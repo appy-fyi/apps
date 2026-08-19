@@ -1,5 +1,8 @@
 TODO:
-
+- For videos, add player controls and a progress bar.
+- Fix all the strings in the menus and across the app
+- In the settings add 2 additional languages and translate all strings to those languages.
+    
 DONE:
 - Cropping not working well, I can start dragging the crop box but then it stuck.
 - Also add vertical and horizontal crop options.
