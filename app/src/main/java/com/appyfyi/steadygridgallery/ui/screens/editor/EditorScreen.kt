@@ -34,6 +34,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -218,8 +219,13 @@ private fun EditingContent(uiState: EditorUiState, viewModel: EditorViewModel) {
             }
         }
 
-        Row(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             Button(onClick = viewModel::rotate90) { Text("Rotate 90°") }
+            Button(onClick = viewModel::applyVerticalCrop) { Text("Vertical") }
+            Button(onClick = viewModel::applyHorizontalCrop) { Text("Horizontal") }
         }
 
         Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
@@ -283,18 +289,25 @@ private fun CropOverlay(
     onCropRectChanged: (Rect) -> Unit,
 ) {
     val handleRadiusPx = with(LocalDensity.current) { HANDLE_TOUCH_RADIUS_DP.dp.toPx() }
+    // Read the live rect/callback via rememberUpdatedState instead of keying pointerInput on
+    // cropRectPx: onCropRectChanged fires on every drag delta, so keying on it would restart
+    // this pointerInput coroutine mid-gesture and cancel detectDragGestures after one event
+    // (the drag would start, then appear to get stuck).
+    val currentCropRectPx by rememberUpdatedState(cropRectPx)
+    val currentOnCropRectChanged by rememberUpdatedState(onCropRectChanged)
 
     Canvas(
         modifier = Modifier
             .fillMaxSize()
-            .pointerInput(cropRectPx, scale) {
+            .pointerInput(scale, bitmapWidth, bitmapHeight) {
                 detectDragGestures { change, dragAmount ->
                     change.consume()
                     val pos = change.position
-                    val left = cropRectPx.left * scale
-                    val top = cropRectPx.top * scale
-                    val right = cropRectPx.right * scale
-                    val bottom = cropRectPx.bottom * scale
+                    val rect = currentCropRectPx
+                    val left = rect.left * scale
+                    val top = rect.top * scale
+                    val right = rect.right * scale
+                    val bottom = rect.bottom * scale
 
                     val nearTopLeft = distance(pos, Offset(left, top)) < handleRadiusPx * 2
                     val nearBottomRight = distance(pos, Offset(right, bottom)) < handleRadiusPx * 2
@@ -322,7 +335,7 @@ private fun CropOverlay(
                         newBottom = newTop + height
                     }
 
-                    onCropRectChanged(
+                    currentOnCropRectChanged(
                         Rect(
                             (newLeft / scale).roundToInt(),
                             (newTop / scale).roundToInt(),

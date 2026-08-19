@@ -6,8 +6,15 @@ import android.widget.VideoView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -43,7 +50,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -70,6 +79,11 @@ fun ViewerScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var showInfoSheet by remember { mutableStateOf(false) }
     var pendingRecycleItemId by remember { mutableLongStateOf(-1L) }
+    // +1 = navigated to next (new content slides in from the right), -1 = previous (from the left).
+    var swipeDirection by remember { mutableStateOf(1) }
+    // Pinch-zoom state for the current image; resets whenever the displayed item changes.
+    var zoomScale by remember(uiState.currentItem?.mediaId) { mutableStateOf(1f) }
+    var zoomOffset by remember(uiState.currentItem?.mediaId) { mutableStateOf(Offset.Zero) }
 
     val deleteRequestLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartIntentSenderForResult(),
@@ -145,48 +159,87 @@ fun ViewerScreen(
                 .padding(padding)
                 .background(Color.Black)
                 .pointerInput(uiState.currentItem?.mediaId) {
-                    detectHorizontalDragGestures { _, dragAmount ->
-                        if (dragAmount < -50) viewModel.showNext()
-                        if (dragAmount > 50) viewModel.showPrevious()
+                    // A single detector handles both pinch-zoom (multi-pointer) and swipe
+                    // navigation (single-pointer drag while not zoomed in) so they don't fight
+                    // over the same touch stream: zoom/pan while zoomed in, else swipe threshold.
+                    detectTransformGestures { _, pan, zoom, _ ->
+                        if (zoom != 1f) {
+                            zoomScale = (zoomScale * zoom).coerceIn(1f, 5f)
+                        }
+                        if (zoomScale > 1f) {
+                            zoomOffset += pan
+                        } else {
+                            zoomOffset = Offset.Zero
+                            if (pan.x < -50) {
+                                swipeDirection = 1
+                                viewModel.showNext()
+                            }
+                            if (pan.x > 50) {
+                                swipeDirection = -1
+                                viewModel.showPrevious()
+                            }
+                        }
                     }
                 },
             contentAlignment = Alignment.Center,
         ) {
-            when (uiState.phase) {
-                ViewerPhase.LOADING -> CircularProgressIndicator()
+            val contentState = ViewerContentState(uiState.phase, uiState.currentItem, uiState.errorMessage)
+            AnimatedContent(
+                targetState = contentState,
+                transitionSpec = {
+                    val direction = swipeDirection
+                    slideInHorizontally(tween(250)) { width -> direction * width }
+                        .plus(fadeIn(tween(250)))
+                        .togetherWith(
+                            slideOutHorizontally(tween(250)) { width -> -direction * width }
+                                .plus(fadeOut(tween(250))),
+                        )
+                },
+                label = "viewerContent",
+            ) { state ->
+                when (state.phase) {
+                    ViewerPhase.LOADING -> CircularProgressIndicator()
 
-                ViewerPhase.ERROR -> Text(
-                    text = uiState.errorMessage ?: "Unable to display this item.",
-                    color = Color.White,
-                )
-
-                ViewerPhase.DISPLAYING_IMAGE -> uiState.currentItem?.let { item ->
-                    AsyncImage(
-                        model = item.contentUri,
-                        contentDescription = item.displayName,
-                        contentScale = ContentScale.Fit,
-                        modifier = Modifier.fillMaxSize(),
+                    ViewerPhase.ERROR -> Text(
+                        text = state.errorMessage ?: "Unable to display this item.",
+                        color = Color.White,
                     )
-                }
 
-                ViewerPhase.DISPLAYING_VIDEO -> uiState.currentItem?.let { item ->
-                    AndroidView(
-                        modifier = Modifier.fillMaxSize(),
-                        factory = { ctx ->
-                            VideoView(ctx).apply {
-                                setVideoURI(item.contentUri)
-                                setOnPreparedListener { it.isLooping = false; start() }
-                            }
-                        },
-                        update = { view -> view.setVideoURI(item.contentUri) },
-                    )
-                }
+                    ViewerPhase.DISPLAYING_IMAGE -> state.item?.let { item ->
+                        AsyncImage(
+                            model = item.contentUri,
+                            contentDescription = item.displayName,
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .graphicsLayer(
+                                    scaleX = zoomScale,
+                                    scaleY = zoomScale,
+                                    translationX = zoomOffset.x,
+                                    translationY = zoomOffset.y,
+                                ),
+                        )
+                    }
 
-                ViewerPhase.DELETED_TO_RECYCLE -> Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Text("Moved to Recycle Bin.", color = Color.White)
-                    Button(onClick = onBack) { Text("Back to folder") }
+                    ViewerPhase.DISPLAYING_VIDEO -> state.item?.let { item ->
+                        AndroidView(
+                            modifier = Modifier.fillMaxSize(),
+                            factory = { ctx ->
+                                VideoView(ctx).apply {
+                                    setVideoURI(item.contentUri)
+                                    setOnPreparedListener { it.isLooping = false; start() }
+                                }
+                            },
+                            update = { view -> view.setVideoURI(item.contentUri) },
+                        )
+                    }
+
+                    ViewerPhase.DELETED_TO_RECYCLE -> Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Text("Moved to Recycle Bin.", color = Color.White)
+                        Button(onClick = onBack) { Text("Back to folder") }
+                    }
                 }
             }
         }
@@ -199,6 +252,14 @@ fun ViewerScreen(
         }
     }
 }
+
+/** Snapshot of the viewer content fed to AnimatedContent so the outgoing slide keeps showing
+ *  the item it had when the swipe started, instead of jumping to whatever uiState is live. */
+private data class ViewerContentState(
+    val phase: ViewerPhase,
+    val item: MediaItem?,
+    val errorMessage: String?,
+)
 
 @Composable
 private fun MediaInfoContent(item: MediaItem) {
