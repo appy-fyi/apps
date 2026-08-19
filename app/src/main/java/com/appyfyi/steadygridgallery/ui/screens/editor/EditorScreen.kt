@@ -32,9 +32,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -44,7 +48,10 @@ import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -183,7 +190,12 @@ private fun EditingContent(uiState: EditorUiState, viewModel: EditorViewModel) {
 
     Column(modifier = Modifier.fillMaxSize()) {
         BoxWithConstraints(
-            modifier = Modifier.fillMaxWidth().weight(1f).padding(8.dp),
+            // Horizontal padding is wider than vertical: a full-width crop handle sits right in
+            // Android's edge back-gesture zone, which can swallow the drag before this screen
+            // ever sees it (systemGestureExclusionRects on CropOverlay covers most of that, but
+            // OEMs can widen the back-gesture sensitivity past what's excludable, so keep a
+            // deliberate safety margin too).
+            modifier = Modifier.fillMaxWidth().weight(1f).padding(horizontal = 48.dp, vertical = 8.dp),
             contentAlignment = Alignment.Center,
         ) {
             // Fit the bitmap within BOTH available dimensions (like ContentScale.Fit), not just
@@ -289,6 +301,9 @@ private fun previewColorFilter(filter: EditFilter): ColorFilter? = when (filter)
 
 private const val HANDLE_TOUCH_RADIUS_DP = 16
 
+/** Which part of the crop box a drag gesture is manipulating, fixed for the gesture's duration. */
+private enum class CropHandle { TOP_LEFT, TOP, TOP_RIGHT, RIGHT, BOTTOM_RIGHT, BOTTOM, BOTTOM_LEFT, LEFT, MOVE }
+
 @Composable
 private fun CropOverlay(
     cropRectPx: Rect,
@@ -305,43 +320,115 @@ private fun CropOverlay(
     val currentCropRectPx by rememberUpdatedState(cropRectPx)
     val currentOnCropRectChanged by rememberUpdatedState(onCropRectChanged)
 
+    // On gesture-nav devices, an edge/corner handle can sit within ~24dp of the screen edge
+    // (e.g. a wide image's crop box spans nearly full width). Without this, Android's
+    // back-gesture recognizer swallows that first touch/drag before this Canvas ever sees it,
+    // so the handle appears completely unresponsive right at the point it's needed most.
+    val view = LocalView.current
+    // Guard against redundant writes: setting systemGestureExclusionRects triggers a window
+    // insets pass, and onGloballyPositioned re-fires after that pass completes. Writing on every
+    // callback regardless of whether the bounds actually changed risks a relayout loop.
+    var lastExclusionBounds by remember { mutableStateOf<Rect?>(null) }
+    DisposableEffect(view) {
+        onDispose { view.systemGestureExclusionRects = emptyList() }
+    }
+
     Canvas(
         modifier = Modifier
             .fillMaxSize()
+            .onGloballyPositioned { coordinates ->
+                val bounds = coordinates.boundsInWindow()
+                val rect = Rect(
+                    bounds.left.roundToInt(),
+                    bounds.top.roundToInt(),
+                    bounds.right.roundToInt(),
+                    bounds.bottom.roundToInt(),
+                )
+                if (rect != lastExclusionBounds) {
+                    lastExclusionBounds = rect
+                    view.systemGestureExclusionRects = listOf(rect)
+                }
+            }
             .pointerInput(scale, bitmapWidth, bitmapHeight) {
-                detectDragGestures { change, dragAmount ->
+                // The active handle is picked once in onDragStart and reused for every delta in
+                // the gesture. Re-picking it on every move (the previous approach) let the choice
+                // flip mid-drag as the box resized, which read as the drag "getting stuck" or
+                // jumping.
+                var activeHandle: CropHandle? = null
+
+                detectDragGestures(
+                    onDragStart = { pos ->
+                        val rect = currentCropRectPx
+                        val left = rect.left * scale
+                        val top = rect.top * scale
+                        val right = rect.right * scale
+                        val bottom = rect.bottom * scale
+                        val midX = (left + right) / 2f
+                        val midY = (top + bottom) / 2f
+                        val threshold = handleRadiusPx * 2
+
+                        val candidates = listOf(
+                            CropHandle.TOP_LEFT to Offset(left, top),
+                            CropHandle.TOP to Offset(midX, top),
+                            CropHandle.TOP_RIGHT to Offset(right, top),
+                            CropHandle.RIGHT to Offset(right, midY),
+                            CropHandle.BOTTOM_RIGHT to Offset(right, bottom),
+                            CropHandle.BOTTOM to Offset(midX, bottom),
+                            CropHandle.BOTTOM_LEFT to Offset(left, bottom),
+                            CropHandle.LEFT to Offset(left, midY),
+                        )
+                        val nearest = candidates.minByOrNull { (_, handlePos) -> distance(pos, handlePos) }
+                        activeHandle = when {
+                            nearest != null && distance(pos, nearest.second) < threshold -> nearest.first
+                            pos.x in left..right && pos.y in top..bottom -> CropHandle.MOVE
+                            else -> null
+                        }
+                    },
+                ) { change, dragAmount ->
+                    val handle = activeHandle ?: return@detectDragGestures
                     change.consume()
-                    val pos = change.position
                     val rect = currentCropRectPx
                     val left = rect.left * scale
                     val top = rect.top * scale
                     val right = rect.right * scale
                     val bottom = rect.bottom * scale
+                    val maxWidthPx = bitmapWidth * scale
+                    val maxHeightPx = bitmapHeight * scale
 
-                    val nearTopLeft = distance(pos, Offset(left, top)) < handleRadiusPx * 2
-                    val nearBottomRight = distance(pos, Offset(right, bottom)) < handleRadiusPx * 2
+                    var newLeft = left
+                    var newTop = top
+                    var newRight = right
+                    var newBottom = bottom
 
-                    val newLeft: Float
-                    val newTop: Float
-                    val newRight: Float
-                    val newBottom: Float
-                    if (nearTopLeft) {
-                        newLeft = (left + dragAmount.x).coerceIn(0f, right - handleRadiusPx)
-                        newTop = (top + dragAmount.y).coerceIn(0f, bottom - handleRadiusPx)
-                        newRight = right
-                        newBottom = bottom
-                    } else if (nearBottomRight) {
-                        newLeft = left
-                        newTop = top
-                        newRight = (right + dragAmount.x).coerceIn(left + handleRadiusPx, bitmapWidth * scale)
-                        newBottom = (bottom + dragAmount.y).coerceIn(top + handleRadiusPx, bitmapHeight * scale)
-                    } else {
-                        val width = right - left
-                        val height = bottom - top
-                        newLeft = (left + dragAmount.x).coerceIn(0f, bitmapWidth * scale - width)
-                        newTop = (top + dragAmount.y).coerceIn(0f, bitmapHeight * scale - height)
-                        newRight = newLeft + width
-                        newBottom = newTop + height
+                    when (handle) {
+                        CropHandle.TOP_LEFT -> {
+                            newLeft = (left + dragAmount.x).coerceIn(0f, right - handleRadiusPx)
+                            newTop = (top + dragAmount.y).coerceIn(0f, bottom - handleRadiusPx)
+                        }
+                        CropHandle.TOP_RIGHT -> {
+                            newRight = (right + dragAmount.x).coerceIn(left + handleRadiusPx, maxWidthPx)
+                            newTop = (top + dragAmount.y).coerceIn(0f, bottom - handleRadiusPx)
+                        }
+                        CropHandle.BOTTOM_LEFT -> {
+                            newLeft = (left + dragAmount.x).coerceIn(0f, right - handleRadiusPx)
+                            newBottom = (bottom + dragAmount.y).coerceIn(top + handleRadiusPx, maxHeightPx)
+                        }
+                        CropHandle.BOTTOM_RIGHT -> {
+                            newRight = (right + dragAmount.x).coerceIn(left + handleRadiusPx, maxWidthPx)
+                            newBottom = (bottom + dragAmount.y).coerceIn(top + handleRadiusPx, maxHeightPx)
+                        }
+                        CropHandle.TOP -> newTop = (top + dragAmount.y).coerceIn(0f, bottom - handleRadiusPx)
+                        CropHandle.BOTTOM -> newBottom = (bottom + dragAmount.y).coerceIn(top + handleRadiusPx, maxHeightPx)
+                        CropHandle.LEFT -> newLeft = (left + dragAmount.x).coerceIn(0f, right - handleRadiusPx)
+                        CropHandle.RIGHT -> newRight = (right + dragAmount.x).coerceIn(left + handleRadiusPx, maxWidthPx)
+                        CropHandle.MOVE -> {
+                            val width = right - left
+                            val height = bottom - top
+                            newLeft = (left + dragAmount.x).coerceIn(0f, maxWidthPx - width)
+                            newTop = (top + dragAmount.y).coerceIn(0f, maxHeightPx - height)
+                            newRight = newLeft + width
+                            newBottom = newTop + height
+                        }
                     }
 
                     currentOnCropRectChanged(
@@ -359,6 +446,8 @@ private fun CropOverlay(
         val top = cropRectPx.top * scale
         val right = cropRectPx.right * scale
         val bottom = cropRectPx.bottom * scale
+        val midX = (left + right) / 2f
+        val midY = (top + bottom) / 2f
 
         drawRect(
             color = Color.White,
@@ -366,8 +455,19 @@ private fun CropOverlay(
             size = androidx.compose.ui.geometry.Size(right - left, bottom - top),
             style = androidx.compose.ui.graphics.drawscope.Stroke(width = 3f),
         )
-        drawCircle(color = Color.White, radius = handleRadiusPx / 2, center = Offset(left, top))
-        drawCircle(color = Color.White, radius = handleRadiusPx / 2, center = Offset(right, bottom))
+        val handlePositions = listOf(
+            Offset(left, top),
+            Offset(midX, top),
+            Offset(right, top),
+            Offset(right, midY),
+            Offset(right, bottom),
+            Offset(midX, bottom),
+            Offset(left, bottom),
+            Offset(left, midY),
+        )
+        handlePositions.forEach { center ->
+            drawCircle(color = Color.White, radius = handleRadiusPx / 2, center = center)
+        }
     }
 }
 
