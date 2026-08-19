@@ -1,9 +1,11 @@
 package com.appyfyi.steadygridgallery.ui.screens.folders
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.appyfyi.steadygridgallery.R
 import com.appyfyi.steadygridgallery.data.media.FolderSummary
 import com.appyfyi.steadygridgallery.data.media.MediaStoreRepository
 import com.appyfyi.steadygridgallery.ui.common.appContainer
@@ -27,7 +29,10 @@ data class FoldersUiState(
         }
 }
 
-class FoldersViewModel(private val repository: MediaStoreRepository) : ViewModel() {
+class FoldersViewModel(
+    private val repository: MediaStoreRepository,
+    private val appContext: Context,
+) : ViewModel() {
     private val _uiState = MutableStateFlow(FoldersUiState())
     val uiState: StateFlow<FoldersUiState> = _uiState
 
@@ -44,7 +49,7 @@ class FoldersViewModel(private val repository: MediaStoreRepository) : ViewModel
                 .onFailure { error ->
                     _uiState.value = _uiState.value.copy(
                         phase = FoldersPhase.ERROR,
-                        errorMessage = error.message ?: "Unable to load folders",
+                        errorMessage = error.message ?: appContext.getString(R.string.folders_load_error_fallback),
                     )
                 }
         }
@@ -56,7 +61,10 @@ class FoldersViewModel(private val repository: MediaStoreRepository) : ViewModel
 
     companion object {
         val Factory = viewModelFactory {
-            initializer { FoldersViewModel(appContainer().mediaStoreRepository) }
+            initializer {
+                val container = appContainer()
+                FoldersViewModel(container.mediaStoreRepository, container.appContext)
+            }
         }
     }
 }

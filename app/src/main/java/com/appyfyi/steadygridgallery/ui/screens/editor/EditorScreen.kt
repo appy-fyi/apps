@@ -45,9 +45,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.appyfyi.steadygridgallery.R
 import com.appyfyi.steadygridgallery.data.media.EditFilter
 import kotlin.math.roundToInt
 
@@ -65,10 +67,10 @@ fun EditorScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Editor") },
+                title = { Text(stringResource(R.string.editor_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
                     }
                 },
             )
@@ -84,10 +86,10 @@ fun EditorScreen(
                     icon = Icons.Filled.WorkspacePremium,
                     iconTint = MaterialTheme.colorScheme.primary,
                     iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                    title = "Unlock the Editor",
-                    message = "Crop, rotate, filters, and export are part of Steady Gallery Pro.",
+                    title = stringResource(R.string.editor_unlock_title),
+                    message = stringResource(R.string.editor_unlock_message),
                 ) {
-                    Button(onClick = onNavigateToPurchase) { Text("Unlock") }
+                    Button(onClick = onNavigateToPurchase) { Text(stringResource(R.string.common_unlock)) }
                 }
 
                 EditorPhase.EDITING -> EditingContent(uiState, viewModel)
@@ -97,13 +99,13 @@ fun EditorScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        Text("Exporting…", style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.editor_exporting), style = MaterialTheme.typography.titleMedium)
                         LinearProgressIndicator(
                             progress = { uiState.exportProgressPercent / 100f },
                             modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp),
                         )
                         Text(
-                            "${uiState.exportProgressPercent}%",
+                            stringResource(R.string.editor_export_percent_format, uiState.exportProgressPercent),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -114,20 +116,20 @@ fun EditorScreen(
                     icon = Icons.Filled.CheckCircle,
                     iconTint = MaterialTheme.colorScheme.primary,
                     iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                    title = "Export complete",
-                    message = "Saved to Pictures/Steady Gallery.",
+                    title = stringResource(R.string.editor_export_success_title),
+                    message = stringResource(R.string.editor_export_success_message),
                 ) {
-                    Button(onClick = onBack) { Text("Done") }
+                    Button(onClick = onBack) { Text(stringResource(R.string.common_done)) }
                 }
 
                 EditorPhase.EXPORT_ERROR -> EditorMessageState(
                     icon = Icons.Filled.ErrorOutline,
                     iconTint = MaterialTheme.colorScheme.error,
                     iconContainerColor = MaterialTheme.colorScheme.errorContainer,
-                    title = "Export failed",
-                    message = uiState.errorMessage ?: "Something went wrong while exporting.",
+                    title = stringResource(R.string.editor_export_failed_title),
+                    message = uiState.errorMessage ?: stringResource(R.string.editor_export_error_fallback),
                 ) {
-                    Button(onClick = viewModel::export) { Text("Retry") }
+                    Button(onClick = viewModel::export) { Text(stringResource(R.string.common_retry)) }
                 }
             }
         }
@@ -205,7 +207,7 @@ private fun EditingContent(uiState: EditorUiState, viewModel: EditorViewModel) {
             ) {
                 Image(
                     bitmap = bitmap.asImageBitmap(),
-                    contentDescription = "Image being edited",
+                    contentDescription = stringResource(R.string.editor_image_being_edited),
                     colorFilter = previewColorFilter(uiState.filter),
                     modifier = Modifier.fillMaxSize(),
                 )
@@ -223,9 +225,9 @@ private fun EditingContent(uiState: EditorUiState, viewModel: EditorViewModel) {
             modifier = Modifier.fillMaxWidth().padding(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Button(onClick = viewModel::rotate90) { Text("Rotate 90°") }
-            Button(onClick = viewModel::applyVerticalCrop) { Text("Vertical") }
-            Button(onClick = viewModel::applyHorizontalCrop) { Text("Horizontal") }
+            Button(onClick = viewModel::rotate90) { Text(stringResource(R.string.editor_rotate_90)) }
+            Button(onClick = viewModel::applyVerticalCrop) { Text(stringResource(R.string.editor_crop_vertical)) }
+            Button(onClick = viewModel::applyHorizontalCrop) { Text(stringResource(R.string.editor_crop_horizontal)) }
         }
 
         Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
@@ -233,7 +235,7 @@ private fun EditingContent(uiState: EditorUiState, viewModel: EditorViewModel) {
                 FilterChip(
                     selected = uiState.filter == filter,
                     onClick = { viewModel.setFilter(filter) },
-                    label = { Text(filter.displayName) },
+                    label = { Text(stringResource(filter.labelRes())) },
                     modifier = Modifier.padding(end = 4.dp),
                 )
             }
@@ -243,9 +245,16 @@ private fun EditingContent(uiState: EditorUiState, viewModel: EditorViewModel) {
             onClick = viewModel::export,
             modifier = Modifier.fillMaxWidth().padding(8.dp),
         ) {
-            Text("Export")
+            Text(stringResource(R.string.editor_export_button))
         }
     }
+}
+
+private fun EditFilter.labelRes(): Int = when (this) {
+    EditFilter.ORIGINAL -> R.string.edit_filter_original
+    EditFilter.GRAYSCALE -> R.string.edit_filter_grayscale
+    EditFilter.SEPIA -> R.string.edit_filter_sepia
+    EditFilter.HIGH_CONTRAST -> R.string.edit_filter_high_contrast
 }
 
 /** Mirrors ImageEditProcessor's color matrices so the live preview matches what Export produces. */

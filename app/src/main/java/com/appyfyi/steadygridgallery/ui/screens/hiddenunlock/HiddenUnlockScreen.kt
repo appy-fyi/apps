@@ -36,12 +36,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.appyfyi.steadygridgallery.R
 import java.util.concurrent.Executor
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,6 +60,8 @@ fun HiddenUnlockScreen(
     var pin by remember { mutableStateOf("") }
     var confirmPin by remember { mutableStateOf("") }
     var enableBiometric by remember { mutableStateOf(false) }
+    val biometricPromptTitle = stringResource(R.string.hidden_unlock_prompt_title)
+    val biometricUsePinInstead = stringResource(R.string.hidden_unlock_use_pin_instead)
 
     LaunchedEffect(Unit) { viewModel.load() }
 
@@ -72,10 +76,10 @@ fun HiddenUnlockScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Hidden Folders") },
+                title = { Text(stringResource(R.string.hidden_folders_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
                     }
                 },
             )
@@ -97,11 +101,11 @@ fun HiddenUnlockScreen(
 
             when (uiState.phase) {
                 HiddenUnlockPhase.NO_LOCK_CONFIGURED -> {
-                    Text("Set up a PIN to protect hidden folders.", style = MaterialTheme.typography.bodyMedium)
+                    Text(stringResource(R.string.hidden_unlock_setup_prompt), style = MaterialTheme.typography.bodyMedium)
                     OutlinedTextField(
                         value = pin,
                         onValueChange = { pin = it.filter { c -> c.isDigit() } },
-                        label = { Text("New PIN") },
+                        label = { Text(stringResource(R.string.hidden_unlock_new_pin_label)) },
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                         modifier = Modifier.fillMaxWidth(),
@@ -110,7 +114,7 @@ fun HiddenUnlockScreen(
                     OutlinedTextField(
                         value = confirmPin,
                         onValueChange = { confirmPin = it.filter { c -> c.isDigit() } },
-                        label = { Text("Confirm PIN") },
+                        label = { Text(stringResource(R.string.hidden_unlock_confirm_pin_label)) },
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                         modifier = Modifier.fillMaxWidth(),
@@ -125,14 +129,14 @@ fun HiddenUnlockScreen(
                                 checked = enableBiometric,
                                 onCheckedChange = { enableBiometric = it },
                             )
-                            Text("Enable biometric unlock")
+                            Text(stringResource(R.string.hidden_unlock_enable_biometric))
                         }
                     }
                     Button(
                         onClick = { viewModel.setUpPin(pin, confirmPin, enableBiometric) },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text("Create PIN")
+                        Text(stringResource(R.string.hidden_unlock_create_pin_button))
                     }
                 }
 
@@ -140,7 +144,7 @@ fun HiddenUnlockScreen(
                     OutlinedTextField(
                         value = pin,
                         onValueChange = { pin = it.filter { c -> c.isDigit() } },
-                        label = { Text("Enter PIN") },
+                        label = { Text(stringResource(R.string.hidden_unlock_enter_pin_label)) },
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                         modifier = Modifier.fillMaxWidth(),
@@ -148,12 +152,12 @@ fun HiddenUnlockScreen(
                     )
                     if (uiState.phase == HiddenUnlockPhase.AUTH_ERROR) {
                         Text(
-                            uiState.errorMessage ?: "Incorrect PIN",
+                            uiState.errorMessage ?: stringResource(R.string.hidden_unlock_incorrect_pin_fallback),
                             color = MaterialTheme.colorScheme.error,
                         )
                     }
                     Button(onClick = { viewModel.submitPin(pin) }, modifier = Modifier.fillMaxWidth()) {
-                        Text("Unlock")
+                        Text(stringResource(R.string.common_unlock))
                     }
 
                     if (canUseBiometric && uiState.biometricEnabled) {
@@ -161,20 +165,22 @@ fun HiddenUnlockScreen(
                             onClick = {
                                 showBiometricPrompt(
                                     activity = activity!!,
+                                    title = biometricPromptTitle,
+                                    usePinInsteadText = biometricUsePinInstead,
                                     onSuccess = viewModel::onBiometricSuccess,
                                     onError = viewModel::onBiometricError,
                                 )
                             },
                             modifier = Modifier.fillMaxWidth(),
                         ) {
-                            Text("Use biometric")
+                            Text(stringResource(R.string.hidden_unlock_use_biometric))
                         }
                     }
                 }
 
                 HiddenUnlockPhase.AUTHENTICATING -> CircularProgressIndicator()
 
-                HiddenUnlockPhase.UNLOCKED -> Text("Unlocked.")
+                HiddenUnlockPhase.UNLOCKED -> Text(stringResource(R.string.hidden_unlock_unlocked))
             }
         }
     }
@@ -182,6 +188,8 @@ fun HiddenUnlockScreen(
 
 private fun showBiometricPrompt(
     activity: FragmentActivity,
+    title: String,
+    usePinInsteadText: String,
     onSuccess: () -> Unit,
     onError: (String) -> Unit,
 ) {
@@ -200,8 +208,8 @@ private fun showBiometricPrompt(
         },
     )
     val promptInfo = BiometricPrompt.PromptInfo.Builder()
-        .setTitle("Unlock hidden folders")
-        .setNegativeButtonText("Use PIN instead")
+        .setTitle(title)
+        .setNegativeButtonText(usePinInsteadText)
         .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
         .build()
     prompt.authenticate(promptInfo)

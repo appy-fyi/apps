@@ -1,11 +1,13 @@
 package com.appyfyi.steadygridgallery.ui.screens.viewer
 
 import android.app.PendingIntent
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.appyfyi.steadygridgallery.R
 import com.appyfyi.steadygridgallery.data.media.MediaItem
 import com.appyfyi.steadygridgallery.data.media.MediaKind
 import com.appyfyi.steadygridgallery.data.media.MediaStoreRepository
@@ -37,6 +39,7 @@ class ViewerViewModel(
     private val initialMediaId: String,
     private val mediaRepository: MediaStoreRepository,
     private val recycleRepository: RecycleRepository,
+    private val appContext: Context,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ViewerUiState())
@@ -53,7 +56,10 @@ class ViewerViewModel(
         viewModelScope.launch {
             val item = mediaRepository.findMediaItem(initialMediaId)
             if (item == null) {
-                _uiState.value = _uiState.value.copy(phase = ViewerPhase.ERROR, errorMessage = "Media not found")
+                _uiState.value = _uiState.value.copy(
+                    phase = ViewerPhase.ERROR,
+                    errorMessage = appContext.getString(R.string.viewer_media_not_found),
+                )
                 return@launch
             }
             mediaRepository.loadMediaInFolder(item.folderKey)
@@ -103,7 +109,11 @@ class ViewerViewModel(
                     eventChannel.send(ViewerEvent.ConfirmSystemDelete(pendingIntent, recycleItemId))
                 }
                 .onFailure {
-                    eventChannel.send(ViewerEvent.RecycleFailed(it.message ?: "Unable to recycle ${item.displayName}"))
+                    eventChannel.send(
+                        ViewerEvent.RecycleFailed(
+                            it.message ?: appContext.getString(R.string.viewer_recycle_failed_format, item.displayName),
+                        ),
+                    )
                 }
         }
     }
@@ -128,6 +138,7 @@ class ViewerViewModel(
                     initialMediaId = Routes.decode(encodedMediaId),
                     mediaRepository = container.mediaStoreRepository,
                     recycleRepository = container.recycleRepository,
+                    appContext = container.appContext,
                 )
             }
         }

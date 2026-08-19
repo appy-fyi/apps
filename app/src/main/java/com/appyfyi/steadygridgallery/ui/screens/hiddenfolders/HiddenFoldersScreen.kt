@@ -33,10 +33,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.appyfyi.steadygridgallery.R
 import com.appyfyi.steadygridgallery.data.media.FolderSummary
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,10 +56,10 @@ fun HiddenFoldersScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Hidden Folders") },
+                title = { Text(stringResource(R.string.hidden_folders_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
                     }
                 },
             )
@@ -71,26 +73,26 @@ fun HiddenFoldersScreen(
 
                 HiddenFoldersPhase.LOCKED -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Session locked.")
-                        androidx.compose.material3.Button(onClick = onRequiresUnlock) { Text("Unlock") }
+                        Text(stringResource(R.string.hidden_folders_session_locked))
+                        androidx.compose.material3.Button(onClick = onRequiresUnlock) { Text(stringResource(R.string.common_unlock)) }
                     }
                 }
 
                 HiddenFoldersPhase.ERROR -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
-                        text = uiState.errorMessage ?: "Unable to load hidden folders.",
+                        text = uiState.errorMessage ?: stringResource(R.string.hidden_folders_error_fallback),
                         color = MaterialTheme.colorScheme.error,
                     )
                 }
 
                 HiddenFoldersPhase.EMPTY -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No folders are hidden.")
+                    Text(stringResource(R.string.hidden_folders_empty))
                 }
 
                 HiddenFoldersPhase.POPULATED -> {
                     Surface(color = MaterialTheme.colorScheme.primaryContainer) {
                         Text(
-                            "Unlocked",
+                            stringResource(R.string.hidden_folders_unlocked_banner),
                             modifier = Modifier.fillMaxWidth().padding(8.dp),
                         )
                     }
@@ -137,7 +139,7 @@ private fun HiddenFolderTile(folder: FolderSummary, onOpen: () -> Unit, onUnhide
                 modifier = Modifier.align(Alignment.TopEnd).padding(6.dp),
             ) {
                 IconButton(onClick = onUnhide) {
-                    Icon(Icons.Filled.Visibility, contentDescription = "Unhide folder")
+                    Icon(Icons.Filled.Visibility, contentDescription = stringResource(R.string.hidden_folders_unhide))
                 }
             }
         }
@@ -148,7 +150,7 @@ private fun HiddenFolderTile(folder: FolderSummary, onOpen: () -> Unit, onUnhide
             modifier = Modifier.padding(top = 8.dp),
         )
         Text(
-            "${folder.itemCount} items",
+            stringResource(R.string.hidden_folders_item_count_format, folder.itemCount),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

@@ -1,10 +1,12 @@
 package com.appyfyi.steadygridgallery.ui.screens.hiddenunlock
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.appyfyi.steadygridgallery.R
 import com.appyfyi.steadygridgallery.data.db.dao.FolderStateDao
 import com.appyfyi.steadygridgallery.data.prefs.HiddenUnlockSession
 import com.appyfyi.steadygridgallery.data.prefs.LockCredentialStore
@@ -29,6 +31,7 @@ class HiddenUnlockViewModel(
     private val session: HiddenUnlockSession,
     private val folderStateDao: FolderStateDao,
     private val pendingHideFolderKey: String?,
+    private val appContext: Context,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(HiddenUnlockUiState())
     val uiState: StateFlow<HiddenUnlockUiState> = _uiState
@@ -53,14 +56,14 @@ class HiddenUnlockViewModel(
         if (pin.length !in 4..12 || pin.any { !it.isDigit() }) {
             _uiState.value = _uiState.value.copy(
                 phase = HiddenUnlockPhase.NO_LOCK_CONFIGURED,
-                errorMessage = "PIN must be 4 to 12 digits",
+                errorMessage = appContext.getString(R.string.hidden_unlock_pin_length_error),
             )
             return
         }
         if (pin != confirmPin) {
             _uiState.value = _uiState.value.copy(
                 phase = HiddenUnlockPhase.NO_LOCK_CONFIGURED,
-                errorMessage = "PINs do not match",
+                errorMessage = appContext.getString(R.string.hidden_unlock_pin_mismatch_error),
             )
             return
         }
@@ -81,7 +84,7 @@ class HiddenUnlockViewModel(
             } else {
                 _uiState.value = _uiState.value.copy(
                     phase = HiddenUnlockPhase.AUTH_ERROR,
-                    errorMessage = "Incorrect PIN",
+                    errorMessage = appContext.getString(R.string.hidden_unlock_incorrect_pin_fallback),
                 )
             }
         }
@@ -119,6 +122,7 @@ class HiddenUnlockViewModel(
                     session = container.hiddenUnlockSession,
                     folderStateDao = container.database.folderStateDao(),
                     pendingHideFolderKey = pendingKey,
+                    appContext = container.appContext,
                 )
             }
         }

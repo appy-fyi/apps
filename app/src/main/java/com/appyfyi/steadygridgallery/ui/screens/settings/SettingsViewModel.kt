@@ -1,9 +1,11 @@
 package com.appyfyi.steadygridgallery.ui.screens.settings
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.appyfyi.steadygridgallery.R
 import com.appyfyi.steadygridgallery.data.db.entity.SortMode
 import com.appyfyi.steadygridgallery.data.prefs.AppSettings
 import com.appyfyi.steadygridgallery.data.prefs.SettingsRepository
@@ -21,7 +23,10 @@ data class SettingsUiState(
     val errorMessage: String? = null,
 )
 
-class SettingsViewModel(private val repository: SettingsRepository) : ViewModel() {
+class SettingsViewModel(
+    private val repository: SettingsRepository,
+    private val appContext: Context,
+) : ViewModel() {
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState
 
@@ -38,7 +43,7 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
             }.onFailure { error ->
                 _uiState.value = _uiState.value.copy(
                     phase = SettingsPhase.ERROR,
-                    errorMessage = error.message ?: "Unable to load settings",
+                    errorMessage = error.message ?: appContext.getString(R.string.settings_load_error_fallback),
                 )
             }
         }
@@ -52,7 +57,10 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
 
     companion object {
         val Factory = viewModelFactory {
-            initializer { SettingsViewModel(appContainer().settingsRepository) }
+            initializer {
+                val container = appContainer()
+                SettingsViewModel(container.settingsRepository, container.appContext)
+            }
         }
     }
 }

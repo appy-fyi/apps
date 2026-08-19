@@ -34,11 +34,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.appyfyi.steadygridgallery.BuildConfig
+import com.appyfyi.steadygridgallery.R
 import com.appyfyi.steadygridgallery.data.billing.BillingUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,10 +55,10 @@ fun PurchaseScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Unlock Pro") },
+                title = { Text(stringResource(R.string.purchase_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBackToSettings) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
                     }
                 },
             )
@@ -77,8 +79,7 @@ fun PurchaseScreen(
             }
 
             Text(
-                "Unlock the editor and hidden folders forever with a single, one-time purchase. " +
-                    "No subscription, no account required.",
+                stringResource(R.string.purchase_description),
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
             )
@@ -98,18 +99,18 @@ fun PurchaseScreen(
                         is BillingUiState.NotPurchased -> {
                             Text(state.formattedPrice, style = MaterialTheme.typography.headlineMedium)
                             Text(
-                                "One-time purchase",
+                                stringResource(R.string.purchase_one_time),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                             Button(
                                 onClick = { activity?.let(viewModel::buy) },
                                 modifier = Modifier.fillMaxWidth(),
-                            ) { Text("Buy unlock") }
+                            ) { Text(stringResource(R.string.purchase_buy_button)) }
                             OutlinedButton(
                                 onClick = viewModel::restore,
                                 modifier = Modifier.fillMaxWidth(),
-                            ) { Text("Restore purchase") }
+                            ) { Text(stringResource(R.string.purchase_restore_button)) }
                         }
 
                         is BillingUiState.Purchasing -> CircularProgressIndicator()
@@ -121,9 +122,9 @@ fun PurchaseScreen(
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(32.dp),
                             )
-                            Text("Pro unlocked. Thank you!", style = MaterialTheme.typography.titleMedium)
+                            Text(stringResource(R.string.purchase_thank_you), style = MaterialTheme.typography.titleMedium)
                             Button(onClick = onBackToSettings, modifier = Modifier.fillMaxWidth()) {
-                                Text("Continue")
+                                Text(stringResource(R.string.common_continue))
                             }
                         }
 
@@ -135,12 +136,12 @@ fun PurchaseScreen(
                                 modifier = Modifier.size(32.dp),
                             )
                             Text(
-                                "Play Billing is unavailable on this device right now.",
+                                stringResource(R.string.purchase_billing_unavailable),
                                 color = MaterialTheme.colorScheme.error,
                                 textAlign = TextAlign.Center,
                             )
                             OutlinedButton(onClick = viewModel::retryConnection, modifier = Modifier.fillMaxWidth()) {
-                                Text("Retry")
+                                Text(stringResource(R.string.common_retry))
                             }
                         }
 
@@ -153,7 +154,7 @@ fun PurchaseScreen(
                             )
                             Text(state.message, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
                             OutlinedButton(onClick = viewModel::retryConnection, modifier = Modifier.fillMaxWidth()) {
-                                Text("Retry")
+                                Text(stringResource(R.string.common_retry))
                             }
                         }
                     }
@@ -166,15 +167,15 @@ fun PurchaseScreen(
             if (BuildConfig.DEBUG) {
                 HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                 Text(
-                    "Debug tools (stripped from release builds)",
+                    stringResource(R.string.purchase_debug_tools_label),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 OutlinedButton(onClick = viewModel::debugGrantEntitlement, modifier = Modifier.fillMaxWidth()) {
-                    Text("DEBUG: simulate purchase")
+                    Text(stringResource(R.string.purchase_debug_simulate))
                 }
                 OutlinedButton(onClick = viewModel::debugRevokeEntitlement, modifier = Modifier.fillMaxWidth()) {
-                    Text("DEBUG: revoke purchase")
+                    Text(stringResource(R.string.purchase_debug_revoke))
                 }
             }
         }

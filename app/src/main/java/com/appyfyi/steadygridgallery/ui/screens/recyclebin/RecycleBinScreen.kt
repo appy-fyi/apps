@@ -32,10 +32,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.appyfyi.steadygridgallery.R
 import com.appyfyi.steadygridgallery.data.db.entity.RecycleItemEntity
 import java.io.File
 import java.text.DateFormat
@@ -55,10 +57,10 @@ fun RecycleBinScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Recycle Bin") },
+                title = { Text(stringResource(R.string.recycle_bin_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
                     }
                 },
             )
@@ -71,13 +73,13 @@ fun RecycleBinScreen(
 
                 RecycleBinPhase.ERROR -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
-                        text = uiState.errorMessage ?: "Unable to load Recycle Bin.",
+                        text = uiState.errorMessage ?: stringResource(R.string.recycle_bin_error_fallback),
                         color = MaterialTheme.colorScheme.error,
                     )
                 }
 
                 RecycleBinPhase.EMPTY -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Recycle Bin is empty.")
+                    Text(stringResource(R.string.recycle_bin_empty))
                 }
 
                 RecycleBinPhase.POPULATED -> Box(Modifier.fillMaxSize()) {
@@ -95,11 +97,11 @@ fun RecycleBinScreen(
                             TextButton(
                                 onClick = viewModel::restoreSelected,
                                 enabled = uiState.selectedIds.isNotEmpty(),
-                            ) { Text("Restore selected") }
+                            ) { Text(stringResource(R.string.recycle_bin_restore_selected)) }
                             TextButton(
                                 onClick = { showDeleteConfirmation = true },
                                 enabled = uiState.selectedIds.isNotEmpty(),
-                            ) { Text("Delete permanently") }
+                            ) { Text(stringResource(R.string.recycle_bin_delete_permanently)) }
                         }
                     }
                 }
@@ -110,16 +112,16 @@ fun RecycleBinScreen(
     if (showDeleteConfirmation) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirmation = false },
-            title = { Text("Delete permanently?") },
-            text = { Text("This cannot be undone. The protected copy in Recycle Bin will be removed.") },
+            title = { Text(stringResource(R.string.recycle_bin_delete_dialog_title)) },
+            text = { Text(stringResource(R.string.recycle_bin_delete_dialog_message)) },
             confirmButton = {
                 TextButton(onClick = {
                     showDeleteConfirmation = false
                     viewModel.permanentlyDeleteSelected()
-                }) { Text("Delete") }
+                }) { Text(stringResource(R.string.common_delete)) }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteConfirmation = false }) { Text("Cancel") }
+                TextButton(onClick = { showDeleteConfirmation = false }) { Text(stringResource(R.string.common_cancel)) }
             },
         )
     }

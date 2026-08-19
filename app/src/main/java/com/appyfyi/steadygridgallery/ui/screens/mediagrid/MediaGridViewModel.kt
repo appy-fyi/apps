@@ -1,11 +1,13 @@
 package com.appyfyi.steadygridgallery.ui.screens.mediagrid
 
 import android.app.PendingIntent
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.appyfyi.steadygridgallery.R
 import com.appyfyi.steadygridgallery.data.db.dao.FolderStateDao
 import com.appyfyi.steadygridgallery.data.db.entity.SortMode
 import com.appyfyi.steadygridgallery.data.media.MediaItem
@@ -48,6 +50,7 @@ class MediaGridViewModel(
     private val recycleRepository: RecycleRepository,
     private val purchaseEntitlementStore: PurchaseEntitlementStore,
     private val lockCredentialStore: LockCredentialStore,
+    private val appContext: Context,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MediaGridUiState())
@@ -78,7 +81,7 @@ class MediaGridViewModel(
                 .onFailure { error ->
                     _uiState.value = _uiState.value.copy(
                         phase = MediaGridPhase.ERROR,
-                        errorMessage = error.message ?: "Unable to load this folder",
+                        errorMessage = error.message ?: appContext.getString(R.string.media_grid_load_error_fallback),
                     )
                 }
         }
@@ -123,7 +126,11 @@ class MediaGridViewModel(
                 recycleRepository.copyAndVerify(item)
                     .onSuccess { recycleItemIds += it }
                     .onFailure {
-                        eventChannel.send(MediaGridEvent.RecycleFailed(it.message ?: "Recycle failed for ${item.displayName}"))
+                        eventChannel.send(
+                            MediaGridEvent.RecycleFailed(
+                                it.message ?: appContext.getString(R.string.media_grid_recycle_failed_format, item.displayName),
+                            ),
+                        )
                     }
             }
             if (recycleItemIds.isNotEmpty()) {
@@ -173,6 +180,7 @@ class MediaGridViewModel(
                     recycleRepository = container.recycleRepository,
                     purchaseEntitlementStore = container.purchaseEntitlementStore,
                     lockCredentialStore = container.lockCredentialStore,
+                    appContext = container.appContext,
                 )
             }
         }

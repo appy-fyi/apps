@@ -50,10 +50,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.appyfyi.steadygridgallery.R
 import com.appyfyi.steadygridgallery.data.db.entity.SortMode
 import com.appyfyi.steadygridgallery.data.media.MediaItem
 import com.appyfyi.steadygridgallery.data.media.MediaKind
@@ -106,18 +108,18 @@ fun MediaGridScreen(
         topBar = {
             if (uiState.phase == MediaGridPhase.SELECTION_ACTIVE) {
                 TopAppBar(
-                    title = { Text("${uiState.selectedIds.size} selected") },
+                    title = { Text(stringResource(R.string.media_grid_selected_count_format, uiState.selectedIds.size)) },
                     navigationIcon = {
                         IconButton(onClick = viewModel::clearSelection) {
-                            Icon(Icons.Filled.ArrowBack, contentDescription = "Clear selection")
+                            Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.common_clear_selection))
                         }
                     },
                     actions = {
                         IconButton(onClick = viewModel::deleteSelectedToRecycle) {
-                            Icon(Icons.Filled.Delete, contentDescription = "Move to Recycle Bin")
+                            Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.common_move_to_recycle_bin))
                         }
                         IconButton(onClick = viewModel::requestHideFolder) {
-                            Icon(Icons.Filled.VisibilityOff, contentDescription = "Hide folder")
+                            Icon(Icons.Filled.VisibilityOff, contentDescription = stringResource(R.string.media_grid_hide_folder))
                         }
                     },
                 )
@@ -125,21 +127,21 @@ fun MediaGridScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            text = uiState.folderDisplayName.ifBlank { "Folder" },
+                            text = uiState.folderDisplayName.ifBlank { stringResource(R.string.media_grid_folder_fallback_title) },
                         )
                     },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
-                            Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                            Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
                         }
                     },
                     actions = {
                         IconButton(onClick = { sortMenuExpanded = true }) {
-                            Icon(Icons.Filled.Sort, contentDescription = "Sort")
+                            Icon(Icons.Filled.Sort, contentDescription = stringResource(R.string.common_sort))
                         }
                         DropdownMenu(expanded = sortMenuExpanded, onDismissRequest = { sortMenuExpanded = false }) {
                             SortMode.entries.forEach { mode ->
-                                DropdownMenuItem(text = { Text(mode.name) }, onClick = {
+                                DropdownMenuItem(text = { Text(stringResource(mode.labelRes())) }, onClick = {
                                     sortMenuExpanded = false
                                     viewModel.changeSortMode(mode)
                                 })
@@ -158,13 +160,13 @@ fun MediaGridScreen(
 
                 MediaGridPhase.ERROR -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
-                        text = uiState.errorMessage ?: "Unable to load this folder.",
+                        text = uiState.errorMessage ?: stringResource(R.string.media_grid_error_fallback),
                         color = MaterialTheme.colorScheme.error,
                     )
                 }
 
                 MediaGridPhase.EMPTY -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("This folder has no photos or videos to show.")
+                    Text(stringResource(R.string.media_grid_empty))
                 }
 
                 MediaGridPhase.POPULATED, MediaGridPhase.SELECTION_ACTIVE -> {
@@ -232,7 +234,7 @@ private fun MediaTile(
             ) {
                 Icon(
                     imageVector = Icons.Filled.PlayArrow,
-                    contentDescription = "Video",
+                    contentDescription = stringResource(R.string.media_video_content_description),
                     tint = Color.White,
                     modifier = Modifier.padding(2.dp).size(16.dp),
                 )
@@ -246,11 +248,18 @@ private fun MediaTile(
             ) {
                 Icon(
                     imageVector = Icons.Filled.CheckCircle,
-                    contentDescription = "Selected",
+                    contentDescription = stringResource(R.string.media_selected_content_description),
                     tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.padding(2.dp).size(18.dp),
                 )
             }
         }
     }
+}
+
+private fun SortMode.labelRes(): Int = when (this) {
+    SortMode.DATE_DESC -> R.string.sort_mode_date_desc
+    SortMode.DATE_ASC -> R.string.sort_mode_date_asc
+    SortMode.NAME_ASC -> R.string.sort_mode_name_asc
+    SortMode.NAME_DESC -> R.string.sort_mode_name_desc
 }

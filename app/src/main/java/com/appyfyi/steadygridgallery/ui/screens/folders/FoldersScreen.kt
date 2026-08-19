@@ -42,10 +42,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.appyfyi.steadygridgallery.R
 import com.appyfyi.steadygridgallery.data.media.FolderSummary
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,29 +68,29 @@ fun FoldersScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Steady Gallery", style = MaterialTheme.typography.titleLarge) },
+                title = { Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleLarge) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                 ),
                 actions = {
                     IconButton(onClick = { menuExpanded = true }) {
-                        Icon(Icons.Filled.MoreVert, contentDescription = "More options")
+                        Icon(Icons.Filled.MoreVert, contentDescription = stringResource(R.string.common_more_options))
                     }
                     DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
-                        DropdownMenuItem(text = { Text("Recycle Bin") }, onClick = {
+                        DropdownMenuItem(text = { Text(stringResource(R.string.recycle_bin_title)) }, onClick = {
                             menuExpanded = false
                             onOpenRecycleBin()
                         })
-                        DropdownMenuItem(text = { Text("Hidden Folders") }, onClick = {
+                        DropdownMenuItem(text = { Text(stringResource(R.string.hidden_folders_title)) }, onClick = {
                             menuExpanded = false
                             onOpenHiddenFolders()
                         })
-                        DropdownMenuItem(text = { Text("Settings") }, onClick = {
+                        DropdownMenuItem(text = { Text(stringResource(R.string.settings_title)) }, onClick = {
                             menuExpanded = false
                             onOpenSettings()
                         })
-                        DropdownMenuItem(text = { Text("Unlock Pro") }, onClick = {
+                        DropdownMenuItem(text = { Text(stringResource(R.string.purchase_title)) }, onClick = {
                             menuExpanded = false
                             onOpenPurchase()
                         })
@@ -101,7 +103,7 @@ fun FoldersScreen(
             OutlinedTextField(
                 value = uiState.searchQuery,
                 onValueChange = viewModel::onSearchQueryChanged,
-                label = { Text("Search folders") },
+                label = { Text(stringResource(R.string.folders_search_hint)) },
                 modifier = Modifier.fillMaxWidth().padding(16.dp),
                 singleLine = true,
             )
@@ -113,13 +115,13 @@ fun FoldersScreen(
 
                 FoldersPhase.ERROR -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
-                        text = uiState.errorMessage ?: "Something went wrong loading your folders.",
+                        text = uiState.errorMessage ?: stringResource(R.string.folders_error_fallback),
                         color = MaterialTheme.colorScheme.error,
                     )
                 }
 
                 FoldersPhase.EMPTY -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No media folders found on this device yet.")
+                    Text(stringResource(R.string.folders_empty))
                 }
 
                 FoldersPhase.POPULATED -> {
@@ -176,7 +178,7 @@ private fun FolderTile(folder: FolderSummary, onClick: () -> Unit) {
                 ) {
                     Icon(
                         imageVector = Icons.Filled.PhotoCamera,
-                        contentDescription = "Camera folder",
+                        contentDescription = stringResource(R.string.folder_camera_content_description),
                         tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.padding(6.dp).size(16.dp),
                     )
@@ -190,7 +192,7 @@ private fun FolderTile(folder: FolderSummary, onClick: () -> Unit) {
             modifier = Modifier.padding(top = 8.dp),
         )
         Text(
-            text = "${folder.itemCount} items • ${folder.relativePath}",
+            text = stringResource(R.string.folder_item_count_and_path_format, folder.itemCount, folder.relativePath),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,

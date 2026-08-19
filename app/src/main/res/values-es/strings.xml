@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Common / shared across screens -->
+    <string name="common_back">Atrás</string>
+    <string name="common_more_options">Más opciones</string>
+    <string name="common_sort">Ordenar</string>
+    <string name="common_clear_selection">Borrar selección</string>
+    <string name="common_move_to_recycle_bin">Mover a la papelera</string>
+    <string name="common_share">Compartir</string>
+    <string name="common_info">Información</string>
+    <string name="common_edit">Editar</string>
+    <string name="common_unlock">Desbloquear</string>
+    <string name="common_continue">Continuar</string>
+    <string name="common_retry">Reintentar</string>
+    <string name="common_delete">Eliminar</string>
+    <string name="common_cancel">Cancelar</string>
+    <string name="common_done">Listo</string>
+    <string name="recycle_bin_title">Papelera</string>
+    <string name="hidden_folders_title">Carpetas ocultas</string>
+    <string name="settings_title">Ajustes</string>
+    <string name="purchase_title">Desbloquear Pro</string>
+
+    <!-- Folders -->
+    <string name="folders_search_hint">Buscar carpetas</string>
+    <string name="folders_error_fallback">Ocurrió un error al cargar tus carpetas.</string>
+    <string name="folders_load_error_fallback">No se pudieron cargar las carpetas</string>
+    <string name="folders_empty">No se encontraron carpetas de fotos o videos en este dispositivo.</string>
+    <string name="folder_camera_content_description">Carpeta de la cámara</string>
+    <string name="folder_item_count_and_path_format">%1$d elementos • %2$s</string>
+
+    <!-- Media grid -->
+    <string name="media_grid_selected_count_format">%1$d seleccionados</string>
+    <string name="media_grid_hide_folder">Ocultar carpeta</string>
+    <string name="media_grid_folder_fallback_title">Carpeta</string>
+    <string name="media_grid_error_fallback">No se pudo cargar esta carpeta.</string>
+    <string name="media_grid_load_error_fallback">No se pudo cargar esta carpeta</string>
+    <string name="media_grid_empty">Esta carpeta no tiene fotos ni videos para mostrar.</string>
+    <string name="media_grid_recycle_failed_format">No se pudo reciclar %1$s</string>
+    <string name="media_video_content_description">Video</string>
+    <string name="media_selected_content_description">Seleccionado</string>
+    <string name="sort_mode_date_desc">Más recientes primero</string>
+    <string name="sort_mode_date_asc">Más antiguos primero</string>
+    <string name="sort_mode_name_asc">Nombre (A–Z)</string>
+    <string name="sort_mode_name_desc">Nombre (Z–A)</string>
+
+    <!-- Editor -->
+    <string name="editor_title">Editor</string>
+    <string name="editor_unlock_title">Desbloquea el editor</string>
+    <string name="editor_unlock_message">Recortar, girar, filtros y exportar son parte de Steady Gallery Pro.</string>
+    <string name="editor_exporting">Exportando…</string>
+    <string name="editor_export_percent_format">%1$d%%</string>
+    <string name="editor_export_success_title">Exportación completa</string>
+    <string name="editor_export_success_message">Guardado en Pictures/Steady Gallery.</string>
+    <string name="editor_export_failed_title">Error al exportar</string>
+    <string name="editor_export_error_fallback">Ocurrió un error al exportar.</string>
+    <string name="editor_image_being_edited">Imagen en edición</string>
+    <string name="editor_rotate_90">Girar 90°</string>
+    <string name="editor_crop_vertical">Vertical</string>
+    <string name="editor_crop_horizontal">Horizontal</string>
+    <string name="editor_export_button">Exportar</string>
+    <string name="editor_media_not_found">Archivo no encontrado</string>
+    <string name="editor_export_timed_out">Tiempo de exportación agotado</string>
+    <string name="editor_export_failed_fallback">Error al exportar</string>
+    <string name="edit_filter_original">Original</string>
+    <string name="edit_filter_grayscale">Escala de grises</string>
+    <string name="edit_filter_sepia">Sepia</string>
+    <string name="edit_filter_high_contrast">Alto contraste</string>
+
+    <!-- Settings -->
+    <string name="settings_error_fallback">No se pudieron cargar los ajustes.</string>
+    <string name="settings_load_error_fallback">No se pudieron cargar los ajustes</string>
+    <string name="settings_section_display">Pantalla</string>
+    <string name="settings_sort_order_label">Orden</string>
+    <string name="settings_grid_column_size_label">Tamaño de cuadrícula</string>
+    <string name="settings_grid_cell_size_format">%1$ddp</string>
+    <string name="settings_theme_label">Tema</string>
+    <string name="settings_section_privacy">Privacidad</string>
+    <string name="settings_privacy_local_only">Tus fotos y videos permanecen en este dispositivo. No hay cuenta ni sincronización en la nube.</string>
+    <string name="settings_privacy_target_sdk">Diseñada para los permisos de contenido multimedia actuales de Android. SDK de destino: 35.</string>
+    <string name="settings_section_security">Seguridad y permisos</string>
+    <string name="settings_manage_hidden_lock">Administrar bloqueo oculto</string>
+    <string name="settings_review_media_permission">Revisar permiso de contenido multimedia</string>
+    <string name="settings_version_format">Versión %1$s</string>
+    <string name="settings_language_label">Idioma</string>
+    <string name="theme_mode_system">Sistema</string>
+    <string name="theme_mode_light">Claro</string>
+    <string name="theme_mode_dark">Oscuro</string>
+    <string name="language_system">Sistema</string>
+    <string name="language_english">English</string>
+    <string name="language_spanish">Español</string>
+    <string name="language_french">Français</string>
+
+    <!-- Recycle bin -->
+    <string name="recycle_bin_error_fallback">No se pudo cargar la papelera.</string>
+    <string name="recycle_bin_empty">La papelera está vacía.</string>
+    <string name="recycle_bin_restore_selected">Restaurar seleccionados</string>
+    <string name="recycle_bin_delete_permanently">Eliminar permanentemente</string>
+    <string name="recycle_bin_delete_dialog_title">¿Eliminar permanentemente?</string>
+    <string name="recycle_bin_delete_dialog_message">Esto no se puede deshacer. Se eliminará la copia protegida en la papelera.</string>
+
+    <!-- Hidden folders -->
+    <string name="hidden_folders_session_locked">Sesión bloqueada.</string>
+    <string name="hidden_folders_error_fallback">No se pudieron cargar las carpetas ocultas.</string>
+    <string name="hidden_folders_load_error_fallback">No se pudieron cargar las carpetas ocultas</string>
+    <string name="hidden_folders_empty">No hay carpetas ocultas.</string>
+    <string name="hidden_folders_unlocked_banner">Desbloqueado</string>
+    <string name="hidden_folders_unhide">Mostrar carpeta</string>
+    <string name="hidden_folders_item_count_format">%1$d elementos</string>
+
+    <!-- Hidden unlock -->
+    <string name="hidden_unlock_setup_prompt">Configura un PIN para proteger las carpetas ocultas.</string>
+    <string name="hidden_unlock_new_pin_label">PIN nuevo</string>
+    <string name="hidden_unlock_confirm_pin_label">Confirmar PIN</string>
+    <string name="hidden_unlock_enable_biometric">Activar desbloqueo biométrico</string>
+    <string name="hidden_unlock_create_pin_button">Crear PIN</string>
+    <string name="hidden_unlock_enter_pin_label">Introducir PIN</string>
+    <string name="hidden_unlock_incorrect_pin_fallback">PIN incorrecto</string>
+    <string name="hidden_unlock_use_biometric">Usar biometría</string>
+    <string name="hidden_unlock_unlocked">Desbloqueado.</string>
+    <string name="hidden_unlock_prompt_title">Desbloquear carpetas ocultas</string>
+    <string name="hidden_unlock_use_pin_instead">Usar PIN en su lugar</string>
+    <string name="hidden_unlock_pin_length_error">El PIN debe tener de 4 a 12 dígitos</string>
+    <string name="hidden_unlock_pin_mismatch_error">Los PIN no coinciden</string>
+
+    <!-- Permission onboarding -->
+    <string name="permission_tagline">Una galería mantenida y centrada en la privacidad, diseñada para los permisos de contenido multimedia actuales de Android.</string>
+    <string name="permission_privacy_note">Tus fotos y videos permanecen en este dispositivo. No hay cuenta, sincronización en la nube ni carga.</string>
+    <string name="permission_checking">Comprobando el estado del permiso…</string>
+    <string name="permission_denied_message">Se requiere acceso a fotos y videos para explorar tu galería.</string>
+    <string name="permission_grant_button">Conceder acceso a fotos y videos</string>
+    <string name="permission_permanently_denied_message">Se denegó el acceso a fotos y videos. Actívalo desde los ajustes del sistema para continuar.</string>
+    <string name="permission_open_settings_button">Abrir ajustes</string>
+    <string name="permission_granted_message">Permiso concedido.</string>
+
+    <!-- Purchase -->
+    <string name="purchase_description">Desbloquea el editor y las carpetas ocultas para siempre con una única compra. Sin suscripción, sin cuenta.</string>
+    <string name="purchase_one_time">Compra única</string>
+    <string name="purchase_buy_button">Comprar desbloqueo</string>
+    <string name="purchase_restore_button">Restaurar compra</string>
+    <string name="purchase_thank_you">Pro desbloqueado. ¡Gracias!</string>
+    <string name="purchase_billing_unavailable">Google Play Billing no está disponible en este dispositivo en este momento.</string>
+    <string name="purchase_debug_tools_label">Herramientas de depuración (excluidas de las versiones de lanzamiento)</string>
+    <string name="purchase_debug_simulate">DEPURACIÓN: simular compra</string>
+    <string name="purchase_debug_revoke">DEPURACIÓN: revocar compra</string>
+    <string name="purchase_default_price">2,99 $</string>
+    <string name="purchase_product_not_loaded">Los detalles del producto aún no se han cargado</string>
+
+    <!-- Viewer -->
+    <string name="viewer_error_fallback">No se puede mostrar este elemento.</string>
+    <string name="viewer_media_not_found">Archivo no encontrado</string>
+    <string name="viewer_recycle_failed_format">No se pudo reciclar %1$s</string>
+    <string name="viewer_moved_to_recycle_bin">Movido a la papelera.</string>
+    <string name="viewer_back_to_folder">Volver a la carpeta</string>
+    <string name="viewer_pause">Pausar</string>
+    <string name="viewer_play">Reproducir</string>
+    <string name="viewer_info_date_format">Fecha: %1$s</string>
+    <string name="viewer_info_dimensions_format">Dimensiones: %1$d x %2$d</string>
+    <string name="viewer_info_type_format">Tipo: %1$s</string>
+    <string name="viewer_info_path_format">Ruta: %1$s</string>
+    <string name="viewer_info_date_unknown">Desconocida</string>
+</resources>

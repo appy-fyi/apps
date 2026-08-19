@@ -1,9 +1,11 @@
 package com.appyfyi.steadygridgallery.ui.screens.hiddenfolders
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.appyfyi.steadygridgallery.R
 import com.appyfyi.steadygridgallery.data.db.dao.FolderStateDao
 import com.appyfyi.steadygridgallery.data.media.FolderSummary
 import com.appyfyi.steadygridgallery.data.media.MediaStoreRepository
@@ -25,6 +27,7 @@ class HiddenFoldersViewModel(
     private val mediaRepository: MediaStoreRepository,
     private val folderStateDao: FolderStateDao,
     private val session: HiddenUnlockSession,
+    private val appContext: Context,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(HiddenFoldersUiState())
     val uiState: StateFlow<HiddenFoldersUiState> = _uiState
@@ -46,7 +49,7 @@ class HiddenFoldersViewModel(
                 .onFailure { error ->
                     _uiState.value = _uiState.value.copy(
                         phase = HiddenFoldersPhase.ERROR,
-                        errorMessage = error.message ?: "Unable to load hidden folders",
+                        errorMessage = error.message ?: appContext.getString(R.string.hidden_folders_load_error_fallback),
                     )
                 }
         }
@@ -67,6 +70,7 @@ class HiddenFoldersViewModel(
                     mediaRepository = container.mediaStoreRepository,
                     folderStateDao = container.database.folderStateDao(),
                     session = container.hiddenUnlockSession,
+                    appContext = container.appContext,
                 )
             }
         }

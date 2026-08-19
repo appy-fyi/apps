@@ -13,6 +13,7 @@ import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
 import com.appyfyi.steadygridgallery.BuildConfig
+import com.appyfyi.steadygridgallery.R
 import com.appyfyi.steadygridgallery.data.prefs.PRO_UNLOCK_PRODUCT_ID
 import com.appyfyi.steadygridgallery.data.prefs.PurchaseEntitlementStore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -97,12 +98,12 @@ class BillingRepository(
 
     private fun currentFormattedPrice(): String {
         val offer = productDetails?.oneTimePurchaseOfferDetails
-        return offer?.formattedPrice ?: "$2.99"
+        return offer?.formattedPrice ?: context.getString(R.string.purchase_default_price)
     }
 
     fun launchPurchaseFlow(activity: Activity) {
         val details = productDetails ?: run {
-            _uiState.value = BillingUiState.Error("Product details not loaded yet")
+            _uiState.value = BillingUiState.Error(context.getString(R.string.purchase_product_not_loaded))
             return
         }
         val productDetailsParams = BillingFlowParams.ProductDetailsParams.newBuilder()

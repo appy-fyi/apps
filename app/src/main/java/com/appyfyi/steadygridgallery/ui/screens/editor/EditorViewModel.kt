@@ -9,6 +9,7 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.appyfyi.steadygridgallery.R
 import com.appyfyi.steadygridgallery.data.media.EditFilter
 import com.appyfyi.steadygridgallery.data.media.ImageEditProcessor
 import com.appyfyi.steadygridgallery.data.media.ImageExporter
@@ -63,7 +64,7 @@ class EditorViewModel(
             if (item == null) {
                 _uiState.value = _uiState.value.copy(
                     phase = EditorPhase.EXPORT_ERROR,
-                    errorMessage = "Media not found",
+                    errorMessage = appContext.getString(R.string.editor_media_not_found),
                 )
                 return@launch
             }
@@ -166,13 +167,13 @@ class EditorViewModel(
                 pendingUri?.let { ImageExporter.deletePending(appContext, it) }
                 _uiState.value = _uiState.value.copy(
                     phase = EditorPhase.EXPORT_ERROR,
-                    errorMessage = "Export timed out",
+                    errorMessage = appContext.getString(R.string.editor_export_timed_out),
                 )
             } catch (t: Throwable) {
                 pendingUri?.let { ImageExporter.deletePending(appContext, it) }
                 _uiState.value = _uiState.value.copy(
                     phase = EditorPhase.EXPORT_ERROR,
-                    errorMessage = t.message ?: "Export failed",
+                    errorMessage = t.message ?: appContext.getString(R.string.editor_export_failed_fallback),
                 )
             }
         }

@@ -20,11 +20,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -34,6 +37,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -44,6 +49,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,15 +64,19 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.appyfyi.steadygridgallery.R
 import com.appyfyi.steadygridgallery.data.media.MediaItem
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -116,7 +127,7 @@ fun ViewerScreen(
                 title = { Text(uiState.currentItem?.displayName.orEmpty(), color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back), tint = Color.White)
                     }
                 },
                 actions = {
@@ -130,18 +141,22 @@ fun ViewerScreen(
                             }
                             context.startActivity(Intent.createChooser(shareIntent, null))
                         }) {
-                            Icon(Icons.Filled.Share, contentDescription = "Share", tint = Color.White)
+                            Icon(Icons.Filled.Share, contentDescription = stringResource(R.string.common_share), tint = Color.White)
                         }
                         IconButton(onClick = { showInfoSheet = true }) {
-                            Icon(Icons.Filled.Info, contentDescription = "Info", tint = Color.White)
+                            Icon(Icons.Filled.Info, contentDescription = stringResource(R.string.common_info), tint = Color.White)
                         }
                         if (uiState.phase == ViewerPhase.DISPLAYING_IMAGE) {
                             IconButton(onClick = { onEditMedia(item.mediaId) }) {
-                                Icon(Icons.Filled.Edit, contentDescription = "Edit", tint = Color.White)
+                                Icon(Icons.Filled.Edit, contentDescription = stringResource(R.string.common_edit), tint = Color.White)
                             }
                         }
                         IconButton(onClick = viewModel::moveCurrentToRecycle) {
-                            Icon(Icons.Filled.Delete, contentDescription = "Move to Recycle Bin", tint = Color.White)
+                            Icon(
+                                Icons.Filled.Delete,
+                                contentDescription = stringResource(R.string.common_move_to_recycle_bin),
+                                tint = Color.White,
+                            )
                         }
                     }
                 },
@@ -189,7 +204,7 @@ fun ViewerScreen(
                     ViewerPhase.LOADING -> CircularProgressIndicator()
 
                     ViewerPhase.ERROR -> Text(
-                        text = state.errorMessage ?: "Unable to display this item.",
+                        text = state.errorMessage ?: stringResource(R.string.viewer_error_fallback),
                         color = Color.White,
                     )
 
@@ -210,23 +225,14 @@ fun ViewerScreen(
                     }
 
                     ViewerPhase.DISPLAYING_VIDEO -> state.item?.let { item ->
-                        AndroidView(
-                            modifier = Modifier.fillMaxSize(),
-                            factory = { ctx ->
-                                VideoView(ctx).apply {
-                                    setVideoURI(item.contentUri)
-                                    setOnPreparedListener { it.isLooping = false; start() }
-                                }
-                            },
-                            update = { view -> view.setVideoURI(item.contentUri) },
-                        )
+                        VideoPlayerWithControls(item = item)
                     }
 
                     ViewerPhase.DELETED_TO_RECYCLE -> Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Text("Moved to Recycle Bin.", color = Color.White)
-                        Button(onClick = onBack) { Text("Back to folder") }
+                        Text(stringResource(R.string.viewer_moved_to_recycle_bin), color = Color.White)
+                        Button(onClick = onBack) { Text(stringResource(R.string.viewer_back_to_folder)) }
                     }
                 }
             }
@@ -283,17 +289,118 @@ private data class ViewerContentState(
     val errorMessage: String?,
 )
 
+/** Plays a video with a Compose-drawn overlay bar (play/pause, seek slider, elapsed/total time)
+ *  instead of the legacy [android.widget.MediaController] popup, to match the viewer's theme. */
+@Composable
+private fun VideoPlayerWithControls(item: MediaItem) {
+    var videoView by remember(item.mediaId) { mutableStateOf<VideoView?>(null) }
+    var isPlaying by remember(item.mediaId) { mutableStateOf(false) }
+    var durationMs by remember(item.mediaId) { mutableIntStateOf(0) }
+    var positionMs by remember(item.mediaId) { mutableFloatStateOf(0f) }
+    var isSeeking by remember(item.mediaId) { mutableStateOf(false) }
+
+    LaunchedEffect(item.mediaId, isPlaying, isSeeking) {
+        while (isPlaying && !isSeeking) {
+            videoView?.let { positionMs = it.currentPosition.toFloat() }
+            delay(200)
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        AndroidView(
+            modifier = Modifier.fillMaxSize(),
+            factory = { ctx ->
+                VideoView(ctx).apply {
+                    setVideoURI(item.contentUri)
+                    setOnPreparedListener { mp ->
+                        mp.isLooping = false
+                        durationMs = mp.duration
+                        start()
+                        isPlaying = true
+                    }
+                    setOnCompletionListener {
+                        isPlaying = false
+                        positionMs = durationMs.toFloat()
+                    }
+                    videoView = this
+                }
+            },
+            update = { view ->
+                if (view !== videoView) {
+                    view.setVideoURI(item.contentUri)
+                }
+            },
+        )
+
+        val pauseContentDescription = stringResource(R.string.viewer_pause)
+        val playContentDescription = stringResource(R.string.viewer_play)
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .background(Color.Black.copy(alpha = 0.5f))
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IconButton(onClick = {
+                val view = videoView ?: return@IconButton
+                if (view.isPlaying) {
+                    view.pause()
+                    isPlaying = false
+                } else {
+                    view.start()
+                    isPlaying = true
+                }
+            }) {
+                Icon(
+                    imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                    contentDescription = if (isPlaying) pauseContentDescription else playContentDescription,
+                    tint = Color.White,
+                )
+            }
+            Text(formatDurationMs(positionMs.toInt()), color = Color.White, modifier = Modifier.padding(horizontal = 4.dp))
+            Slider(
+                value = positionMs,
+                valueRange = 0f..durationMs.coerceAtLeast(1).toFloat(),
+                onValueChange = {
+                    isSeeking = true
+                    positionMs = it
+                },
+                onValueChangeFinished = {
+                    videoView?.seekTo(positionMs.toInt())
+                    isSeeking = false
+                },
+                modifier = Modifier.weight(1f),
+                colors = SliderDefaults.colors(
+                    thumbColor = Color.White,
+                    activeTrackColor = Color.White,
+                    inactiveTrackColor = Color.White.copy(alpha = 0.3f),
+                ),
+            )
+            Text(formatDurationMs(durationMs), color = Color.White, modifier = Modifier.padding(horizontal = 4.dp))
+        }
+    }
+}
+
+private fun formatDurationMs(millis: Int): String {
+    val totalSeconds = (millis / 1000).coerceAtLeast(0)
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return String.format(Locale.US, "%d:%02d", minutes, seconds)
+}
+
 @Composable
 private fun MediaInfoContent(item: MediaItem) {
-    val dateText = remember(item.dateTakenMillis, item.dateAddedMillis) {
+    val unknownDate = stringResource(R.string.viewer_info_date_unknown)
+    val dateText = remember(item.dateTakenMillis, item.dateAddedMillis, unknownDate) {
         val millis = item.dateTakenMillis.takeIf { it > 0 } ?: item.dateAddedMillis
-        if (millis > 0) DateFormat.getDateTimeInstance().format(Date(millis)) else "Unknown"
+        if (millis > 0) DateFormat.getDateTimeInstance().format(Date(millis)) else unknownDate
     }
     Column(modifier = Modifier.fillMaxWidth().padding(24.dp)) {
         Text(item.displayName, style = MaterialTheme.typography.titleMedium)
-        Text("Date: $dateText")
-        Text("Dimensions: ${item.width} x ${item.height}")
-        Text("Type: ${item.mimeType}")
-        Text("Path: ${item.relativePath}")
+        Text(stringResource(R.string.viewer_info_date_format, dateText))
+        Text(stringResource(R.string.viewer_info_dimensions_format, item.width, item.height))
+        Text(stringResource(R.string.viewer_info_type_format, item.mimeType))
+        Text(stringResource(R.string.viewer_info_path_format, item.relativePath))
     }
 }

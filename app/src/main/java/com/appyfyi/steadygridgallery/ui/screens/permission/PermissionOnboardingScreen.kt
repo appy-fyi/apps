@@ -28,10 +28,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.appyfyi.steadygridgallery.R
 import com.appyfyi.steadygridgallery.ui.common.MEDIA_PERMISSIONS
 import com.appyfyi.steadygridgallery.ui.common.hasMediaPermissions
 
@@ -76,17 +78,17 @@ fun PermissionOnboardingScreen(
                 )
             }
             Text(
-                text = "Steady Gallery",
+                text = stringResource(R.string.app_name),
                 style = MaterialTheme.typography.headlineMedium,
                 textAlign = TextAlign.Center,
             )
             Text(
-                text = "A maintained, privacy-first gallery built for current Android media permissions.",
+                text = stringResource(R.string.permission_tagline),
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
             )
             Text(
-                text = "Your photos and videos stay on this device. There is no account, cloud sync, or upload.",
+                text = stringResource(R.string.permission_privacy_note),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -94,7 +96,7 @@ fun PermissionOnboardingScreen(
 
             when (state) {
                 PermissionOnboardingState.CHECKING_PERMISSION -> {
-                    Text("Checking permission status…")
+                    Text(stringResource(R.string.permission_checking))
                 }
 
                 PermissionOnboardingState.NEEDS_PERMISSION,
@@ -102,7 +104,7 @@ fun PermissionOnboardingScreen(
                 -> {
                     if (state == PermissionOnboardingState.PERMISSION_DENIED) {
                         Text(
-                            text = "Photos and Videos access is required to browse your gallery.",
+                            text = stringResource(R.string.permission_denied_message),
                             color = MaterialTheme.colorScheme.error,
                             textAlign = TextAlign.Center,
                         )
@@ -111,13 +113,13 @@ fun PermissionOnboardingScreen(
                         onClick = { permissionLauncher.launch(MEDIA_PERMISSIONS) },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text("Grant Photos and Videos")
+                        Text(stringResource(R.string.permission_grant_button))
                     }
                 }
 
                 PermissionOnboardingState.PERMISSION_PERMANENTLY_DENIED -> {
                     Text(
-                        text = "Photos and Videos access was denied. Enable it from system settings to continue.",
+                        text = stringResource(R.string.permission_permanently_denied_message),
                         color = MaterialTheme.colorScheme.error,
                         textAlign = TextAlign.Center,
                     )
@@ -128,14 +130,14 @@ fun PermissionOnboardingScreen(
                         )
                         context.startActivity(intent)
                     }) {
-                        Text("Open Settings")
+                        Text(stringResource(R.string.permission_open_settings_button))
                     }
                 }
 
                 PermissionOnboardingState.READY -> {
-                    Text(text = "Permission granted.")
+                    Text(text = stringResource(R.string.permission_granted_message))
                     Button(onClick = onContinueToFolders, modifier = Modifier.fillMaxWidth()) {
-                        Text("Continue")
+                        Text(stringResource(R.string.common_continue))
                     }
                 }
             }
