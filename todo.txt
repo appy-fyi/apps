@@ -2,5 +2,6 @@ TODO:
 - Cropping not working well, I can start dragging the crop box but then it stuck.
 - Also add vertical and horizontal crop options.
 - When swiping to the next image show swipe transition.
+- Add an option to zoom in and out when pinching the image.
 
 DONE:
