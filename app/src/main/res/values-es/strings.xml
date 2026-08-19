@@ -54,9 +54,8 @@
     <string name="editor_export_failed_title">Error al exportar</string>
     <string name="editor_export_error_fallback">Ocurrió un error al exportar.</string>
     <string name="editor_image_being_edited">Imagen en edición</string>
-    <string name="editor_rotate_90">Girar 90°</string>
-    <string name="editor_crop_vertical">Vertical</string>
-    <string name="editor_crop_horizontal">Horizontal</string>
+    <string name="editor_rotate_clockwise">Girar en sentido horario</string>
+    <string name="editor_rotate_counterclockwise">Girar en sentido antihorario</string>
     <string name="editor_export_button">Exportar</string>
     <string name="editor_media_not_found">Archivo no encontrado</string>
     <string name="editor_export_timed_out">Tiempo de exportación agotado</string>

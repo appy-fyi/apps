@@ -25,7 +25,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
-import kotlin.math.roundToInt
 
 enum class EditorPhase { LOADING, PURCHASE_REQUIRED, EDITING, EXPORTING, EXPORT_SUCCESS, EXPORT_ERROR }
 
@@ -87,35 +86,13 @@ class EditorViewModel(
         _uiState.value = _uiState.value.copy(cropRectPx = rect)
     }
 
-    /** Centers a 3:4 portrait crop box, sized to the largest that fits the source bitmap. */
-    fun applyVerticalCrop() = applyAspectCrop(widthRatio = 3f, heightRatio = 4f)
-
-    /** Centers a 4:3 landscape crop box, sized to the largest that fits the source bitmap. */
-    fun applyHorizontalCrop() = applyAspectCrop(widthRatio = 4f, heightRatio = 3f)
-
-    private fun applyAspectCrop(widthRatio: Float, heightRatio: Float) {
-        val bitmap = _uiState.value.decodedBitmap ?: return
-        val bitmapWidth = bitmap.width
-        val bitmapHeight = bitmap.height
-        val targetRatio = widthRatio / heightRatio
-        val currentRatio = bitmapWidth.toFloat() / bitmapHeight.toFloat()
-
-        val cropWidth: Int
-        val cropHeight: Int
-        if (currentRatio > targetRatio) {
-            cropHeight = bitmapHeight
-            cropWidth = (bitmapHeight * targetRatio).roundToInt().coerceIn(1, bitmapWidth)
-        } else {
-            cropWidth = bitmapWidth
-            cropHeight = (bitmapWidth / targetRatio).roundToInt().coerceIn(1, bitmapHeight)
-        }
-        val left = (bitmapWidth - cropWidth) / 2
-        val top = (bitmapHeight - cropHeight) / 2
-        setCropRect(Rect(left, top, left + cropWidth, top + cropHeight))
+    fun rotateClockwise() {
+        val next = (_uiState.value.rotationDegrees + 90) % 360
+        _uiState.value = _uiState.value.copy(rotationDegrees = next)
     }
 
-    fun rotate90() {
-        val next = (_uiState.value.rotationDegrees + 90) % 360
+    fun rotateCounterClockwise() {
+        val next = (_uiState.value.rotationDegrees + 270) % 360
         _uiState.value = _uiState.value.copy(rotationDegrees = next)
     }
 

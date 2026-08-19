@@ -12,12 +12,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.RotateLeft
+import androidx.compose.material.icons.filled.RotateRight
 import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -229,6 +232,24 @@ private fun EditingContent(uiState: EditorUiState, viewModel: EditorViewModel) {
                     bitmapHeight = bitmap.height,
                     scale = scale,
                     onCropRectChanged = viewModel::setCropRect,
+                    // Extend the overlay's hit-test region beyond the image bounds by the handle
+                    // touch radius: a handle at the crop box's default (full-image) extent sits
+                    // exactly on the image edge, which is also this Canvas's own boundary, so a
+                    // touch landing exactly on that edge can miss the hit-test region entirely.
+                    // Padding it out gives every handle real touchable area on every side.
+                    // requiredSize (not size) is essential here: this Box's parent already
+                    // constrains children tightly to displayWidth x displayHeight, and plain
+                    // size() coerces its request within incoming constraints -- it would get
+                    // silently clamped back down instead of actually enlarging the hit area.
+                    // align(Center) -- rather than a manually computed negative offset -- lets
+                    // Box's own alignment math center the oversized overlay, so the padding
+                    // comes out symmetric on all four sides without hand-rolled offset math.
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .requiredSize(
+                            displayWidth + HANDLE_TOUCH_RADIUS_DP.dp * 2,
+                            displayHeight + HANDLE_TOUCH_RADIUS_DP.dp * 2,
+                        ),
                 )
             }
         }
@@ -237,9 +258,18 @@ private fun EditingContent(uiState: EditorUiState, viewModel: EditorViewModel) {
             modifier = Modifier.fillMaxWidth().padding(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Button(onClick = viewModel::rotate90) { Text(stringResource(R.string.editor_rotate_90)) }
-            Button(onClick = viewModel::applyVerticalCrop) { Text(stringResource(R.string.editor_crop_vertical)) }
-            Button(onClick = viewModel::applyHorizontalCrop) { Text(stringResource(R.string.editor_crop_horizontal)) }
+            IconButton(onClick = viewModel::rotateCounterClockwise) {
+                Icon(
+                    Icons.Filled.RotateLeft,
+                    contentDescription = stringResource(R.string.editor_rotate_counterclockwise),
+                )
+            }
+            IconButton(onClick = viewModel::rotateClockwise) {
+                Icon(
+                    Icons.Filled.RotateRight,
+                    contentDescription = stringResource(R.string.editor_rotate_clockwise),
+                )
+            }
         }
 
         Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
@@ -311,8 +341,13 @@ private fun CropOverlay(
     bitmapHeight: Int,
     scale: Float,
     onCropRectChanged: (Rect) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val handleRadiusPx = with(LocalDensity.current) { HANDLE_TOUCH_RADIUS_DP.dp.toPx() }
+    // This Canvas is padded handleRadiusPx beyond the image on every side (see call site), so
+    // every bitmap-space coordinate is shifted by this offset to land in the padded canvas's
+    // local space -- image-relative (0, 0) is at canvas-local (handleRadiusPx, handleRadiusPx).
+    val originOffset = handleRadiusPx
     // Read the live rect/callback via rememberUpdatedState instead of keying pointerInput on
     // cropRectPx: onCropRectChanged fires on every drag delta, so keying on it would restart
     // this pointerInput coroutine mid-gesture and cancel detectDragGestures after one event
@@ -334,7 +369,7 @@ private fun CropOverlay(
     }
 
     Canvas(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .onGloballyPositioned { coordinates ->
                 val bounds = coordinates.boundsInWindow()
@@ -359,10 +394,10 @@ private fun CropOverlay(
                 detectDragGestures(
                     onDragStart = { pos ->
                         val rect = currentCropRectPx
-                        val left = rect.left * scale
-                        val top = rect.top * scale
-                        val right = rect.right * scale
-                        val bottom = rect.bottom * scale
+                        val left = rect.left * scale + originOffset
+                        val top = rect.top * scale + originOffset
+                        val right = rect.right * scale + originOffset
+                        val bottom = rect.bottom * scale + originOffset
                         val midX = (left + right) / 2f
                         val midY = (top + bottom) / 2f
                         val threshold = handleRadiusPx * 2
@@ -388,12 +423,14 @@ private fun CropOverlay(
                     val handle = activeHandle ?: return@detectDragGestures
                     change.consume()
                     val rect = currentCropRectPx
-                    val left = rect.left * scale
-                    val top = rect.top * scale
-                    val right = rect.right * scale
-                    val bottom = rect.bottom * scale
-                    val maxWidthPx = bitmapWidth * scale
-                    val maxHeightPx = bitmapHeight * scale
+                    val left = rect.left * scale + originOffset
+                    val top = rect.top * scale + originOffset
+                    val right = rect.right * scale + originOffset
+                    val bottom = rect.bottom * scale + originOffset
+                    val minX = originOffset
+                    val minY = originOffset
+                    val maxWidthPx = bitmapWidth * scale + originOffset
+                    val maxHeightPx = bitmapHeight * scale + originOffset
 
                     var newLeft = left
                     var newTop = top
@@ -402,30 +439,30 @@ private fun CropOverlay(
 
                     when (handle) {
                         CropHandle.TOP_LEFT -> {
-                            newLeft = (left + dragAmount.x).coerceIn(0f, right - handleRadiusPx)
-                            newTop = (top + dragAmount.y).coerceIn(0f, bottom - handleRadiusPx)
+                            newLeft = (left + dragAmount.x).coerceIn(minX, right - handleRadiusPx)
+                            newTop = (top + dragAmount.y).coerceIn(minY, bottom - handleRadiusPx)
                         }
                         CropHandle.TOP_RIGHT -> {
                             newRight = (right + dragAmount.x).coerceIn(left + handleRadiusPx, maxWidthPx)
-                            newTop = (top + dragAmount.y).coerceIn(0f, bottom - handleRadiusPx)
+                            newTop = (top + dragAmount.y).coerceIn(minY, bottom - handleRadiusPx)
                         }
                         CropHandle.BOTTOM_LEFT -> {
-                            newLeft = (left + dragAmount.x).coerceIn(0f, right - handleRadiusPx)
+                            newLeft = (left + dragAmount.x).coerceIn(minX, right - handleRadiusPx)
                             newBottom = (bottom + dragAmount.y).coerceIn(top + handleRadiusPx, maxHeightPx)
                         }
                         CropHandle.BOTTOM_RIGHT -> {
                             newRight = (right + dragAmount.x).coerceIn(left + handleRadiusPx, maxWidthPx)
                             newBottom = (bottom + dragAmount.y).coerceIn(top + handleRadiusPx, maxHeightPx)
                         }
-                        CropHandle.TOP -> newTop = (top + dragAmount.y).coerceIn(0f, bottom - handleRadiusPx)
+                        CropHandle.TOP -> newTop = (top + dragAmount.y).coerceIn(minY, bottom - handleRadiusPx)
                         CropHandle.BOTTOM -> newBottom = (bottom + dragAmount.y).coerceIn(top + handleRadiusPx, maxHeightPx)
-                        CropHandle.LEFT -> newLeft = (left + dragAmount.x).coerceIn(0f, right - handleRadiusPx)
+                        CropHandle.LEFT -> newLeft = (left + dragAmount.x).coerceIn(minX, right - handleRadiusPx)
                         CropHandle.RIGHT -> newRight = (right + dragAmount.x).coerceIn(left + handleRadiusPx, maxWidthPx)
                         CropHandle.MOVE -> {
                             val width = right - left
                             val height = bottom - top
-                            newLeft = (left + dragAmount.x).coerceIn(0f, maxWidthPx - width)
-                            newTop = (top + dragAmount.y).coerceIn(0f, maxHeightPx - height)
+                            newLeft = (left + dragAmount.x).coerceIn(minX, maxWidthPx - width)
+                            newTop = (top + dragAmount.y).coerceIn(minY, maxHeightPx - height)
                             newRight = newLeft + width
                             newBottom = newTop + height
                         }
@@ -433,19 +470,19 @@ private fun CropOverlay(
 
                     currentOnCropRectChanged(
                         Rect(
-                            (newLeft / scale).roundToInt(),
-                            (newTop / scale).roundToInt(),
-                            (newRight / scale).roundToInt(),
-                            (newBottom / scale).roundToInt(),
+                            ((newLeft - originOffset) / scale).roundToInt(),
+                            ((newTop - originOffset) / scale).roundToInt(),
+                            ((newRight - originOffset) / scale).roundToInt(),
+                            ((newBottom - originOffset) / scale).roundToInt(),
                         ),
                     )
                 }
             },
     ) {
-        val left = cropRectPx.left * scale
-        val top = cropRectPx.top * scale
-        val right = cropRectPx.right * scale
-        val bottom = cropRectPx.bottom * scale
+        val left = cropRectPx.left * scale + originOffset
+        val top = cropRectPx.top * scale + originOffset
+        val right = cropRectPx.right * scale + originOffset
+        val bottom = cropRectPx.bottom * scale + originOffset
         val midX = (left + right) / 2f
         val midY = (top + bottom) / 2f
 

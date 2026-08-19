@@ -54,9 +54,8 @@
     <string name="editor_export_failed_title">Échec de l\'exportation</string>
     <string name="editor_export_error_fallback">Une erreur s\'est produite lors de l\'exportation.</string>
     <string name="editor_image_being_edited">Image en cours de modification</string>
-    <string name="editor_rotate_90">Rotation 90°</string>
-    <string name="editor_crop_vertical">Vertical</string>
-    <string name="editor_crop_horizontal">Horizontal</string>
+    <string name="editor_rotate_clockwise">Rotation horaire</string>
+    <string name="editor_rotate_counterclockwise">Rotation antihoraire</string>
     <string name="editor_export_button">Exporter</string>
     <string name="editor_media_not_found">Fichier introuvable</string>
     <string name="editor_export_timed_out">Délai d\'exportation dépassé</string>
