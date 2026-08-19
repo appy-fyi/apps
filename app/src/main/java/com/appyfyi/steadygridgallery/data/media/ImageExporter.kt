@@ -51,6 +51,21 @@ object ImageExporter {
         context.contentResolver.update(uri, clearPending, null, null)
     }
 
+    /**
+     * Overwrites the bytes of an existing MediaStore entry in place ("wt" truncates before
+     * writing). Caller is responsible for holding write access to [uri] -- e.g. via a granted
+     * [android.provider.MediaStore.createWriteRequest] -- since the entry may not have been
+     * created by this app.
+     */
+    fun overwrite(context: Context, uri: Uri, bitmap: Bitmap, mimeType: String) {
+        val format = if (mimeType == "image/png") Bitmap.CompressFormat.PNG else Bitmap.CompressFormat.JPEG
+        context.contentResolver.openOutputStream(uri, "wt")?.use { out ->
+            if (!bitmap.compress(format, 95, out)) {
+                error("Bitmap compression failed")
+            }
+        } ?: error("Unable to open destination for writing")
+    }
+
     fun deletePending(context: Context, uri: Uri) {
         context.contentResolver.delete(uri, null, null)
     }

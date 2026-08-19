@@ -1,6 +1,10 @@
 package com.appyfyi.steadygridgallery.ui.screens.editor
 
+import android.app.Activity
 import android.graphics.Rect
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -30,6 +34,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -72,7 +77,22 @@ fun EditorScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    val overwriteRequestLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult(),
+    ) { result ->
+        viewModel.onOverwriteConfirmed(result.resultCode == Activity.RESULT_OK)
+    }
+
     LaunchedEffect(Unit) { viewModel.load() }
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is EditorEvent.ConfirmOverwrite ->
+                    overwriteRequestLauncher.launch(IntentSenderRequest.Builder(event.pendingIntent.intentSender).build())
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -126,8 +146,20 @@ fun EditorScreen(
                     icon = Icons.Filled.CheckCircle,
                     iconTint = MaterialTheme.colorScheme.primary,
                     iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                    title = stringResource(R.string.editor_export_success_title),
-                    message = stringResource(R.string.editor_export_success_message),
+                    title = stringResource(
+                        if (uiState.saveMode == SaveMode.OVERWRITE) {
+                            R.string.editor_save_success_title
+                        } else {
+                            R.string.editor_export_success_title
+                        },
+                    ),
+                    message = stringResource(
+                        if (uiState.saveMode == SaveMode.OVERWRITE) {
+                            R.string.editor_save_success_message
+                        } else {
+                            R.string.editor_export_success_message
+                        },
+                    ),
                 ) {
                     Button(onClick = onBack) { Text(stringResource(R.string.common_done)) }
                 }
@@ -139,7 +171,7 @@ fun EditorScreen(
                     title = stringResource(R.string.editor_export_failed_title),
                     message = uiState.errorMessage ?: stringResource(R.string.editor_export_error_fallback),
                 ) {
-                    Button(onClick = viewModel::export) { Text(stringResource(R.string.common_retry)) }
+                    Button(onClick = viewModel::retry) { Text(stringResource(R.string.common_retry)) }
                 }
             }
         }
@@ -283,11 +315,22 @@ private fun EditingContent(uiState: EditorUiState, viewModel: EditorViewModel) {
             }
         }
 
-        Button(
-            onClick = viewModel::export,
+        Row(
             modifier = Modifier.fillMaxWidth().padding(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(stringResource(R.string.editor_export_button))
+            OutlinedButton(
+                onClick = viewModel::saveCopy,
+                modifier = Modifier.weight(1f),
+            ) {
+                Text(stringResource(R.string.editor_save_copy_button))
+            }
+            Button(
+                onClick = viewModel::save,
+                modifier = Modifier.weight(1f),
+            ) {
+                Text(stringResource(R.string.editor_save_button))
+            }
         }
     }
 }
