@@ -140,7 +140,7 @@ private fun EditingContent(uiState: EditorUiState, viewModel: EditorViewModel) {
                 FilterChip(
                     selected = uiState.filter == filter,
                     onClick = { viewModel.setFilter(filter) },
-                    label = { Text(filter.name.lowercase().replaceFirstChar { it.uppercase() }) },
+                    label = { Text(filter.displayName) },
                     modifier = Modifier.padding(end = 4.dp),
                 )
             }

@@ -1,3 +1,8 @@
 package com.appyfyi.steadygridgallery.data.media
 
-enum class EditFilter { ORIGINAL, GRAYSCALE, SEPIA, HIGH_CONTRAST }
+enum class EditFilter(val displayName: String) {
+    ORIGINAL("Original"),
+    GRAYSCALE("Grayscale"),
+    SEPIA("Sepia"),
+    HIGH_CONTRAST("High Contrast"),
+}

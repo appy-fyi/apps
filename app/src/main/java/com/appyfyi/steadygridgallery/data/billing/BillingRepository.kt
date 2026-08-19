@@ -12,6 +12,7 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
+import com.appyfyi.steadygridgallery.BuildConfig
 import com.appyfyi.steadygridgallery.data.prefs.PRO_UNLOCK_PRODUCT_ID
 import com.appyfyi.steadygridgallery.data.prefs.PurchaseEntitlementStore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -158,5 +159,22 @@ class BillingRepository(
     private fun sha256(value: String): String {
         val digest = MessageDigest.getInstance("SHA-256").digest(value.toByteArray())
         return digest.joinToString(separator = "") { "%02x".format(it) }
+    }
+
+    /**
+     * Local-only stand-in for a real Play purchase, for testing Editor/Hidden Folders before the
+     * app is registered in Play Console. Guarded by BuildConfig.DEBUG so it's physically absent
+     * from release builds, not just hidden in the UI.
+     */
+    fun debugGrantEntitlement() {
+        if (!BuildConfig.DEBUG) return
+        entitlementStore.setEntitlement(PRO_UNLOCK_PRODUCT_ID, isPurchased = true, purchaseTokenHash = "debug-bypass")
+        _uiState.value = BillingUiState.Purchased
+    }
+
+    fun debugRevokeEntitlement() {
+        if (!BuildConfig.DEBUG) return
+        entitlementStore.setEntitlement(PRO_UNLOCK_PRODUCT_ID, isPurchased = false, purchaseTokenHash = "")
+        _uiState.value = BillingUiState.NotPurchased(currentFormattedPrice())
     }
 }

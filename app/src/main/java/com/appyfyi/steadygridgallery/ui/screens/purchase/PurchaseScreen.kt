@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -21,6 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.appyfyi.steadygridgallery.BuildConfig
 import com.appyfyi.steadygridgallery.data.billing.BillingUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -70,6 +72,20 @@ fun PurchaseScreen(
                 is BillingUiState.Error -> {
                     Text(state.message, color = MaterialTheme.colorScheme.error)
                     OutlinedButton(onClick = viewModel::retryConnection) { Text("Retry") }
+                }
+            }
+
+            // Debug-only: this whole block is compiled out of release builds (BuildConfig.DEBUG
+            // is a compile-time constant), so it can't ship. Lets Editor/Hidden Folders be tested
+            // locally before the app exists in Play Console for a real purchase.
+            if (BuildConfig.DEBUG) {
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                Text("Debug tools (stripped from release builds)", style = MaterialTheme.typography.labelSmall)
+                OutlinedButton(onClick = viewModel::debugGrantEntitlement) {
+                    Text("DEBUG: simulate purchase")
+                }
+                OutlinedButton(onClick = viewModel::debugRevokeEntitlement) {
+                    Text("DEBUG: revoke purchase")
                 }
             }
         }

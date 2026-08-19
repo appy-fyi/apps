@@ -19,6 +19,10 @@ class PurchaseViewModel(private val billingRepository: BillingRepository) : View
 
     fun restore() = billingRepository.refreshPurchases()
 
+    fun debugGrantEntitlement() = billingRepository.debugGrantEntitlement()
+
+    fun debugRevokeEntitlement() = billingRepository.debugRevokeEntitlement()
+
     companion object {
         val Factory = viewModelFactory {
             initializer { PurchaseViewModel(appContainer().billingRepository) }
