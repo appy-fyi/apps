@@ -1,4 +1,5 @@
 TODO:
+- Replace the Export button with two buttons "Save" and "Save a Copy"
 DONE:
 - Cropping still not working smoothly. Also when I said vertical and horizontal I meant to add a dragging button on the edges of the crop box (and not just on the corners). Also add dragging buttons on all the corners.
 - You can remove the current Vertical and Horizontal buttons.
