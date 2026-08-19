@@ -1,0 +1,151 @@
+---
+name: build-from-spec
+description: Build a complete native Android app end-to-end from a self-contained build-spec.json (the format appy.fyi's /report/:play_id/build-spec.json download produces). Use when the user has dropped a *-build-spec.json file into this project and wants Claude Code to build the app it describes — scaffolds the Gradle/Compose project, implements every screen/feature/data-model entity exactly as specified, writes the test_plan as real tests, and stops cleanly at the human-only gates (trademark clearance, privacy-claim verification, Play Console publishing) instead of guessing past them.
+---
+
+This project has no relationship to appy.fyi — the build-spec.json it was
+handed is the *entire* brief. Don't assume any other context exists. Read it
+once, completely, before writing a single file, and treat every field as a
+hard constraint, not a suggestion: this document was deliberately written so
+you never have to guess a version number, invent an algorithm, or ask a
+clarifying question. If something really is ambiguous even after re-reading
+the spec, that's a gap in the spec, not something to paper over — stop and
+say so rather than inventing scope.
+
+## 0. Find and read the spec
+
+Look for a single `*-build-spec.json` file in the project root (or wherever
+the user points you). Read the whole file before doing anything else — don't
+start scaffolding off a partial read. If more than one matches, ask which.
+
+The JSON has this shape (all fields always present):
+
+- `working_name`, `package_id`, `positioning`, `non_goals[]` — what to build
+  and its explicit scope boundary. `trademark_cleared: false` always — see
+  §6.
+- `tech_stack` — `kotlin_version`, `compose_bom_version`, `gradle_version`,
+  and `libraries[]` (`purpose`, `gradle_coordinate`) — pinned, real versions.
+  Use exactly these, don't substitute "latest."
+- `design_system` — literal hex colors and typography; don't invent a
+  palette.
+- `min_sdk`, `target_sdk`, `permissions[]` — the manifest's permission list
+  is a ceiling, not a floor: never add a permission not listed here, no
+  matter how convenient.
+- `screens[]` — every screen (`name`, `route`, `purpose`, `key_ui_elements`,
+  `states`, `entry_points`). This is the full Compose Navigation graph.
+  Every listed `states` value (loading/empty/error/etc.) needs a real,
+  visibly distinct UI state, not a single generic loading spinner reused
+  everywhere.
+- `data_model[]` — entities with typed `fields` (`name`, `type`, `notes`)
+  and a `storage` of `room_local`, `firestore`, or `encrypted_local`.
+- `features[]` — `implementation_notes` is the actual approach (specific API
+  calls, algorithms, state machines); `acceptance_criteria` are the pass/fail
+  bar; `screens[]` says which screens this feature touches.
+- `backend` (`"none"` or `"firebase"`) and `ai.needed` — if both are the
+  "nothing extra" case, don't add a backend or an AI API call anyway out of
+  habit.
+- `pricing` — `model` (`one_time`/`subscription`) and `billing_lib`
+  (`play_billing_direct`/`revenuecat`). Build exactly this billing model,
+  not whichever is more familiar.
+- `store_listing` — listing copy plus `icon_prompt`, a ready-to-use
+  image-generation prompt (see §5 — you can't generate the image yourself).
+- `legal` — `data_collected[]`, `regulated_category`,
+  `privacy_policy_url`, `privacy_policy_accurate: false` always.
+- `test_plan[]` — `kind` (`unit`/`instrumented`/`manual`), `scenario`,
+  `steps[]`, `expected` — steps are written to be transcribed directly into
+  a test function.
+- `build_instructions` — literal shell commands to build, test, and sign.
+- `human_gates_required[]` — see §6.
+
+## 1. Scaffold the project
+
+Create a standard Gradle Android project: `settings.gradle.kts`, root and
+`app/build.gradle.kts`, `app/src/main/AndroidManifest.xml`. Set
+`applicationId` to `package_id`, `minSdk`/`targetSdk` from the spec, and the
+Kotlin/Compose BOM/Gradle versions from `tech_stack` exactly. Add every
+`tech_stack.libraries[].gradle_coordinate` as a dependency and nothing else
+speculative. Declare only `permissions[]` in the manifest.
+
+## 2. Data layer
+
+For each `data_model[]` entity: `room_local` → a Room `@Entity` + DAO with
+the listed fields and types; `encrypted_local` → `EncryptedSharedPreferences`
+(AndroidX Security) rather than Room, since it's flagged that way in the
+spec on purpose (credentials/entitlements, not queryable app data);
+`firestore` → a Firestore collection (only expected when `backend` is
+`"firebase"`).
+
+## 3. Screens and navigation
+
+Build one Composable per `screens[]` entry, wired into a single Compose
+Navigation graph keyed by `route`. Every entry in a screen's `states[]` needs
+a real branch in that screen's UI — an agent-written app that collapses
+`loading`/`error`/`empty` into one generic spinner has silently dropped part
+of the spec. Cross-check `entry_points[]` against your navigation calls: if
+the spec says a screen is reachable from three places, all three navigation
+call sites need to exist.
+
+## 4. Features
+
+Implement each `features[]` entry by following its `implementation_notes`
+literally — they're written as the actual approach (specific Android APIs,
+algorithms, edge-case handling), not paraphrasable intent. After
+implementing a feature, re-read its `acceptance_criteria` and confirm the
+code actually satisfies each one before moving on, rather than assuming the
+implementation covers them because it "seems right." Respect
+`non_goals[]` as hard exclusions — don't build toward them even if a feature
+would be easy to extend that direction.
+
+Implement `pricing` via the specified `billing_lib` — Play Billing directly
+for `one_time`, RevenueCat for `subscription` — and nothing else (no
+speculative account system if `backend` is `"none"`).
+
+## 5. Assets
+
+You can't generate the actual icon image. Use `store_listing.icon_prompt`
+with whatever image-generation tool is available in this environment; if
+none is available, create a simple placeholder vector drawable derived from
+`design_system`'s colors and clearly flag in your final report that the real
+icon still needs to be generated before this ships. Same for screenshots —
+note that Play listing screenshots aren't produced by this skill.
+
+## 6. Stop at the human gates — don't build past them
+
+`trademark_cleared: false` and `legal.privacy_policy_accurate: false` are
+not placeholders waiting for a value you can fill in — they're the two
+checkpoints appy.fyi's build-spec pipeline deliberately leaves for a human
+(see the source repo's `doc/autoapp.md`). Concretely, that means:
+
+- Write the code, write a real Room/EncryptedSharedPreferences
+  implementation, write a real privacy policy *page* using
+  `legal.data_collected`/`legal.privacy_policy_url` as the draft — but don't
+  assert anywhere in your final report that the name is trademark-clear or
+  that the privacy claim has been verified. Those are still open.
+- Generate a local debug/upload keystore for `build_instructions` to run
+  against (that's a disposable local artifact, fine to create), but flag the
+  placeholder store/key passwords in `build_instructions` as needing to be
+  replaced with real secrets before any real release — don't silently ship
+  the sample password.
+- Do **not** attempt to create a Play Console account, register the app,
+  configure billing products, or upload anything anywhere. That whole
+  category of action is out of scope for this skill regardless of how far
+  the CLI tooling could technically go.
+- `human_gates_required[]` in the spec lists which of these still apply —
+  echo them back in your final report as the open items, don't resolve them
+  yourself.
+
+## 7. Verify
+
+Run `build_instructions` (or the equivalent up through the test tasks — skip
+the signing/`bundleRelease` step unless the user asks for a signed build) if
+an Android SDK/emulator toolchain is available in this environment. If it
+isn't, say so explicitly rather than reporting untested code as passing —
+"builds and tests pass" is a claim you need to have actually run, not
+inferred from the code looking right.
+
+## 8. Final report
+
+Summarize: what got built (screens/features/tests), what `build_instructions`
+actually did or didn't run and why, the icon/screenshot gap from §5, and the
+open `human_gates_required[]` items from §6 as an explicit checklist — not a
+buried caveat.
