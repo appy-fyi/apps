@@ -42,6 +42,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -82,8 +83,10 @@ fun ViewerScreen(
     // +1 = navigated to next (new content slides in from the right), -1 = previous (from the left).
     var swipeDirection by remember { mutableStateOf(1) }
     // Pinch-zoom state for the current image; resets whenever the displayed item changes.
-    var zoomScale by remember(uiState.currentItem?.mediaId) { mutableStateOf(1f) }
-    var zoomOffset by remember(uiState.currentItem?.mediaId) { mutableStateOf(Offset.Zero) }
+    val zoomScaleState = remember(uiState.currentItem?.mediaId) { mutableStateOf(1f) }
+    val zoomOffsetState = remember(uiState.currentItem?.mediaId) { mutableStateOf(Offset.Zero) }
+    val zoomScale by zoomScaleState
+    val zoomOffset by zoomOffsetState
 
     val deleteRequestLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartIntentSenderForResult(),
@@ -158,29 +161,14 @@ fun ViewerScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .background(Color.Black)
-                .pointerInput(uiState.currentItem?.mediaId) {
-                    // A single detector handles both pinch-zoom (multi-pointer) and swipe
-                    // navigation (single-pointer drag while not zoomed in) so they don't fight
-                    // over the same touch stream: zoom/pan while zoomed in, else swipe threshold.
-                    detectTransformGestures { _, pan, zoom, _ ->
-                        if (zoom != 1f) {
-                            zoomScale = (zoomScale * zoom).coerceIn(1f, 5f)
-                        }
-                        if (zoomScale > 1f) {
-                            zoomOffset += pan
-                        } else {
-                            zoomOffset = Offset.Zero
-                            if (pan.x < -50) {
-                                swipeDirection = 1
-                                viewModel.showNext()
-                            }
-                            if (pan.x > 50) {
-                                swipeDirection = -1
-                                viewModel.showPrevious()
-                            }
-                        }
-                    }
-                },
+                .pinchZoomAndSwipe(
+                    key = uiState.currentItem?.mediaId,
+                    zoomScale = zoomScaleState,
+                    zoomOffset = zoomOffsetState,
+                    onSwipeDirectionChanged = { swipeDirection = it },
+                    onSwipeNext = viewModel::showNext,
+                    onSwipePrevious = viewModel::showPrevious,
+                ),
             contentAlignment = Alignment.Center,
         ) {
             val contentState = ViewerContentState(uiState.phase, uiState.currentItem, uiState.errorMessage)
@@ -249,6 +237,40 @@ fun ViewerScreen(
         val sheetState = rememberModalBottomSheetState()
         ModalBottomSheet(onDismissRequest = { showInfoSheet = false }, sheetState = sheetState) {
             MediaInfoContent(uiState.currentItem!!)
+        }
+    }
+}
+
+/**
+ * A single gesture detector handles both pinch-zoom (multi-pointer) and swipe navigation
+ * (single-pointer drag while not zoomed in) so they don't fight over the same touch stream:
+ * zoom/pan while zoomed in, else swipe threshold. `internal` (not `private`) so the instrumented
+ * test in androidTest can drive this exact gesture logic via performTouchInput.
+ */
+internal fun Modifier.pinchZoomAndSwipe(
+    key: Any?,
+    zoomScale: MutableState<Float>,
+    zoomOffset: MutableState<Offset>,
+    onSwipeDirectionChanged: (Int) -> Unit,
+    onSwipeNext: () -> Unit,
+    onSwipePrevious: () -> Unit,
+): Modifier = pointerInput(key) {
+    detectTransformGestures { _, pan, zoom, _ ->
+        if (zoom != 1f) {
+            zoomScale.value = (zoomScale.value * zoom).coerceIn(1f, 5f)
+        }
+        if (zoomScale.value > 1f) {
+            zoomOffset.value += pan
+        } else {
+            zoomOffset.value = Offset.Zero
+            if (pan.x < -50) {
+                onSwipeDirectionChanged(1)
+                onSwipeNext()
+            }
+            if (pan.x > 50) {
+                onSwipeDirectionChanged(-1)
+                onSwipePrevious()
+            }
         }
     }
 }
