@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -39,6 +38,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -174,19 +176,36 @@ private fun EditingContent(uiState: EditorUiState, viewModel: EditorViewModel) {
     val bitmap = uiState.decodedBitmap ?: return
     val cropRect = uiState.cropRectPx ?: Rect(0, 0, bitmap.width, bitmap.height)
     val density = LocalDensity.current
+    val rotationDegrees = uiState.rotationDegrees
 
     Column(modifier = Modifier.fillMaxSize()) {
         BoxWithConstraints(
             modifier = Modifier.fillMaxWidth().weight(1f).padding(8.dp),
             contentAlignment = Alignment.Center,
         ) {
-            val displayWidthPx = with(density) { maxWidth.toPx() }
-            val scale = displayWidthPx / bitmap.width
+            // Fit the bitmap within BOTH available dimensions (like ContentScale.Fit), not just
+            // width -- a width-only fit lets tall/portrait images overflow past this weighted
+            // Box's bounded height and draw over the Rotate/filter/Export controls below it.
+            // The fit also accounts for the live rotation preview: a 90/270 rotation swaps which
+            // bitmap dimension maps to on-screen width vs height.
+            val rotatedQuarterTurn = rotationDegrees % 180 != 0
+            val effectiveBitmapWidth = if (rotatedQuarterTurn) bitmap.height else bitmap.width
+            val effectiveBitmapHeight = if (rotatedQuarterTurn) bitmap.width else bitmap.height
+            val maxWidthPx = with(density) { maxWidth.toPx() }
+            val maxHeightPx = with(density) { maxHeight.toPx() }
+            val scale = minOf(maxWidthPx / effectiveBitmapWidth, maxHeightPx / effectiveBitmapHeight)
+            val displayWidth = with(density) { (bitmap.width * scale).toDp() }
+            val displayHeight = with(density) { (bitmap.height * scale).toDp() }
 
-            Box(modifier = Modifier.fillMaxWidth().aspectRatio(bitmap.width.toFloat() / bitmap.height)) {
+            Box(
+                modifier = Modifier
+                    .size(displayWidth, displayHeight)
+                    .graphicsLayer(rotationZ = rotationDegrees.toFloat()),
+            ) {
                 Image(
                     bitmap = bitmap.asImageBitmap(),
                     contentDescription = "Image being edited",
+                    colorFilter = previewColorFilter(uiState.filter),
                     modifier = Modifier.fillMaxSize(),
                 )
                 CropOverlay(
@@ -220,6 +239,36 @@ private fun EditingContent(uiState: EditorUiState, viewModel: EditorViewModel) {
         ) {
             Text("Export")
         }
+    }
+}
+
+/** Mirrors ImageEditProcessor's color matrices so the live preview matches what Export produces. */
+private fun previewColorFilter(filter: EditFilter): ColorFilter? = when (filter) {
+    EditFilter.ORIGINAL -> null
+    EditFilter.GRAYSCALE -> ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
+    EditFilter.SEPIA -> ColorFilter.colorMatrix(
+        ColorMatrix(
+            floatArrayOf(
+                0.393f, 0.769f, 0.189f, 0f, 0f,
+                0.349f, 0.686f, 0.168f, 0f, 0f,
+                0.272f, 0.534f, 0.131f, 0f, 0f,
+                0f, 0f, 0f, 1f, 0f,
+            ),
+        ),
+    )
+    EditFilter.HIGH_CONTRAST -> {
+        val contrast = 1.6f
+        val translate = (-0.5f * contrast + 0.5f) * 255f
+        ColorFilter.colorMatrix(
+            ColorMatrix(
+                floatArrayOf(
+                    contrast, 0f, 0f, 0f, translate,
+                    0f, contrast, 0f, 0f, translate,
+                    0f, 0f, contrast, 0f, translate,
+                    0f, 0f, 0f, 1f, 0f,
+                ),
+            ),
+        )
     }
 }
 
