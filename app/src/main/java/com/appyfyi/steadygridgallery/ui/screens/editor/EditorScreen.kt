@@ -4,6 +4,7 @@ import android.graphics.Rect
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -12,12 +13,23 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -33,7 +45,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.material3.ExperimentalMaterial3Api
 import com.appyfyi.steadygridgallery.data.media.EditFilter
 import kotlin.math.roundToInt
 
@@ -48,56 +59,113 @@ fun EditorScreen(
 
     LaunchedEffect(Unit) { viewModel.load() }
 
-    Scaffold(topBar = { TopAppBar(title = { Text("Editor") }) }) { padding ->
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Editor") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+            )
+        },
+    ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             when (uiState.phase) {
                 EditorPhase.LOADING -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
 
-                EditorPhase.PURCHASE_REQUIRED -> Column(
-                    modifier = Modifier.fillMaxSize().padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
+                EditorPhase.PURCHASE_REQUIRED -> EditorMessageState(
+                    icon = Icons.Filled.WorkspacePremium,
+                    iconTint = MaterialTheme.colorScheme.primary,
+                    iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                    title = "Unlock the Editor",
+                    message = "Crop, rotate, filters, and export are part of Steady Gallery Pro.",
                 ) {
-                    Text("The editor is part of Steady Gallery Pro.")
                     Button(onClick = onNavigateToPurchase) { Text("Unlock") }
                 }
 
                 EditorPhase.EDITING -> EditingContent(uiState, viewModel)
 
                 EditorPhase.EXPORTING -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Text("Exporting…", style = MaterialTheme.typography.titleMedium)
                         LinearProgressIndicator(
                             progress = { uiState.exportProgressPercent / 100f },
                             modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp),
                         )
-                        Text("${uiState.exportProgressPercent}%")
+                        Text(
+                            "${uiState.exportProgressPercent}%",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
 
-                EditorPhase.EXPORT_SUCCESS -> Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
+                EditorPhase.EXPORT_SUCCESS -> EditorMessageState(
+                    icon = Icons.Filled.CheckCircle,
+                    iconTint = MaterialTheme.colorScheme.primary,
+                    iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                    title = "Export complete",
+                    message = "Saved to Pictures/Steady Gallery.",
                 ) {
-                    Text("Export complete.")
                     Button(onClick = onBack) { Text("Done") }
                 }
 
-                EditorPhase.EXPORT_ERROR -> Column(
-                    modifier = Modifier.fillMaxSize().padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
+                EditorPhase.EXPORT_ERROR -> EditorMessageState(
+                    icon = Icons.Filled.ErrorOutline,
+                    iconTint = MaterialTheme.colorScheme.error,
+                    iconContainerColor = MaterialTheme.colorScheme.errorContainer,
+                    title = "Export failed",
+                    message = uiState.errorMessage ?: "Something went wrong while exporting.",
                 ) {
-                    Text(
-                        text = uiState.errorMessage ?: "Export failed.",
-                        color = MaterialTheme.colorScheme.error,
-                    )
                     Button(onClick = viewModel::export) { Text("Retry") }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun EditorMessageState(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    iconTint: Color,
+    iconContainerColor: Color,
+    title: String,
+    message: String,
+    action: @Composable () -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Surface(shape = CircleShape, color = iconContainerColor) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconTint,
+                modifier = Modifier.padding(20.dp).size(40.dp),
+            )
+        }
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(top = 20.dp),
+        )
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            modifier = Modifier.padding(top = 8.dp, bottom = 24.dp),
+        )
+        action()
     }
 }
 

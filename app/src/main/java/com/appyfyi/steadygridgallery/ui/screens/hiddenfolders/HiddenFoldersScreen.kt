@@ -1,5 +1,6 @@
 package com.appyfyi.steadygridgallery.ui.screens.hiddenfolders
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Visibility
@@ -29,6 +31,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -114,18 +117,40 @@ fun HiddenFoldersScreen(
 @Composable
 private fun HiddenFolderTile(folder: FolderSummary, onOpen: () -> Unit, onUnhide: () -> Unit) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        Box(modifier = Modifier.fillMaxWidth().aspectRatio(1f).clickable(onClick = onOpen)) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f)
+                .clip(MaterialTheme.shapes.medium)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .clickable(onClick = onOpen),
+        ) {
             AsyncImage(
                 model = folder.coverUri,
                 contentDescription = folder.displayName,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
             )
-            IconButton(onClick = onUnhide, modifier = Modifier.align(Alignment.TopEnd)) {
-                Icon(Icons.Filled.Visibility, contentDescription = "Unhide folder")
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+                modifier = Modifier.align(Alignment.TopEnd).padding(6.dp),
+            ) {
+                IconButton(onClick = onUnhide) {
+                    Icon(Icons.Filled.Visibility, contentDescription = "Unhide folder")
+                }
             }
         }
-        Text(folder.displayName, maxLines = 1)
-        Text("${folder.itemCount} items", style = MaterialTheme.typography.bodySmall)
+        Text(
+            folder.displayName,
+            style = MaterialTheme.typography.titleSmall,
+            maxLines = 1,
+            modifier = Modifier.padding(top = 8.dp),
+        )
+        Text(
+            "${folder.itemCount} items",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }

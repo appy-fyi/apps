@@ -16,7 +16,7 @@ import java.time.Instant
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
 data class AppSettings(
-    val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val themeMode: ThemeMode = ThemeMode.DARK,
     val gridCellDp: Int = 128,
     val defaultSort: SortMode = SortMode.DATE_DESC,
 )
@@ -35,7 +35,7 @@ class SettingsRepository(
 
     private fun Map<String, String>.toAppSettings(): AppSettings = AppSettings(
         themeMode = this[PreferenceKeys.THEME_MODE]?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() }
-            ?: ThemeMode.SYSTEM,
+            ?: ThemeMode.DARK,
         gridCellDp = this[PreferenceKeys.GRID_CELL_DP]?.toIntOrNull() ?: 128,
         defaultSort = this[PreferenceKeys.DEFAULT_SORT]?.let { runCatching { SortMode.valueOf(it) }.getOrNull() }
             ?: SortMode.DATE_DESC,

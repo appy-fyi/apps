@@ -86,6 +86,7 @@ fun SteadyNavGraph(navController: NavHostController, startDestination: String) {
             ),
         ) {
             HiddenUnlockScreen(
+                onBack = { navController.popBackStack() },
                 onUnlocked = {
                     navController.navigate(Routes.HIDDEN_FOLDERS) {
                         popUpTo(Routes.HIDDEN_UNLOCK) { inclusive = true }
@@ -104,6 +105,7 @@ fun SteadyNavGraph(navController: NavHostController, startDestination: String) {
 
         composable(Routes.SETTINGS) {
             SettingsScreen(
+                onBack = { navController.popBackStack() },
                 onManageHiddenLock = { navController.navigate(Routes.hiddenUnlock()) },
                 onReviewMediaPermission = { navController.navigate(Routes.PERMISSIONS) },
             )

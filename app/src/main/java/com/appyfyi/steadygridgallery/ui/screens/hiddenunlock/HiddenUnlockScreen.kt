@@ -4,15 +4,29 @@ import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,8 +44,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import java.util.concurrent.Executor
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HiddenUnlockScreen(
+    onBack: () -> Unit,
     onUnlocked: () -> Unit,
     viewModel: HiddenUnlockViewModel = viewModel(factory = HiddenUnlockViewModel.Factory),
 ) {
@@ -53,43 +69,69 @@ fun HiddenUnlockScreen(
         BiometricManager.from(context).canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG) ==
         BiometricManager.BIOMETRIC_SUCCESS
 
-    Scaffold { padding ->
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Hidden Folders") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+            )
+        },
+    ) { padding ->
         Column(
             modifier = Modifier.fillMaxSize().padding(padding).padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text("Hidden Folders", style = MaterialTheme.typography.headlineSmall)
+            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer) {
+                Icon(
+                    imageVector = Icons.Filled.Lock,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(18.dp).size(32.dp),
+                )
+            }
 
             when (uiState.phase) {
                 HiddenUnlockPhase.NO_LOCK_CONFIGURED -> {
-                    Text("Set up a PIN to protect hidden folders.")
+                    Text("Set up a PIN to protect hidden folders.", style = MaterialTheme.typography.bodyMedium)
                     OutlinedTextField(
                         value = pin,
                         onValueChange = { pin = it.filter { c -> c.isDigit() } },
                         label = { Text("New PIN") },
                         visualTransformation = PasswordVisualTransformation(),
-                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
                     )
                     OutlinedTextField(
                         value = confirmPin,
                         onValueChange = { confirmPin = it.filter { c -> c.isDigit() } },
                         label = { Text("Confirm PIN") },
                         visualTransformation = PasswordVisualTransformation(),
-                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
                     )
                     if (uiState.errorMessage != null) {
                         Text(uiState.errorMessage!!, color = MaterialTheme.colorScheme.error)
                     }
                     if (canUseBiometric) {
-                        androidx.compose.foundation.layout.Row(verticalAlignment = Alignment.CenterVertically) {
-                            androidx.compose.material3.Checkbox(
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
                                 checked = enableBiometric,
                                 onCheckedChange = { enableBiometric = it },
                             )
                             Text("Enable biometric unlock")
                         }
                     }
-                    Button(onClick = { viewModel.setUpPin(pin, confirmPin, enableBiometric) }) {
+                    Button(
+                        onClick = { viewModel.setUpPin(pin, confirmPin, enableBiometric) },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
                         Text("Create PIN")
                     }
                 }
@@ -100,7 +142,9 @@ fun HiddenUnlockScreen(
                         onValueChange = { pin = it.filter { c -> c.isDigit() } },
                         label = { Text("Enter PIN") },
                         visualTransformation = PasswordVisualTransformation(),
-                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
                     )
                     if (uiState.phase == HiddenUnlockPhase.AUTH_ERROR) {
                         Text(
@@ -108,16 +152,21 @@ fun HiddenUnlockScreen(
                             color = MaterialTheme.colorScheme.error,
                         )
                     }
-                    Button(onClick = { viewModel.submitPin(pin) }) { Text("Unlock") }
+                    Button(onClick = { viewModel.submitPin(pin) }, modifier = Modifier.fillMaxWidth()) {
+                        Text("Unlock")
+                    }
 
                     if (canUseBiometric && uiState.biometricEnabled) {
-                        OutlinedButton(onClick = {
-                            showBiometricPrompt(
-                                activity = activity!!,
-                                onSuccess = viewModel::onBiometricSuccess,
-                                onError = viewModel::onBiometricError,
-                            )
-                        }) {
+                        OutlinedButton(
+                            onClick = {
+                                showBiometricPrompt(
+                                    activity = activity!!,
+                                    onSuccess = viewModel::onBiometricSuccess,
+                                    onError = viewModel::onBiometricError,
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
                             Text("Use biometric")
                         }
                     }

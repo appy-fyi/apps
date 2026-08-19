@@ -9,11 +9,18 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -57,15 +65,31 @@ fun PermissionOnboardingScreen(
                 .padding(padding)
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(text = "Steady Gallery", style = MaterialTheme.typography.headlineMedium)
+            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer) {
+                Icon(
+                    imageVector = Icons.Filled.PhotoLibrary,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(24.dp).size(44.dp),
+                )
+            }
+            Text(
+                text = "Steady Gallery",
+                style = MaterialTheme.typography.headlineMedium,
+                textAlign = TextAlign.Center,
+            )
             Text(
                 text = "A maintained, privacy-first gallery built for current Android media permissions.",
                 style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
             )
             Text(
                 text = "Your photos and videos stay on this device. There is no account, cloud sync, or upload.",
                 style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
             )
 
             when (state) {
@@ -80,9 +104,13 @@ fun PermissionOnboardingScreen(
                         Text(
                             text = "Photos and Videos access is required to browse your gallery.",
                             color = MaterialTheme.colorScheme.error,
+                            textAlign = TextAlign.Center,
                         )
                     }
-                    Button(onClick = { permissionLauncher.launch(MEDIA_PERMISSIONS) }) {
+                    Button(
+                        onClick = { permissionLauncher.launch(MEDIA_PERMISSIONS) },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
                         Text("Grant Photos and Videos")
                     }
                 }
@@ -91,8 +119,9 @@ fun PermissionOnboardingScreen(
                     Text(
                         text = "Photos and Videos access was denied. Enable it from system settings to continue.",
                         color = MaterialTheme.colorScheme.error,
+                        textAlign = TextAlign.Center,
                     )
-                    OutlinedButton(onClick = {
+                    OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = {
                         val intent = Intent(
                             Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                             Uri.parse("package:" + context.packageName),
@@ -105,7 +134,7 @@ fun PermissionOnboardingScreen(
 
                 PermissionOnboardingState.READY -> {
                     Text(text = "Permission granted.")
-                    Button(onClick = onContinueToFolders) {
+                    Button(onClick = onContinueToFolders, modifier = Modifier.fillMaxWidth()) {
                         Text("Continue")
                     }
                 }
