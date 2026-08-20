@@ -1,4 +1,5 @@
 TODO:
+- Make sure hidden photos are hidden! This is very important, once someone hide a photo do not show it unless unlocked. If a user unlocked hidden folders add a global switch to hide back all photos.
 DONE:
 - Replace the Export button with two buttons "Save" and "Save a Copy"
 - Cropping still not working smoothly. Also when I said vertical and horizontal I meant to add a dragging button on the edges of the crop box (and not just on the corners). Also add dragging buttons on all the corners.

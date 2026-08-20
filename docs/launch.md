@@ -82,22 +82,37 @@ into concrete steps, plus the launch mechanics.
 - [ ] Confirm `legal.regulated_category: "none"` still holds given the
       biometric-unlock feature, before filling in Play's Data Safety form.
 
-### 3.2 Generate the real app icon
+### 3.2 Generate the real app icon — done
 
-The launcher icon is currently a **placeholder**, not the finished asset —
-`app/src/main/res/drawable/ic_launcher_foreground.xml` literally has a
-comment saying so. There are also no legacy PNG mipmaps, only the
-adaptive-icon XML (fine for minSdk 33, but confirm Play Console's asset
-upload doesn't also want a flat 512×512 PNG — it does, see below).
+The launcher icon is generated (2026-08-20) via the `build-from-spec-plugin`'s
+deterministic icon generator (`genLauncherIcon.ts`), which reads
+`design_system.icon_name` (`images`) and `color_primary_hex` (`#1565C0`) from
+the build spec and writes a real adaptive-icon resource set — no more
+placeholder comment in `ic_launcher_foreground.xml`:
 
-- [ ] Generate a 1024×1024 icon using the prompt already in the spec
-      (`store_listing.icon_prompt`): deep blue background (#1565C0), white
-      outlined photo frame, small green shield badge, subtle restore arrow,
-      flat vector, no text, no camera lens, no brand logos.
-- [ ] Replace `ic_launcher_background.xml` / `ic_launcher_foreground.xml`
-      with the real asset (as vector drawables or PNG mipmaps), and export
-      a flat 512×512 PNG separately for the Play Console app icon upload
-      field (adaptive icon layers aren't accepted there directly).
+- [x] `app/src/main/res/drawable/ic_launcher_background.xml` — flat
+      `#1565C0` fill.
+- [x] `app/src/main/res/drawable/ic_launcher_foreground.xml` — white
+      Phosphor "images" glyph (photo-stack/frame), auto-picked for contrast
+      against the background.
+- [x] `app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml` and
+      `ic_launcher_round.xml` — adaptive-icon wrappers. No legacy density
+      PNG mipmaps needed since `min_sdk` is 33 (adaptive icons require API
+      26+, so `--legacy` fallback rasterization wasn't run).
+- [x] `store_listing/play_store_icon_512.png` — flat 512×512 RGBA PNG of the
+      same background+glyph, for the Play Console app icon upload field
+      (adaptive icon layers aren't accepted there directly).
+
+Note this is **not** the icon described by `store_listing.icon_prompt`
+(deep blue + white photo frame + green shield badge + restore arrow) — that
+prompt is explicitly unused by this generation path (it's a plain
+brand-color-fill + single glyph, not the shield/arrow composition). The
+result is simpler than the placeholder XML it replaced (which already had a
+hand-drawn frame/mountain/shield/arrow design) but is a real, finished,
+non-placeholder asset. If you want the fuller shield/restore-arrow icon
+described in the spec's prompt instead, that still needs to be produced with
+an image-generation tool by hand — flag this to me if you'd like that
+version instead of the deterministic one.
 
 ### 3.3 Google Play Console setup
 
@@ -170,8 +185,8 @@ device/emulator and haven't been run yet:
 
 1. Kick off tester recruitment for closed testing now (3.3) — it's the
    14-day floor, start the clock immediately.
-2. Generate the real icon (3.2) and get trademark/privacy sign-off (3.1) in
-   parallel — neither blocks the other.
+2. Icon is generated (3.2, done) — get trademark/privacy sign-off (3.1),
+   which doesn't block on anything else here.
 3. Run the instrumented + manual test pass (3.5) on an emulator.
 4. Regenerate the release keystore password, build the signed AAB (3.4),
    and upload to internal testing.
