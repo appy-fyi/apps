@@ -20,6 +20,23 @@ start scaffolding off a partial read. If more than one matches, ask which.
 
 The JSON has this shape (all fields always present):
 
+- `project_context` — a fixed disclaimer: this spec describes an
+  independent, alternative app competing with an incumbent Play Store app,
+  not a modification, clone, or reskin of the incumbent's own code or
+  branding. Treat the incumbent purely as a market reference.
+- `api_access` — optional, live enrichment beyond the static report data
+  baked into the rest of this spec. `base_url` plus three GET endpoints
+  (`endpoints.app_info`, `endpoints.reviews`, `endpoints.app_photos`), each
+  already a full URL for this specific app — nothing to template yourself.
+  `instructions` says how to call them: send `Authorization: Bearer <key>`
+  using the `APPY_API_KEY` environment variable if it's set. In particular,
+  `endpoints.app_photos` returns CDN URLs for the incumbent's own Play Store
+  screenshots — worth fetching for visual/UX inspiration (layout, information
+  density, what the current app actually looks like) before designing
+  `design_system` and `screens[]`, since the report's prose alone doesn't
+  convey that. If `APPY_API_KEY` isn't set, or a call 401s, skip `api_access`
+  entirely and proceed with the rest of the spec — it's enrichment, never a
+  blocker.
 - `working_name`, `package_id`, `positioning`, `non_goals[]` — what to build
   and its explicit scope boundary. `trademark_cleared: false` always — see
   §6.
@@ -108,6 +125,9 @@ none is available, create a simple placeholder vector drawable derived from
 `design_system`'s colors and clearly flag in your final report that the real
 icon still needs to be generated before this ships. Same for screenshots —
 note that Play listing screenshots aren't produced by this skill.
+`api_access.endpoints.app_photos` (see above) is for reference during
+design, not a source of assets to ship — per `project_context`, this app's
+own icon and screenshots must be its own, not the incumbent's.
 
 ## 6. Stop at the human gates — don't build past them
 
