@@ -8,7 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.appyfyi.steadygridgallery.ui.screens.editor.EditorScreen
 import com.appyfyi.steadygridgallery.ui.screens.folders.FoldersScreen
-import com.appyfyi.steadygridgallery.ui.screens.hiddenfolders.HiddenFoldersScreen
+import com.appyfyi.steadygridgallery.ui.screens.hiddenphotos.HiddenPhotosScreen
 import com.appyfyi.steadygridgallery.ui.screens.hiddenunlock.HiddenUnlockScreen
 import com.appyfyi.steadygridgallery.ui.screens.mediagrid.MediaGridScreen
 import com.appyfyi.steadygridgallery.ui.screens.permission.PermissionOnboardingScreen
@@ -34,7 +34,7 @@ fun SteadyNavGraph(navController: NavHostController, startDestination: String) {
             FoldersScreen(
                 onOpenFolder = { folderKey -> navController.navigate(Routes.mediaGrid(folderKey)) },
                 onOpenRecycleBin = { navController.navigate(Routes.RECYCLE_BIN) },
-                onOpenHiddenFolders = { navController.navigate(Routes.hiddenUnlock()) },
+                onOpenHiddenPhotos = { navController.navigate(Routes.hiddenUnlock()) },
                 onOpenSettings = { navController.navigate(Routes.SETTINGS) },
                 onOpenPurchase = { navController.navigate(Routes.PURCHASE) },
             )
@@ -48,7 +48,7 @@ fun SteadyNavGraph(navController: NavHostController, startDestination: String) {
                 onBack = { navController.popBackStack() },
                 onOpenMedia = { mediaId -> navController.navigate(Routes.viewer(mediaId)) },
                 onNavigateToPurchase = { navController.navigate(Routes.PURCHASE) },
-                onNavigateToHiddenUnlock = { folderKey -> navController.navigate(Routes.hiddenUnlock(folderKey)) },
+                onNavigateToHiddenUnlock = { navController.navigate(Routes.hiddenUnlock(forHide = true)) },
             )
         }
 
@@ -79,26 +79,32 @@ fun SteadyNavGraph(navController: NavHostController, startDestination: String) {
         composable(
             route = Routes.HIDDEN_UNLOCK,
             arguments = listOf(
-                navArgument(Routes.ARG_PENDING_HIDE_FOLDER_KEY) {
-                    type = NavType.StringType
-                    defaultValue = ""
+                navArgument(Routes.ARG_FOR_HIDE) {
+                    type = NavType.BoolType
+                    defaultValue = false
                 },
             ),
-        ) {
+        ) { backStackEntry ->
+            val forHide = backStackEntry.arguments?.getBoolean(Routes.ARG_FOR_HIDE) ?: false
             HiddenUnlockScreen(
                 onBack = { navController.popBackStack() },
                 onUnlocked = {
-                    navController.navigate(Routes.HIDDEN_FOLDERS) {
-                        popUpTo(Routes.HIDDEN_UNLOCK) { inclusive = true }
+                    if (forHide) {
+                        // Unlocking here was only to clear the PIN gate before hiding the
+                        // caller's selection; return to it instead of opening Hidden Photos.
+                        navController.popBackStack()
+                    } else {
+                        navController.navigate(Routes.HIDDEN_PHOTOS) {
+                            popUpTo(Routes.HIDDEN_UNLOCK) { inclusive = true }
+                        }
                     }
                 },
             )
         }
 
-        composable(Routes.HIDDEN_FOLDERS) {
-            HiddenFoldersScreen(
+        composable(Routes.HIDDEN_PHOTOS) {
+            HiddenPhotosScreen(
                 onBack = { navController.popBackStack() },
-                onOpenFolder = { folderKey -> navController.navigate(Routes.mediaGrid(folderKey)) },
                 onRequiresUnlock = { navController.navigate(Routes.hiddenUnlock()) },
             )
         }

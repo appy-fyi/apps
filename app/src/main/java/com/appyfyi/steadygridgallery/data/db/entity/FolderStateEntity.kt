@@ -16,7 +16,6 @@ data class FolderStateEntity(
     @PrimaryKey val folderKey: String,
     val displayName: String,
     val relativePath: String,
-    val isHidden: Boolean,
     val sortMode: String,
     val updatedAt: Instant,
 )

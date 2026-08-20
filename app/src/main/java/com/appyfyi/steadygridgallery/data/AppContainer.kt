@@ -3,6 +3,7 @@ package com.appyfyi.steadygridgallery.data
 import android.content.Context
 import com.appyfyi.steadygridgallery.data.billing.BillingRepository
 import com.appyfyi.steadygridgallery.data.db.AppDatabase
+import com.appyfyi.steadygridgallery.data.hidden.HiddenMediaRepository
 import com.appyfyi.steadygridgallery.data.media.MediaStoreRepository
 import com.appyfyi.steadygridgallery.data.prefs.HiddenUnlockSession
 import com.appyfyi.steadygridgallery.data.prefs.LockCredentialStore
@@ -24,11 +25,17 @@ class AppContainer(context: Context) {
         context = context,
         folderStateDao = database.folderStateDao(),
         recycleItemDao = database.recycleItemDao(),
+        hiddenMediaDao = database.hiddenMediaDao(),
     )
 
     val recycleRepository = RecycleRepository(
         context = context,
         recycleItemDao = database.recycleItemDao(),
+    )
+
+    val hiddenMediaRepository = HiddenMediaRepository(
+        context = context,
+        hiddenMediaDao = database.hiddenMediaDao(),
     )
 
     val settingsRepository = SettingsRepository(

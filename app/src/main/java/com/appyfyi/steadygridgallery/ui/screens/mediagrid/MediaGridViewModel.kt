@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.appyfyi.steadygridgallery.R
 import com.appyfyi.steadygridgallery.data.db.dao.FolderStateDao
 import com.appyfyi.steadygridgallery.data.db.entity.SortMode
+import com.appyfyi.steadygridgallery.data.hidden.HiddenMediaRepository
 import com.appyfyi.steadygridgallery.data.media.MediaItem
 import com.appyfyi.steadygridgallery.data.media.MediaStoreRepository
 import com.appyfyi.steadygridgallery.data.prefs.LockCredentialStore
@@ -37,10 +38,11 @@ data class MediaGridUiState(
 
 sealed interface MediaGridEvent {
     data class ConfirmSystemDelete(val pendingIntent: PendingIntent, val recycleItemIds: List<Long>) : MediaGridEvent
+    data class ConfirmSystemHide(val pendingIntent: PendingIntent, val hiddenItemIds: List<Long>) : MediaGridEvent
     data object RequiresPurchaseToHide : MediaGridEvent
-    data class RequiresPinSetupToHide(val folderKey: String) : MediaGridEvent
-    data object FolderHidden : MediaGridEvent
+    data object RequiresPinSetupToHide : MediaGridEvent
     data class RecycleFailed(val message: String) : MediaGridEvent
+    data class HideFailed(val message: String) : MediaGridEvent
 }
 
 class MediaGridViewModel(
@@ -48,6 +50,7 @@ class MediaGridViewModel(
     private val mediaRepository: MediaStoreRepository,
     private val folderStateDao: FolderStateDao,
     private val recycleRepository: RecycleRepository,
+    private val hiddenMediaRepository: HiddenMediaRepository,
     private val purchaseEntitlementStore: PurchaseEntitlementStore,
     private val lockCredentialStore: LockCredentialStore,
     private val appContext: Context,
@@ -58,6 +61,10 @@ class MediaGridViewModel(
 
     private val eventChannel = Channel<MediaGridEvent>(Channel.BUFFERED)
     val events = eventChannel.receiveAsFlow()
+
+    // Set by hideSelected() when a hide was requested but no PIN exists yet; consumed by load()
+    // once the PIN has been created, so hiding resumes automatically after PIN setup completes.
+    private var pendingHideMediaIds: Set<String>? = null
 
     fun load() {
         _uiState.value = _uiState.value.copy(phase = MediaGridPhase.LOADING, errorMessage = null)
@@ -77,6 +84,11 @@ class MediaGridViewModel(
                         sortMode = sortMode,
                         selectedIds = emptySet(),
                     )
+                    val pending = pendingHideMediaIds
+                    if (pending != null && lockCredentialStore.hasCredential()) {
+                        pendingHideMediaIds = null
+                        hidePhotos(pending)
+                    }
                 }
                 .onFailure { error ->
                     _uiState.value = _uiState.value.copy(
@@ -153,16 +165,52 @@ class MediaGridViewModel(
         }
     }
 
-    fun requestHideFolder() {
+    fun hideSelected() {
+        val ids = _uiState.value.selectedIds
+        if (ids.isEmpty()) return
         viewModelScope.launch {
             when {
                 !purchaseEntitlementStore.isPurchased.value -> eventChannel.send(MediaGridEvent.RequiresPurchaseToHide)
-                !lockCredentialStore.hasCredential() -> eventChannel.send(MediaGridEvent.RequiresPinSetupToHide(folderKey))
-                else -> {
-                    folderStateDao.setHidden(folderKey, true)
-                    eventChannel.send(MediaGridEvent.FolderHidden)
+                !lockCredentialStore.hasCredential() -> {
+                    pendingHideMediaIds = ids
+                    eventChannel.send(MediaGridEvent.RequiresPinSetupToHide)
                 }
+                else -> hidePhotos(ids)
             }
+        }
+    }
+
+    private suspend fun hidePhotos(mediaIds: Set<String>) {
+        val selected = _uiState.value.items.filter { it.mediaId in mediaIds }
+        if (selected.isEmpty()) return
+        val succeeded = mutableListOf<Pair<Long, MediaItem>>()
+        for (item in selected) {
+            hiddenMediaRepository.copyAndVerify(item)
+                .onSuccess { hiddenItemId -> succeeded += hiddenItemId to item }
+                .onFailure {
+                    eventChannel.send(
+                        MediaGridEvent.HideFailed(
+                            it.message ?: appContext.getString(R.string.media_grid_hide_failed_format, item.displayName),
+                        ),
+                    )
+                }
+        }
+        if (succeeded.isNotEmpty()) {
+            val uris = succeeded.map { it.second.contentUri }
+            val pendingIntent = hiddenMediaRepository.buildDeleteRequest(uris)
+            eventChannel.send(MediaGridEvent.ConfirmSystemHide(pendingIntent, succeeded.map { it.first }))
+        }
+    }
+
+    fun onSystemHideResult(confirmed: Boolean, hiddenItemIds: List<Long>) {
+        viewModelScope.launch {
+            if (confirmed) {
+                hiddenItemIds.forEach { hiddenMediaRepository.markHidden(it) }
+            }
+            // If cancelled, rows stay COPIED_PENDING_SYSTEM_DELETE -- the original remains in the
+            // library and the protected copy is already safe in Hidden Photos.
+            load()
+            clearSelection()
         }
     }
 
@@ -178,6 +226,7 @@ class MediaGridViewModel(
                     mediaRepository = container.mediaStoreRepository,
                     folderStateDao = container.database.folderStateDao(),
                     recycleRepository = container.recycleRepository,
+                    hiddenMediaRepository = container.hiddenMediaRepository,
                     purchaseEntitlementStore = container.purchaseEntitlementStore,
                     lockCredentialStore = container.lockCredentialStore,
                     appContext = container.appContext,

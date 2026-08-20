@@ -7,6 +7,7 @@ import android.net.Uri
 import android.provider.MediaStore
 import androidx.core.database.getStringOrNull
 import com.appyfyi.steadygridgallery.data.db.dao.FolderStateDao
+import com.appyfyi.steadygridgallery.data.db.dao.HiddenMediaDao
 import com.appyfyi.steadygridgallery.data.db.dao.RecycleItemDao
 import com.appyfyi.steadygridgallery.data.db.entity.FolderStateEntity
 import com.appyfyi.steadygridgallery.data.db.entity.SortMode
@@ -40,16 +41,21 @@ class MediaStoreRepository(
     private val context: Context,
     private val folderStateDao: FolderStateDao,
     private val recycleItemDao: RecycleItemDao,
+    private val hiddenMediaDao: HiddenMediaDao,
 ) {
     private val resolver: ContentResolver get() = context.contentResolver
+
+    /** Items either in the Recycle Bin or moved into Hidden Photos must never show up as live media. */
+    private suspend fun excludedMediaStoreIds(): Set<Long> =
+        (recycleItemDao.activeOriginalMediaStoreIds() + hiddenMediaDao.activeOriginalMediaStoreIds()).toSet()
 
     suspend fun refreshFoldersAndGetVisible(): Result<List<FolderSummary>> = withContext(Dispatchers.IO) {
         runCatching {
             val allItems = queryTable(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, MediaKind.IMAGE) +
                 queryTable(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, MediaKind.VIDEO)
 
-            val activeRecycled = recycleItemDao.activeOriginalMediaStoreIds().toSet()
-            val visibleItems = allItems.filterNot { it.mediaStoreId in activeRecycled }
+            val excluded = excludedMediaStoreIds()
+            val visibleItems = allItems.filterNot { it.mediaStoreId in excluded }
 
             val now = Instant.now()
             val byFolder = visibleItems.groupBy { it.folderKey }
@@ -59,7 +65,6 @@ class MediaStoreRepository(
                     folderKey = folderKey,
                     displayName = sample.relativePath.trim('/').substringAfterLast('/').ifBlank { sample.relativePath },
                     relativePath = sample.relativePath,
-                    isHidden = folderStateDao.getByKey(folderKey)?.isHidden ?: false,
                     sortMode = folderStateDao.getByKey(folderKey)?.sortMode ?: SortMode.DATE_DESC.name,
                     updatedAt = now,
                 )
@@ -71,7 +76,6 @@ class MediaStoreRepository(
             val allStates = folderEntities.associateBy { it.folderKey }
 
             byFolder.entries
-                .filterNot { (key, _) -> allStates[key]?.isHidden == true }
                 .map { (folderKey, items) ->
                     val sample = items.first()
                     val isCamera = sample.relativePath.contains("DCIM/Camera", ignoreCase = true)
@@ -92,38 +96,14 @@ class MediaStoreRepository(
         }
     }
 
-    suspend fun loadHiddenFolders(): Result<List<FolderSummary>> = withContext(Dispatchers.IO) {
-        runCatching {
-            val allItems = queryTable(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, MediaKind.IMAGE) +
-                queryTable(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, MediaKind.VIDEO)
-            val activeRecycled = recycleItemDao.activeOriginalMediaStoreIds().toSet()
-            val visibleItems = allItems.filterNot { it.mediaStoreId in activeRecycled }
-            visibleItems.groupBy { it.folderKey }
-                .filterKeys { key -> folderStateDao.getByKey(key)?.isHidden == true }
-                .map { (folderKey, items) ->
-                    val sample = items.first()
-                    val cover = items.maxByOrNull { it.dateTakenMillis.takeIf { d -> d > 0 } ?: it.dateAddedMillis }
-                    FolderSummary(
-                        folderKey = folderKey,
-                        displayName = folderStateDao.getByKey(folderKey)?.displayName ?: sample.relativePath,
-                        relativePath = sample.relativePath,
-                        itemCount = items.size,
-                        coverUri = cover?.contentUri,
-                        isCameraFolder = false,
-                    )
-                }
-                .sortedBy { it.displayName.lowercase(Locale.US) }
-        }
-    }
-
     suspend fun loadMediaInFolder(folderKey: String): Result<List<MediaItem>> = withContext(Dispatchers.IO) {
         runCatching {
             val allItems = queryTable(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, MediaKind.IMAGE) +
                 queryTable(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, MediaKind.VIDEO)
-            val activeRecycled = recycleItemDao.activeOriginalMediaStoreIds().toSet()
+            val excluded = excludedMediaStoreIds()
             allItems
                 .filter { it.folderKey == folderKey }
-                .filterNot { it.mediaStoreId in activeRecycled }
+                .filterNot { it.mediaStoreId in excluded }
                 .sortedByDescending { it.dateTakenMillis.takeIf { d -> d > 0 } ?: it.dateAddedMillis }
         }
     }

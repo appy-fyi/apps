@@ -156,6 +156,14 @@ fun SettingsScreen(
                         OutlinedButton(onClick = onManageHiddenLock, modifier = Modifier.fillMaxWidth()) {
                             Text(stringResource(R.string.settings_manage_hidden_lock))
                         }
+                        if (uiState.hiddenPhotosUnlocked) {
+                            Button(
+                                onClick = viewModel::hideAllNow,
+                                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                            ) {
+                                Text(stringResource(R.string.settings_hide_all_now))
+                            }
+                        }
                         Button(
                             onClick = onReviewMediaPermission,
                             modifier = Modifier.fillMaxWidth().padding(top = 8.dp),

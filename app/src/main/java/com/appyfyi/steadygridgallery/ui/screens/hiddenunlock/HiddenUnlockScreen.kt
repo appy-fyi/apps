@@ -76,7 +76,7 @@ fun HiddenUnlockScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.hidden_folders_title)) },
+                title = { Text(stringResource(R.string.hidden_photos_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))

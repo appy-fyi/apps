@@ -15,20 +15,11 @@ interface FolderStateDao {
     @Upsert
     suspend fun upsertAll(folders: List<FolderStateEntity>)
 
-    @Query("SELECT * FROM folder_state WHERE isHidden = 0 ORDER BY displayName ASC")
-    fun observeVisibleFolders(): Flow<List<FolderStateEntity>>
-
-    @Query("SELECT * FROM folder_state WHERE isHidden = 1 ORDER BY displayName ASC")
-    fun observeHiddenFolders(): Flow<List<FolderStateEntity>>
-
     @Query("SELECT * FROM folder_state WHERE folderKey = :folderKey")
     suspend fun getByKey(folderKey: String): FolderStateEntity?
 
     @Query("SELECT * FROM folder_state WHERE folderKey = :folderKey")
     fun observeByKey(folderKey: String): Flow<FolderStateEntity?>
-
-    @Query("UPDATE folder_state SET isHidden = :isHidden WHERE folderKey = :folderKey")
-    suspend fun setHidden(folderKey: String, isHidden: Boolean)
 
     @Query("UPDATE folder_state SET sortMode = :sortMode WHERE folderKey = :folderKey")
     suspend fun setSortMode(folderKey: String, sortMode: String)

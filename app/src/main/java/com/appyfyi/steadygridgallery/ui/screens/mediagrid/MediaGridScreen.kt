@@ -67,7 +67,7 @@ fun MediaGridScreen(
     onBack: () -> Unit,
     onOpenMedia: (String) -> Unit,
     onNavigateToPurchase: () -> Unit,
-    onNavigateToHiddenUnlock: (pendingHideFolderKey: String) -> Unit,
+    onNavigateToHiddenUnlock: () -> Unit,
     viewModel: MediaGridViewModel = viewModel(factory = MediaGridViewModel.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -75,11 +75,18 @@ fun MediaGridScreen(
     val scope = rememberCoroutineScope()
     var sortMenuExpanded by remember { mutableStateOf(false) }
     var pendingRecycleItemIds by remember { mutableStateOf<List<Long>>(emptyList()) }
+    var pendingHideItemIds by remember { mutableStateOf<List<Long>>(emptyList()) }
 
     val deleteRequestLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartIntentSenderForResult(),
     ) { result ->
         viewModel.onSystemDeleteResult(result.resultCode == Activity.RESULT_OK, pendingRecycleItemIds)
+    }
+
+    val hideRequestLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult(),
+    ) { result ->
+        viewModel.onSystemHideResult(result.resultCode == Activity.RESULT_OK, pendingHideItemIds)
     }
 
     LaunchedEffect(Unit) { viewModel.load() }
@@ -93,10 +100,18 @@ fun MediaGridScreen(
                         IntentSenderRequest.Builder(event.pendingIntent.intentSender).build(),
                     )
                 }
+                is MediaGridEvent.ConfirmSystemHide -> {
+                    pendingHideItemIds = event.hiddenItemIds
+                    hideRequestLauncher.launch(
+                        IntentSenderRequest.Builder(event.pendingIntent.intentSender).build(),
+                    )
+                }
                 MediaGridEvent.RequiresPurchaseToHide -> onNavigateToPurchase()
-                is MediaGridEvent.RequiresPinSetupToHide -> onNavigateToHiddenUnlock(event.folderKey)
-                MediaGridEvent.FolderHidden -> onBack()
+                MediaGridEvent.RequiresPinSetupToHide -> onNavigateToHiddenUnlock()
                 is MediaGridEvent.RecycleFailed -> scope.launch {
+                    snackbarHostState.showSnackbar(event.message)
+                }
+                is MediaGridEvent.HideFailed -> scope.launch {
                     snackbarHostState.showSnackbar(event.message)
                 }
             }
@@ -118,8 +133,8 @@ fun MediaGridScreen(
                         IconButton(onClick = viewModel::deleteSelectedToRecycle) {
                             Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.common_move_to_recycle_bin))
                         }
-                        IconButton(onClick = viewModel::requestHideFolder) {
-                            Icon(Icons.Filled.VisibilityOff, contentDescription = stringResource(R.string.media_grid_hide_folder))
+                        IconButton(onClick = viewModel::hideSelected) {
+                            Icon(Icons.Filled.VisibilityOff, contentDescription = stringResource(R.string.media_grid_hide_selected))
                         }
                     },
                 )

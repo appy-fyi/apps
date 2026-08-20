@@ -2,16 +2,13 @@ package com.appyfyi.steadygridgallery.ui.screens.hiddenunlock
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.appyfyi.steadygridgallery.R
-import com.appyfyi.steadygridgallery.data.db.dao.FolderStateDao
 import com.appyfyi.steadygridgallery.data.prefs.HiddenUnlockSession
 import com.appyfyi.steadygridgallery.data.prefs.LockCredentialStore
 import com.appyfyi.steadygridgallery.ui.common.appContainer
-import com.appyfyi.steadygridgallery.ui.navigation.Routes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,8 +26,6 @@ data class HiddenUnlockUiState(
 class HiddenUnlockViewModel(
     private val lockCredentialStore: LockCredentialStore,
     private val session: HiddenUnlockSession,
-    private val folderStateDao: FolderStateDao,
-    private val pendingHideFolderKey: String?,
     private val appContext: Context,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(HiddenUnlockUiState())
@@ -39,7 +34,7 @@ class HiddenUnlockViewModel(
     fun load() {
         if (session.isUnlocked.value) {
             // Still within the 5-minute in-memory grace period: no need to re-authenticate.
-            viewModelScope.launch { applyPendingHideAndUnlock(lockCredentialStore.isBiometricEnabled()) }
+            unlock(lockCredentialStore.isBiometricEnabled())
             return
         }
         _uiState.value = _uiState.value.copy(
@@ -71,7 +66,7 @@ class HiddenUnlockViewModel(
             withContext(Dispatchers.Default) {
                 lockCredentialStore.createCredential(pin, enableBiometric)
             }
-            applyPendingHideAndUnlock(enableBiometric)
+            unlock(enableBiometric)
         }
     }
 
@@ -80,7 +75,7 @@ class HiddenUnlockViewModel(
         viewModelScope.launch {
             val correct = withContext(Dispatchers.Default) { lockCredentialStore.verifyPin(pin) }
             if (correct) {
-                applyPendingHideAndUnlock(_uiState.value.biometricEnabled)
+                unlock(_uiState.value.biometricEnabled)
             } else {
                 _uiState.value = _uiState.value.copy(
                     phase = HiddenUnlockPhase.AUTH_ERROR,
@@ -91,17 +86,14 @@ class HiddenUnlockViewModel(
     }
 
     fun onBiometricSuccess() {
-        viewModelScope.launch { applyPendingHideAndUnlock(_uiState.value.biometricEnabled) }
+        unlock(_uiState.value.biometricEnabled)
     }
 
     fun onBiometricError(message: String) {
         _uiState.value = _uiState.value.copy(phase = HiddenUnlockPhase.AUTH_ERROR, errorMessage = message)
     }
 
-    private suspend fun applyPendingHideAndUnlock(biometricEnabled: Boolean) {
-        if (!pendingHideFolderKey.isNullOrEmpty()) {
-            folderStateDao.setHidden(pendingHideFolderKey, true)
-        }
+    private fun unlock(biometricEnabled: Boolean) {
         session.unlock()
         _uiState.value = _uiState.value.copy(
             phase = HiddenUnlockPhase.UNLOCKED,
@@ -113,15 +105,10 @@ class HiddenUnlockViewModel(
     companion object {
         val Factory = viewModelFactory {
             initializer {
-                val savedStateHandle = createSavedStateHandle()
-                val encodedPendingKey = savedStateHandle.get<String>(Routes.ARG_PENDING_HIDE_FOLDER_KEY)
-                val pendingKey = encodedPendingKey?.takeIf { it.isNotEmpty() }?.let { Routes.decode(it) }
                 val container = appContainer()
                 HiddenUnlockViewModel(
                     lockCredentialStore = container.lockCredentialStore,
                     session = container.hiddenUnlockSession,
-                    folderStateDao = container.database.folderStateDao(),
-                    pendingHideFolderKey = pendingKey,
                     appContext = container.appContext,
                 )
             }

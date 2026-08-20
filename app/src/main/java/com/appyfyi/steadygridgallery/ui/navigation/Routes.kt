@@ -10,14 +10,14 @@ object Routes {
     const val VIEWER = "viewer/{mediaId}"
     const val EDITOR = "editor/{mediaId}"
     const val RECYCLE_BIN = "recycle_bin"
-    const val HIDDEN_UNLOCK = "hidden_unlock?pendingHideFolderKey={pendingHideFolderKey}"
-    const val HIDDEN_FOLDERS = "hidden_folders"
+    const val HIDDEN_UNLOCK = "hidden_unlock?forHide={forHide}"
+    const val HIDDEN_PHOTOS = "hidden_photos"
     const val SETTINGS = "settings"
     const val PURCHASE = "purchase"
 
     const val ARG_FOLDER_KEY = "folderKey"
     const val ARG_MEDIA_ID = "mediaId"
-    const val ARG_PENDING_HIDE_FOLDER_KEY = "pendingHideFolderKey"
+    const val ARG_FOR_HIDE = "forHide"
 
     /** folderKey embeds ':' and '/' (see MediaStoreRepository.computeFolderKey), so it must be encoded as one path segment. */
     fun mediaGrid(folderKey: String): String = "folder/${encode(folderKey)}"
@@ -25,11 +25,10 @@ object Routes {
     fun viewer(mediaId: String): String = "viewer/${encode(mediaId)}"
 
     /**
-     * [pendingHideFolderKey] carries the folder a "hide folder" tap was for when no PIN exists yet,
-     * so it can be hidden once PIN setup finishes instead of losing the original intent.
+     * [forHide] distinguishes "unlock to hide the current selection" (returns to the caller once
+     * a PIN exists/is verified) from "unlock to browse Hidden Photos" (navigates to that screen).
      */
-    fun hiddenUnlock(pendingHideFolderKey: String? = null): String =
-        "hidden_unlock?pendingHideFolderKey=${encode(pendingHideFolderKey ?: "")}"
+    fun hiddenUnlock(forHide: Boolean = false): String = "hidden_unlock?forHide=$forHide"
 
     fun editor(mediaId: String): String = "editor/${encode(mediaId)}"
 

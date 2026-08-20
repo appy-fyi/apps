@@ -55,7 +55,7 @@ import com.appyfyi.steadygridgallery.data.media.FolderSummary
 fun FoldersScreen(
     onOpenFolder: (String) -> Unit,
     onOpenRecycleBin: () -> Unit,
-    onOpenHiddenFolders: () -> Unit,
+    onOpenHiddenPhotos: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenPurchase: () -> Unit,
     viewModel: FoldersViewModel = viewModel(factory = FoldersViewModel.Factory),
@@ -82,9 +82,9 @@ fun FoldersScreen(
                             menuExpanded = false
                             onOpenRecycleBin()
                         })
-                        DropdownMenuItem(text = { Text(stringResource(R.string.hidden_folders_title)) }, onClick = {
+                        DropdownMenuItem(text = { Text(stringResource(R.string.hidden_photos_title)) }, onClick = {
                             menuExpanded = false
-                            onOpenHiddenFolders()
+                            onOpenHiddenPhotos()
                         })
                         DropdownMenuItem(text = { Text(stringResource(R.string.settings_title)) }, onClick = {
                             menuExpanded = false

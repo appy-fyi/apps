@@ -18,7 +18,7 @@
     <string name="common_cancel">Cancel</string>
     <string name="common_done">Done</string>
     <string name="recycle_bin_title">Recycle Bin</string>
-    <string name="hidden_folders_title">Hidden Folders</string>
+    <string name="hidden_photos_title">Hidden Photos</string>
     <string name="settings_title">Settings</string>
     <string name="purchase_title">Unlock Pro</string>
 
@@ -32,12 +32,13 @@
 
     <!-- Media grid -->
     <string name="media_grid_selected_count_format">%1$d selected</string>
-    <string name="media_grid_hide_folder">Hide folder</string>
+    <string name="media_grid_hide_selected">Hide selected</string>
     <string name="media_grid_folder_fallback_title">Folder</string>
     <string name="media_grid_error_fallback">Unable to load this folder.</string>
     <string name="media_grid_load_error_fallback">Unable to load this folder</string>
     <string name="media_grid_empty">This folder has no photos or videos to show.</string>
     <string name="media_grid_recycle_failed_format">Recycle failed for %1$s</string>
+    <string name="media_grid_hide_failed_format">Hide failed for %1$s</string>
     <string name="media_video_content_description">Video</string>
     <string name="media_selected_content_description">Selected</string>
     <string name="sort_mode_date_desc">Newest first</string>
@@ -83,6 +84,7 @@
     <string name="settings_privacy_target_sdk">Built for current Android media permissions. Target Android SDK: 35.</string>
     <string name="settings_section_security">Security &amp; permissions</string>
     <string name="settings_manage_hidden_lock">Manage hidden lock</string>
+    <string name="settings_hide_all_now">Hide unlocked photos now</string>
     <string name="settings_review_media_permission">Review media permission</string>
     <string name="settings_version_format">Version %1$s</string>
     <string name="settings_language_label">Language</string>
@@ -102,17 +104,15 @@
     <string name="recycle_bin_delete_dialog_title">Delete permanently?</string>
     <string name="recycle_bin_delete_dialog_message">This cannot be undone. The protected copy in Recycle Bin will be removed.</string>
 
-    <!-- Hidden folders -->
-    <string name="hidden_folders_session_locked">Session locked.</string>
-    <string name="hidden_folders_error_fallback">Unable to load hidden folders.</string>
-    <string name="hidden_folders_load_error_fallback">Unable to load hidden folders</string>
-    <string name="hidden_folders_empty">No folders are hidden.</string>
-    <string name="hidden_folders_unlocked_banner">Unlocked</string>
-    <string name="hidden_folders_unhide">Unhide folder</string>
-    <string name="hidden_folders_item_count_format">%1$d items</string>
+    <!-- Hidden photos -->
+    <string name="hidden_photos_session_locked">Session locked.</string>
+    <string name="hidden_photos_error_fallback">Unable to load hidden photos.</string>
+    <string name="hidden_photos_empty">No photos are hidden.</string>
+    <string name="hidden_photos_unlocked_banner">Unlocked</string>
+    <string name="hidden_photos_unhide">Unhide photo</string>
 
     <!-- Hidden unlock -->
-    <string name="hidden_unlock_setup_prompt">Set up a PIN to protect hidden folders.</string>
+    <string name="hidden_unlock_setup_prompt">Set up a PIN to protect hidden photos.</string>
     <string name="hidden_unlock_new_pin_label">New PIN</string>
     <string name="hidden_unlock_confirm_pin_label">Confirm PIN</string>
     <string name="hidden_unlock_enable_biometric">Enable biometric unlock</string>
@@ -121,7 +121,7 @@
     <string name="hidden_unlock_incorrect_pin_fallback">Incorrect PIN</string>
     <string name="hidden_unlock_use_biometric">Use biometric</string>
     <string name="hidden_unlock_unlocked">Unlocked.</string>
-    <string name="hidden_unlock_prompt_title">Unlock hidden folders</string>
+    <string name="hidden_unlock_prompt_title">Unlock hidden photos</string>
     <string name="hidden_unlock_use_pin_instead">Use PIN instead</string>
     <string name="hidden_unlock_pin_length_error">PIN must be 4 to 12 digits</string>
     <string name="hidden_unlock_pin_mismatch_error">PINs do not match</string>
@@ -137,7 +137,7 @@
     <string name="permission_granted_message">Permission granted.</string>
 
     <!-- Purchase -->
-    <string name="purchase_description">Unlock the editor and hidden folders forever with a single, one-time purchase. No subscription, no account required.</string>
+    <string name="purchase_description">Unlock the editor and hidden photos forever with a single, one-time purchase. No subscription, no account required.</string>
     <string name="purchase_one_time">One-time purchase</string>
     <string name="purchase_buy_button">Buy unlock</string>
     <string name="purchase_restore_button">Restore purchase</string>

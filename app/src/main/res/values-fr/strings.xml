@@ -16,7 +16,7 @@
     <string name="common_cancel">Annuler</string>
     <string name="common_done">Terminé</string>
     <string name="recycle_bin_title">Corbeille</string>
-    <string name="hidden_folders_title">Dossiers masqués</string>
+    <string name="hidden_photos_title">Photos masquées</string>
     <string name="settings_title">Paramètres</string>
     <string name="purchase_title">Débloquer Pro</string>
 
@@ -30,12 +30,13 @@
 
     <!-- Media grid -->
     <string name="media_grid_selected_count_format">%1$d sélectionnés</string>
-    <string name="media_grid_hide_folder">Masquer le dossier</string>
+    <string name="media_grid_hide_selected">Masquer la sélection</string>
     <string name="media_grid_folder_fallback_title">Dossier</string>
     <string name="media_grid_error_fallback">Impossible de charger ce dossier.</string>
     <string name="media_grid_load_error_fallback">Impossible de charger ce dossier</string>
     <string name="media_grid_empty">Ce dossier ne contient aucune photo ni vidéo à afficher.</string>
     <string name="media_grid_recycle_failed_format">Échec de la mise à la corbeille de %1$s</string>
+    <string name="media_grid_hide_failed_format">Échec du masquage de %1$s</string>
     <string name="media_video_content_description">Vidéo</string>
     <string name="media_selected_content_description">Sélectionné</string>
     <string name="sort_mode_date_desc">Plus récents d\'abord</string>
@@ -80,7 +81,8 @@
     <string name="settings_privacy_local_only">Vos photos et vidéos restent sur cet appareil. Aucun compte ni synchronisation cloud.</string>
     <string name="settings_privacy_target_sdk">Conçue pour les autorisations multimédias actuelles d\'Android. SDK cible : 35.</string>
     <string name="settings_section_security">Sécurité et autorisations</string>
-    <string name="settings_manage_hidden_lock">Gérer le verrouillage des dossiers masqués</string>
+    <string name="settings_manage_hidden_lock">Gérer le verrouillage des photos masquées</string>
+    <string name="settings_hide_all_now">Masquer les photos déverrouillées maintenant</string>
     <string name="settings_review_media_permission">Vérifier l\'autorisation multimédia</string>
     <string name="settings_version_format">Version %1$s</string>
     <string name="settings_language_label">Langue</string>
@@ -100,17 +102,15 @@
     <string name="recycle_bin_delete_dialog_title">Supprimer définitivement ?</string>
     <string name="recycle_bin_delete_dialog_message">Cette action est irréversible. La copie protégée dans la corbeille sera supprimée.</string>
 
-    <!-- Hidden folders -->
-    <string name="hidden_folders_session_locked">Session verrouillée.</string>
-    <string name="hidden_folders_error_fallback">Impossible de charger les dossiers masqués.</string>
-    <string name="hidden_folders_load_error_fallback">Impossible de charger les dossiers masqués</string>
-    <string name="hidden_folders_empty">Aucun dossier n\'est masqué.</string>
-    <string name="hidden_folders_unlocked_banner">Déverrouillé</string>
-    <string name="hidden_folders_unhide">Afficher le dossier</string>
-    <string name="hidden_folders_item_count_format">%1$d éléments</string>
+    <!-- Hidden photos -->
+    <string name="hidden_photos_session_locked">Session verrouillée.</string>
+    <string name="hidden_photos_error_fallback">Impossible de charger les photos masquées.</string>
+    <string name="hidden_photos_empty">Aucune photo n\'est masquée.</string>
+    <string name="hidden_photos_unlocked_banner">Déverrouillé</string>
+    <string name="hidden_photos_unhide">Afficher la photo</string>
 
     <!-- Hidden unlock -->
-    <string name="hidden_unlock_setup_prompt">Configurez un code PIN pour protéger les dossiers masqués.</string>
+    <string name="hidden_unlock_setup_prompt">Configurez un code PIN pour protéger les photos masquées.</string>
     <string name="hidden_unlock_new_pin_label">Nouveau code PIN</string>
     <string name="hidden_unlock_confirm_pin_label">Confirmer le code PIN</string>
     <string name="hidden_unlock_enable_biometric">Activer le déverrouillage biométrique</string>
@@ -119,7 +119,7 @@
     <string name="hidden_unlock_incorrect_pin_fallback">Code PIN incorrect</string>
     <string name="hidden_unlock_use_biometric">Utiliser la biométrie</string>
     <string name="hidden_unlock_unlocked">Déverrouillé.</string>
-    <string name="hidden_unlock_prompt_title">Déverrouiller les dossiers masqués</string>
+    <string name="hidden_unlock_prompt_title">Déverrouiller les photos masquées</string>
     <string name="hidden_unlock_use_pin_instead">Utiliser un code PIN à la place</string>
     <string name="hidden_unlock_pin_length_error">Le code PIN doit comporter de 4 à 12 chiffres</string>
     <string name="hidden_unlock_pin_mismatch_error">Les codes PIN ne correspondent pas</string>
@@ -135,7 +135,7 @@
     <string name="permission_granted_message">Autorisation accordée.</string>
 
     <!-- Purchase -->
-    <string name="purchase_description">Déverrouillez l\'éditeur et les dossiers masqués pour toujours avec un achat unique. Sans abonnement, sans compte.</string>
+    <string name="purchase_description">Déverrouillez l\'éditeur et les photos masquées pour toujours avec un achat unique. Sans abonnement, sans compte.</string>
     <string name="purchase_one_time">Achat unique</string>
     <string name="purchase_buy_button">Acheter le déblocage</string>
     <string name="purchase_restore_button">Restaurer l\'achat</string>

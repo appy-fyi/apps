@@ -16,7 +16,7 @@
     <string name="common_cancel">Cancelar</string>
     <string name="common_done">Listo</string>
     <string name="recycle_bin_title">Papelera</string>
-    <string name="hidden_folders_title">Carpetas ocultas</string>
+    <string name="hidden_photos_title">Fotos ocultas</string>
     <string name="settings_title">Ajustes</string>
     <string name="purchase_title">Desbloquear Pro</string>
 
@@ -30,12 +30,13 @@
 
     <!-- Media grid -->
     <string name="media_grid_selected_count_format">%1$d seleccionados</string>
-    <string name="media_grid_hide_folder">Ocultar carpeta</string>
+    <string name="media_grid_hide_selected">Ocultar seleccionados</string>
     <string name="media_grid_folder_fallback_title">Carpeta</string>
     <string name="media_grid_error_fallback">No se pudo cargar esta carpeta.</string>
     <string name="media_grid_load_error_fallback">No se pudo cargar esta carpeta</string>
     <string name="media_grid_empty">Esta carpeta no tiene fotos ni videos para mostrar.</string>
     <string name="media_grid_recycle_failed_format">No se pudo reciclar %1$s</string>
+    <string name="media_grid_hide_failed_format">No se pudo ocultar %1$s</string>
     <string name="media_video_content_description">Video</string>
     <string name="media_selected_content_description">Seleccionado</string>
     <string name="sort_mode_date_desc">Más recientes primero</string>
@@ -81,6 +82,7 @@
     <string name="settings_privacy_target_sdk">Diseñada para los permisos de contenido multimedia actuales de Android. SDK de destino: 35.</string>
     <string name="settings_section_security">Seguridad y permisos</string>
     <string name="settings_manage_hidden_lock">Administrar bloqueo oculto</string>
+    <string name="settings_hide_all_now">Ocultar fotos desbloqueadas ahora</string>
     <string name="settings_review_media_permission">Revisar permiso de contenido multimedia</string>
     <string name="settings_version_format">Versión %1$s</string>
     <string name="settings_language_label">Idioma</string>
@@ -100,17 +102,15 @@
     <string name="recycle_bin_delete_dialog_title">¿Eliminar permanentemente?</string>
     <string name="recycle_bin_delete_dialog_message">Esto no se puede deshacer. Se eliminará la copia protegida en la papelera.</string>
 
-    <!-- Hidden folders -->
-    <string name="hidden_folders_session_locked">Sesión bloqueada.</string>
-    <string name="hidden_folders_error_fallback">No se pudieron cargar las carpetas ocultas.</string>
-    <string name="hidden_folders_load_error_fallback">No se pudieron cargar las carpetas ocultas</string>
-    <string name="hidden_folders_empty">No hay carpetas ocultas.</string>
-    <string name="hidden_folders_unlocked_banner">Desbloqueado</string>
-    <string name="hidden_folders_unhide">Mostrar carpeta</string>
-    <string name="hidden_folders_item_count_format">%1$d elementos</string>
+    <!-- Hidden photos -->
+    <string name="hidden_photos_session_locked">Sesión bloqueada.</string>
+    <string name="hidden_photos_error_fallback">No se pudieron cargar las fotos ocultas.</string>
+    <string name="hidden_photos_empty">No hay fotos ocultas.</string>
+    <string name="hidden_photos_unlocked_banner">Desbloqueado</string>
+    <string name="hidden_photos_unhide">Mostrar foto</string>
 
     <!-- Hidden unlock -->
-    <string name="hidden_unlock_setup_prompt">Configura un PIN para proteger las carpetas ocultas.</string>
+    <string name="hidden_unlock_setup_prompt">Configura un PIN para proteger las fotos ocultas.</string>
     <string name="hidden_unlock_new_pin_label">PIN nuevo</string>
     <string name="hidden_unlock_confirm_pin_label">Confirmar PIN</string>
     <string name="hidden_unlock_enable_biometric">Activar desbloqueo biométrico</string>
@@ -119,7 +119,7 @@
     <string name="hidden_unlock_incorrect_pin_fallback">PIN incorrecto</string>
     <string name="hidden_unlock_use_biometric">Usar biometría</string>
     <string name="hidden_unlock_unlocked">Desbloqueado.</string>
-    <string name="hidden_unlock_prompt_title">Desbloquear carpetas ocultas</string>
+    <string name="hidden_unlock_prompt_title">Desbloquear fotos ocultas</string>
     <string name="hidden_unlock_use_pin_instead">Usar PIN en su lugar</string>
     <string name="hidden_unlock_pin_length_error">El PIN debe tener de 4 a 12 dígitos</string>
     <string name="hidden_unlock_pin_mismatch_error">Los PIN no coinciden</string>
@@ -135,7 +135,7 @@
     <string name="permission_granted_message">Permiso concedido.</string>
 
     <!-- Purchase -->
-    <string name="purchase_description">Desbloquea el editor y las carpetas ocultas para siempre con una única compra. Sin suscripción, sin cuenta.</string>
+    <string name="purchase_description">Desbloquea el editor y las fotos ocultas para siempre con una única compra. Sin suscripción, sin cuenta.</string>
     <string name="purchase_one_time">Compra única</string>
     <string name="purchase_buy_button">Comprar desbloqueo</string>
     <string name="purchase_restore_button">Restaurar compra</string>
