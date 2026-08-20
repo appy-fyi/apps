@@ -1,0 +1,185 @@
+# Steady Gallery — Launch Instructions
+
+Status as of 2026-08-20: **the app is feature-complete and ready for the
+human-only launch steps.** All build-spec features and every item in
+`todo.txt`'s DONE list are implemented, unit tests pass, and the app's
+positioning matches what the incumbent's own recent reviews are asking for.
+What's left is the work only a human can do: trademark/legal sign-off, a
+real icon, Play Console setup, and device testing.
+
+## 1. What I checked before writing this
+
+- **Read `com.simplemobiletools.gallery.pro-build-spec.json`** — all 9
+  screens, all 7 features, and the data model are implemented under
+  `app/src/main/java/com/appyfyi/steadygridgallery/`.
+- **Called the `appy.fyi` API** (key found in `.env`) for the incumbent
+  (Simple Gallery Pro):
+  - `app_info` — score 4.46, $2.99 one-time, last update 2026-08-12 (so it's
+    *not* actually abandoned as of today — see risk note below).
+  - `app_photos` — downloaded and viewed all 8 store screenshots. The
+    incumbent's editor is far more advanced (Transform/Filter/Adjust/Focus/
+    Sticker tabs, custom color theming, pattern/PIN/biometric lock). Our
+    spec deliberately scopes v1 down to crop/rotate/filters, which is a
+    documented non-goal, not an oversight — fine to ship, worth flagging
+    that "advanced editor" is a fast-follow if users ask for it.
+  - `reviews` — read all 30 recent reviews. They confirm the exact
+    complaints the build spec was designed around: folders/photos
+    randomly disappearing, the Advanced Editor hanging at 0%/"preparing to
+    export" forever, Camera folder hidden by default, settings resetting,
+    and a couple of one-star reviews specifically about the developer being
+    acquired and no longer trustworthy. No new complaint theme showed up
+    that isn't already covered by the spec's features — I didn't add any
+    new scope based on this.
+- **Ran `./gradlew testDebugUnitTest`** — build succeeded, all unit tests
+  pass.
+- **Checked `AndroidManifest.xml`** — only `READ_MEDIA_IMAGES`,
+  `READ_MEDIA_VIDEO`, `USE_BIOMETRIC`; no `INTERNET`, no
+  `MANAGE_EXTERNAL_STORAGE`. Matches spec.
+- **Checked `.gitignore`** — `*.jks` and `.env` are excluded and not
+  tracked by git, so the keystore and API key are not at risk of being
+  pushed.
+- **Spot-checked `todo.txt`'s DONE list against the code** — Save/Save a
+  Copy buttons, video playback controls, pinch-to-zoom, swipe transitions,
+  video badge on grid thumbnails, and the `es`/`fr` localized string files
+  are all genuinely present in the source, not just claimed done.
+
+## 2. Risk note: the incumbent updated 12 days before this report
+
+`app_info.last_update` is 2026-08-12. The "Abandonment / no updates"
+complaint the whole spec is positioned around is weaker today than when the
+report was written — several August reviews already say some issues were
+fixed. This doesn't mean don't launch, but it does mean the store listing
+and README's "actively maintained" positioning should lean more on the
+*concrete* differentiators that still hold up in this week's reviews
+(reliable recycle bin, camera folder always visible, settings that persist,
+an editor that doesn't hang) rather than purely on "the other app is dead,"
+which is no longer fully true. I'd soften any launch copy that flatly
+claims Simple Gallery Pro is unmaintained.
+
+## 3. Things you need to do before this can go live
+
+These are exactly the two `human_gates_required` in the build spec, broken
+into concrete steps, plus the launch mechanics.
+
+### 3.1 Trademark & privacy review (`trademark_and_privacy_review` gate)
+
+- [ ] `trademark_cleared` is `false` in the build spec. Before submitting to
+      Play Console, confirm the app name "Steady Gallery," the package id
+      `com.appyfyi.steadygridgallery`, and the store icon/screenshots don't
+      use Simple Mobile Tools' name, logo, or trade dress. The README and
+      store listing description currently say "alternative to Simple
+      Gallery Pro" with a Play Store link — that kind of comparative
+      reference is generally fine, but have this looked at before
+      publishing, especially the icon (see 3.2) and any store screenshots.
+  - Reference: `README.md`, `store_listing.long_description` /
+    `short_description` in the build spec.
+- [ ] `legal.privacy_policy_accurate` is `false` on purpose.
+      `docs/PRIVACY_POLICY_DRAFT.md` is a draft — read it against the
+      shipped app, fix anything wrong, add a real contact method (it
+      currently has a placeholder), and publish it at
+      `https://www.appyfyi.com/privacy/steady-gallery` (the URL already
+      declared in `legal.privacy_policy_url`).
+- [ ] Confirm `legal.regulated_category: "none"` still holds given the
+      biometric-unlock feature, before filling in Play's Data Safety form.
+
+### 3.2 Generate the real app icon
+
+The launcher icon is currently a **placeholder**, not the finished asset —
+`app/src/main/res/drawable/ic_launcher_foreground.xml` literally has a
+comment saying so. There are also no legacy PNG mipmaps, only the
+adaptive-icon XML (fine for minSdk 33, but confirm Play Console's asset
+upload doesn't also want a flat 512×512 PNG — it does, see below).
+
+- [ ] Generate a 1024×1024 icon using the prompt already in the spec
+      (`store_listing.icon_prompt`): deep blue background (#1565C0), white
+      outlined photo frame, small green shield badge, subtle restore arrow,
+      flat vector, no text, no camera lens, no brand logos.
+- [ ] Replace `ic_launcher_background.xml` / `ic_launcher_foreground.xml`
+      with the real asset (as vector drawables or PNG mipmaps), and export
+      a flat 512×512 PNG separately for the Play Console app icon upload
+      field (adaptive icon layers aren't accepted there directly).
+
+### 3.3 Google Play Console setup
+
+- [ ] Create the app entry with `package_id: com.appyfyi.steadygridgallery`.
+- [ ] Configure the one-time in-app product `steady_gallery_pro_unlock`
+      as `ProductType.INAPP` at $2.99 — this must exist in Play Console
+      *before* `BillingRepository` can query it successfully.
+- [ ] Fill in the Play Data Safety form using `docs/PRIVACY_POLICY_DRAFT.md`
+      (once verified) as the source of truth — the answer should be "no
+      data collected" across the board.
+- [ ] Enter store listing text from `store_listing` in the build spec
+      (title, short/long description, category: Photography, keywords).
+- [ ] Upload real screenshots of **Steady Gallery itself** — the ones I
+      downloaded (`/tmp/.../scratchpad/appy/*.png`) are the *incumbent's*
+      screenshots, pulled only for UX reference. Take fresh screenshots
+      from a running build of this app before submitting.
+- [ ] `human_gates_required` also lists `closed_testing_recruitment`:
+      recruit the testers needed for Play's closed-testing track (Play
+      requires 12 testers opted in for 14 continuous days before a new
+      developer account can request production access). Start this early
+      since it's the long pole — everything else here can be done in
+      parallel, but this one has a hard 14-day minimum.
+
+### 3.4 Build and sign the release
+
+Run from the repo root (the keystore already exists at
+`steady-gallery-upload.jks`, gitignored, generated with the placeholder
+password `changeit` from `build_instructions`):
+
+```bash
+chmod +x ./gradlew
+./gradlew clean
+./gradlew testDebugUnitTest
+./gradlew connectedDebugAndroidTest   # needs a running emulator/device, see 3.5
+```
+
+- [ ] **Before building the real release artifact**, regenerate the
+      keystore with a strong, unique password instead of `changeit` — that
+      value only exists as a local dev convenience in the build spec's
+      example command, not something to ship with. Store the real
+      passwords in a password manager, not in the shell history or any
+      committed file.
+- [ ] Then build the signed bundle:
+  ```bash
+  RELEASE_STORE_FILE="$PWD/steady-gallery-upload.jks" \
+  RELEASE_STORE_PASSWORD="<your real password>" \
+  RELEASE_KEY_ALIAS="upload" \
+  RELEASE_KEY_PASSWORD="<your real password>" \
+  ./gradlew bundleRelease
+  ```
+- [ ] Upload the resulting `.aab` from `app/build/outputs/bundle/release/`
+      to Play Console's internal testing track first.
+
+### 3.5 Device testing (do this before wide release)
+
+The build spec's `test_plan` has 9 scenarios (4 instrumented, 2 unit — unit
+already passing, 3 manual). The instrumented and manual ones need an actual
+device/emulator and haven't been run yet:
+
+- [ ] Run `./gradlew connectedDebugAndroidTest` against an API 35
+      emulator or device for the 4 instrumented scenarios (editor export
+      progress, hidden-folder data safety, Camera folder ordering,
+      recycle-bin restore).
+- [ ] Manually walk the 3 manual scenarios: fresh-install permission flow
+      on Android 15, a real Play Billing test purchase using a license
+      tester account, and reading the manifest/Settings screen to confirm
+      the privacy/current-Android messaging is visible.
+
+## 4. Suggested order of operations
+
+1. Kick off tester recruitment for closed testing now (3.3) — it's the
+   14-day floor, start the clock immediately.
+2. Generate the real icon (3.2) and get trademark/privacy sign-off (3.1) in
+   parallel — neither blocks the other.
+3. Run the instrumented + manual test pass (3.5) on an emulator.
+4. Regenerate the release keystore password, build the signed AAB (3.4),
+   and upload to internal testing.
+5. Once privacy policy is published and testers have accumulated 14 days,
+   fill in the rest of Play Console (3.3) and submit for production.
+
+Everything in this doc is a human/account-level step — there's no more
+code work I'd recommend before you start on it. Let me know if you want me
+to soften the "unmaintained" framing in the README/store listing per the
+risk note in §2, or make any other content changes while you work through
+the checklist above.

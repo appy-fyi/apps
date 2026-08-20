@@ -521,6 +521,15 @@
       "scenario": "Support current Android versions on day one and say so loudly."
     }
   ],
+  "api_access": {
+    "base_url": "https://appy.fyi",
+    "endpoints": {
+      "reviews": "https://appy.fyi/api/reviews/com.simplemobiletools.gallery.pro",
+      "app_info": "https://appy.fyi/api/app_info/com.simplemobiletools.gallery.pro",
+      "app_photos": "https://appy.fyi/api/app_photos/com.simplemobiletools.gallery.pro"
+    },
+    "instructions": "GET requests, no body. Send `Authorization: Bearer <key>` using the key in the APPY_API_KEY environment variable if it's set. Get a key free, self-serve — sign in at https://appy.fyi/profile with Google and generate one there (one active key per account, no approval or waiting). These are optional enrichment on top of the report data already in this spec (e.g. the incumbent's preview photos, for visual/UX inspiration) — if APPY_API_KEY isn't set or a call 401s, skip it and proceed with the spec as-is rather than treating it as a blocker."
+  },
   "data_model": [
     {
       "entity": "FolderState",
@@ -777,6 +786,7 @@
   "positioning": "A maintained, privacy-first Android gallery focused on reliable local folders, a recycle bin, hidden folders, and crop/rotate/export that completes instead of hanging.",
   "working_name": "Steady Gallery",
   "design_system": {
+    "icon_name": "images",
     "typography": "Material 3 default type scale, no custom font",
     "theme_notes": "Use Material 3 light and dark themes. Light theme uses primary #1565C0, background #FAFAFA, surface #FFFFFF, on-background #1B1B1F. Dark theme uses primary #9ECAFF, background #101418, surface #1B1F24, on-background #E3E2E6. Photo grids use black gutters (#000000) in the viewer only so images remain visually neutral.",
     "color_error_hex": "#B00020",
