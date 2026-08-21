@@ -1,11 +1,12 @@
 TODO:
+DONE:
 - Replace the "Hidden Folders" with "Hidden Photos":
 	- The app creates a hidden folder on the device
 	- Users can select indevidual photos and hide them, when they do the photos moves to the hidden folder.
 	- Photos can be un-hidden from the hidden folder.
 	- The hidden folder is only accissible via pin or biometric
 	- Once a user navigates outside the hidden folder he needs to unlock it again to view it
-DONE:
+- Download some real free to use photos for the testing, demo and screenshots. After you take new screenshots, upload them to appy.fyi
 - Make sure hidden photos are hidden! This is very important, once someone hide a photo do not show it unless unlocked. If a user unlocked hidden folders add a global switch to hide back all photos.
 - Replace the Export button with two buttons "Save" and "Save a Copy"
 - Cropping still not working smoothly. Also when I said vertical and horizontal I meant to add a dragging button on the edges of the crop box (and not just on the corners). Also add dragging buttons on all the corners.

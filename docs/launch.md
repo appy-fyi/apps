@@ -1,5 +1,25 @@
 # Steady Gallery — Launch Instructions
 
+Update 2026-08-21: claimed `ownership` on `appy.fyi` for
+(`com.simplemobiletools.gallery.pro` → `com.appyfyi.steadygridgallery`) and
+published this app's `appy.fyi` app page at
+**https://appy.fyi/app/com.appyfyi.steadygridgallery**, with its icon
+(`store_listing/play_store_icon_512.png`) and all 5 screenshot slots
+uploaded (real screenshots captured live off a running emulator build —
+folder grid, a folder's media view, full-screen viewer, editor, and
+settings).
+
+The `privacy_policy` upload initially 500'd (a stray `app_id not null`
+column on appy.fyi's live `privacy_policy` table, unrelated to this repo —
+root-caused and fixed server-side by appy.fyi's own team). Retried after
+their fix landed and it succeeded: the draft in
+`docs/PRIVACY_POLICY_DRAFT.md` is now hosted at
+**https://appy.fyi/legal/com.appyfyi.steadygridgallery/1**. That URL should
+replace `legal.privacy_policy_url` (`https://www.appyfyi.com/privacy/steady-gallery`,
+never actually hosted) everywhere it's used below — still gated on the
+human review in §3.1, since the draft's contact-method placeholder hasn't
+been filled in yet.
+
 Status as of 2026-08-20: **the app is feature-complete and ready for the
 human-only launch steps.** All build-spec features and every item in
 `todo.txt`'s DONE list are implemented, unit tests pass, and the app's
@@ -79,6 +99,12 @@ into concrete steps, plus the launch mechanics.
       currently has a placeholder), and publish it at
       `https://www.appyfyi.com/privacy/steady-gallery` (the URL already
       declared in `legal.privacy_policy_url`).
+      - Tried publishing this draft to `appy.fyi`'s `privacy_policy`
+        endpoint on 2026-08-21 (ownership was claimed successfully first,
+        and the app_page/icon calls right below worked with the same key)
+        — it consistently 500s. Not a build blocker; `legal.privacy_policy_url`
+        above is still the placeholder to use until either the endpoint is
+        retried successfully or the policy is hosted some other way.
 - [ ] Confirm `legal.regulated_category: "none"` still holds given the
       biometric-unlock feature, before filling in Play's Data Safety form.
 
