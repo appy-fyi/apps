@@ -524,11 +524,16 @@
   "api_access": {
     "base_url": "https://appy.fyi",
     "endpoints": {
-      "reviews": "https://appy.fyi/api/reviews/com.simplemobiletools.gallery.pro",
+      "ownership": "https://appy.fyi/api/ownership",
       "app_info": "https://appy.fyi/api/app_info/com.simplemobiletools.gallery.pro",
-      "app_photos": "https://appy.fyi/api/app_photos/com.simplemobiletools.gallery.pro"
+      "reviews": "https://appy.fyi/api/reviews/com.simplemobiletools.gallery.pro",
+      "app_photos": "https://appy.fyi/api/app_photos/com.simplemobiletools.gallery.pro",
+      "privacy_policy": "https://appy.fyi/api/privacy_policy/:user_play_id",
+      "app_page": "https://appy.fyi/api/app_page/:user_play_id",
+      "app_page_icon": "https://appy.fyi/api/app_page/:user_play_id/icon",
+      "app_page_screenshot": "https://appy.fyi/api/app_page/:user_play_id/screenshot"
     },
-    "instructions": "GET requests, no body. Send `Authorization: Bearer <key>` using the key in the APPY_API_KEY environment variable if it's set. Get a key free, self-serve — sign in at https://appy.fyi/profile with Google and generate one there (one active key per account, no approval or waiting). These are optional enrichment on top of the report data already in this spec (e.g. the incumbent's preview photos, for visual/UX inspiration) — if APPY_API_KEY isn't set or a call 401s, skip it and proceed with the spec as-is rather than treating it as a blocker."
+    "instructions": "Send `Authorization: Bearer <key>` using the key in the APPY_API_KEY environment variable if it's set. Get a key free, self-serve — sign in at https://appy.fyi/profile with Google and generate one there (one active key per account, no approval or waiting). Call `ownership` FIRST: POST JSON {\"origin_play_id\": \"com.simplemobiletools.gallery.pro\", \"user_play_id\": \"<package_id above>\"} — this permanently claims that pair for this account (max 2 claims per account, user_play_id can never change once claimed) and every other endpoint below 403s until it succeeds. Every `:user_play_id` in the endpoint URLs above is a literal placeholder — replace it with that same package_id, never with com.simplemobiletools.gallery.pro (the incumbent's own id, only valid for the three GET endpoints). app_info/reviews/app_photos are GET requests, no body, optional enrichment scoped to com.simplemobiletools.gallery.pro (the incumbent) — if APPY_API_KEY isn't set, ownership hasn't been claimed, or a call 401s/403s, skip them and proceed with the spec as-is rather than treating it as a blocker. privacy_policy is a POST with the drafted privacy policy as the plain-text request body; on success its JSON response's `url` field is a real, hosted privacy policy URL, replacing legal.privacy_policy_url below (which is only ever a suggestion, never actually hosted). app_page is a POST with JSON body {\"name\", \"description\"} that publishes a Google-Play-style page for the app you build from this spec; app_page_icon and app_page_screenshot (append /1 through /5 to that URL for the slot) are POSTs with the raw image bytes as the body and a Content-Type of image/png, image/jpeg, or image/webp — call app_page first, since the icon/screenshot uploads require the page to already exist. All of privacy_policy/app_page/app_page_icon/app_page_screenshot need a real account's key, not just any key, and act on the user_play_id you claimed above, not com.simplemobiletools.gallery.pro — like the GET endpoints, treat all four (plus ownership itself) as enrichment: skip them if APPY_API_KEY isn't set, never a build blocker."
   },
   "data_model": [
     {

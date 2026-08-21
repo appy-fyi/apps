@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.appyfyi.steadygridgallery"
+    namespace = "fyi.appy.steadygridgallery"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.appyfyi.steadygridgallery"
+        applicationId = "fyi.appy.steadygridgallery"
         minSdk = 33
         targetSdk = 35
         versionCode = 1
