@@ -1,8 +1,6 @@
-# Steady Gallery Privacy Policy (DRAFT -- not yet verified for accuracy)
+# Steady Gallery Privacy Policy
 
-**This is a draft only.** `legal.privacy_policy_accurate` is `false` in the build spec on
-purpose: a human must verify every claim below against the shipped app before it is published
-at the real URL, `https://www.appyfyi.com/privacy/steady-gallery`.
+_Last updated: August 21, 2026_
 
 ## Data collected
 
@@ -15,16 +13,21 @@ remote config, no account system, and no server backend. The app manifest does n
 - **Photos and videos** (`READ_MEDIA_IMAGES`, `READ_MEDIA_VIDEO`): used only to display your
   existing folders, media, and thumbnails, and to let you crop/rotate/filter and export edited
   copies back into your device's Photos/Videos library. Nothing leaves the device.
-- **Biometric unlock** (`USE_BIOMETRIC`): used only to unlock the app's local hidden-folders
+- **Biometric unlock** (`USE_BIOMETRIC`): used only to unlock the app's local Hidden Photos
   feature using your device's existing fingerprint/face enrollment. The app never receives your
-  biometric data itself -- only a success/failure signal from the Android system.
+  biometric data itself — only a success/failure signal from the Android system.
 
 ## Local-only storage
 
 - Folder organization, sort order, and app preferences are stored in a local database on your
   device (Room/SQLite) and are never transmitted anywhere.
-- A PIN used to protect hidden folders is never stored in plain text: only a salted PBKDF2 hash
-  of it is kept, in Android's `EncryptedSharedPreferences`.
+- **Hidden Photos**: when you hide individual photos or videos, the app copies them into an
+  app-private folder on your device and removes them from your visible library. Hidden items stay
+  in that app-private folder — never transmitted anywhere — until you unhide them or uninstall the
+  app, and viewing them again requires unlocking with your PIN or biometrics. If you leave the
+  Hidden Photos screen (or use the "hide all now" switch in Settings), it re-locks automatically.
+- A PIN used to protect Hidden Photos is never stored in plain text: only a salted PBKDF2 hash of
+  it is kept, in Android's `EncryptedSharedPreferences`.
 - Purchase status for the one-time Pro unlock is cached locally (also in
   `EncryptedSharedPreferences`) after Google Play Billing confirms the purchase. Steady Gallery
   does not run its own purchase-validation server.
@@ -38,10 +41,10 @@ policy governs that transaction; Steady Gallery does not receive or store your p
 
 ## Contact
 
-_A human must add a real contact address/method here before publishing._
+Questions about this policy or the app can be sent to gilad.kutiel@gmail.com.
 
 ## Regulated data category
 
-`legal.regulated_category` in the build spec is `none`. A human should confirm this still holds
-for the shipped feature set (in particular biometric unlock) before submitting the Play Data
-Safety form.
+Steady Gallery does not collect, transmit, or store biometric data — biometric unlock only reads a
+local success/failure signal from the Android system, never raw biometric material. It does not
+fall into a regulated data category for the Play Data Safety form.

@@ -1,0 +1,63 @@
+Steady Gallery — Play Console "App access" declaration
+========================================================
+Where: Play Console > Policy > App content > App access
+Package id to use: fyi.appy.steadygridgallery (renamed 2026-08-21 from
+com.appyfyi.steadygridgallery — see docs/launch.md)
+
+Q: Is any part of your app restricted?
+A: Yes
+
+Reason: no accounts/sign-in exist, but two features gate content behind a
+local PIN/biometric prompt or a purchase, so reviewers need instructions
+to reach them. Add TWO separate instruction entries (Play Console lets you
+add multiple named entries) — leave Username/Password blank on both, since
+there is no login of any kind. Character counts are shown so you can
+confirm against Play Console's live limit before submitting (Play's
+"Instructions" field has historically capped at 1000 characters; both
+entries below are well under that).
+
+--------------------------------------------------------------------------
+ENTRY 1
+Name/label field:
+  Hidden Photos (PIN / biometric lock)
+
+Username: (leave blank)
+Password: (leave blank)
+
+Instructions field (486 / 1000 characters):
+  Steady Gallery has no accounts or sign-in of any kind; everything is
+  local to the device. Hidden Photos is empty by default, so this screen
+  has nothing to show on first install. To access it: open any folder,
+  select a photo, tap Hide. You'll be prompted to set a PIN (biometric
+  unlock is optional and just re-uses the device's own enrolled
+  fingerprint/face, nothing app-specific). Set any PIN, e.g. 1234, then
+  open Settings > Hidden Photos and enter it to unlock and review the
+  feature.
+
+--------------------------------------------------------------------------
+ENTRY 2
+Name/label field:
+  Pro unlock (one-time purchase)
+
+Username: (leave blank)
+Password: (leave blank)
+
+Instructions field (410 / 1000 characters):
+  The Pro unlock is a one-time Google Play Billing in-app purchase
+  ($2.99, product id steady_gallery_pro_unlock), available via the
+  "Upgrade to Pro" button in Settings. There is no account or login
+  involved. To review Pro features without paying, add a Google account
+  as a license tester in Play Console (Settings > License testing) and
+  use it to complete the purchase flow -- it will show as a test
+  transaction.
+
+--------------------------------------------------------------------------
+Before submitting, double-check:
+- The in-app product steady_gallery_pro_unlock exists in Play Console
+  (Monetize > Products > In-app products) BEFORE this declaration goes
+  out for review, or the Entry 2 instructions won't work for the reviewer.
+- A license tester account is added under Setup > License testing so the
+  test purchase in Entry 2 doesn't get charged for real.
+- Package id used everywhere in Play Console is fyi.appy.steadygridgallery,
+  not the old com.appyfyi.steadygridgallery (see docs/launch.md note on
+  the applicationId rename).

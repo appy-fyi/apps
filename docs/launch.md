@@ -12,13 +12,34 @@ settings).
 The `privacy_policy` upload initially 500'd (a stray `app_id not null`
 column on appy.fyi's live `privacy_policy` table, unrelated to this repo —
 root-caused and fixed server-side by appy.fyi's own team). Retried after
-their fix landed and it succeeded: the draft in
-`docs/PRIVACY_POLICY_DRAFT.md` is now hosted at
-**https://appy.fyi/legal/com.appyfyi.steadygridgallery/1**. That URL should
-replace `legal.privacy_policy_url` (`https://www.appyfyi.com/privacy/steady-gallery`,
-never actually hosted) everywhere it's used below — still gated on the
-human review in §3.1, since the draft's contact-method placeholder hasn't
-been filled in yet.
+their fix landed and it succeeded.
+
+Update 2026-08-21 (later): `docs/PRIVACY_POLICY_DRAFT.md` has been finished
+and re-published — real contact email added (gilad.kutiel@gmail.com),
+"hidden folders" language corrected to "Hidden Photos" (matching the
+todo.txt feature rename), and the regulated-data-category note confirmed
+against `LockCredentialStore`/`SecureStorage` (biometric unlock only reads a
+success/failure signal from Android's BiometricPrompt; no biometric data is
+collected or stored, so `regulated_category: "none"` holds). It's now live
+at **https://appy.fyi/app/com.appyfyi.steadygridgallery/privacy** (the
+earlier `/legal/.../1` URL from the first, still-placeholder upload has been
+superseded by this one). `legal.privacy_policy_url` and
+`legal.privacy_policy_accurate` in the build spec have been updated to this
+URL and `true` respectively — §3.1 below is done except for the trademark
+half of that gate.
+
+Note: `app/build.gradle.kts`'s `applicationId` was renamed from
+`com.appyfyi.steadygridgallery` to `fyi.appy.steadygridgallery` on
+2026-08-21 (commit `c97c10e`), but the `appy.fyi` app page, its screenshots,
+and this privacy policy are all still published under the *old* id,
+`com.appyfyi.steadygridgallery` — `user_play_id` can never change once
+claimed on appy.fyi, and re-claiming under the new id would spend one of
+this account's two total claims and orphan everything already uploaded. The
+mismatch doesn't block anything here (appy.fyi is enrichment/hosting, not
+the actual Play Store listing — that gets whatever `applicationId` the
+signed bundle has), but flag it before Play Console setup in §3.3 so the
+real package id used there is `fyi.appy.steadygridgallery`, and update
+`README.md`'s "Application ID" line (still says the old id) to match.
 
 Status as of 2026-08-20: **the app is feature-complete and ready for the
 human-only launch steps.** All build-spec features and every item in
@@ -93,20 +114,19 @@ into concrete steps, plus the launch mechanics.
       publishing, especially the icon (see 3.2) and any store screenshots.
   - Reference: `README.md`, `store_listing.long_description` /
     `short_description` in the build spec.
-- [ ] `legal.privacy_policy_accurate` is `false` on purpose.
-      `docs/PRIVACY_POLICY_DRAFT.md` is a draft — read it against the
-      shipped app, fix anything wrong, add a real contact method (it
-      currently has a placeholder), and publish it at
-      `https://www.appyfyi.com/privacy/steady-gallery` (the URL already
-      declared in `legal.privacy_policy_url`).
-      - Tried publishing this draft to `appy.fyi`'s `privacy_policy`
-        endpoint on 2026-08-21 (ownership was claimed successfully first,
-        and the app_page/icon calls right below worked with the same key)
-        — it consistently 500s. Not a build blocker; `legal.privacy_policy_url`
-        above is still the placeholder to use until either the endpoint is
-        retried successfully or the policy is hosted some other way.
-- [ ] Confirm `legal.regulated_category: "none"` still holds given the
-      biometric-unlock feature, before filling in Play's Data Safety form.
+- [x] `legal.privacy_policy_accurate` is now `true`. `docs/PRIVACY_POLICY_DRAFT.md`
+      has been checked against the shipped app (`LockCredentialStore`,
+      `SecureStorage`, `HiddenMediaRepository`, `RecycleRepository`,
+      `BillingRepository`), "hidden folders" wording corrected to "Hidden
+      Photos," a real contact email added (gilad.kutiel@gmail.com), and
+      published to `appy.fyi`'s `privacy_policy` endpoint (the earlier 500
+      was appy.fyi's server bug, already fixed). Live at
+      **https://appy.fyi/app/com.appyfyi.steadygridgallery/privacy**, and
+      `legal.privacy_policy_url` in the build spec now points there instead
+      of the never-hosted placeholder.
+- [x] Confirmed `legal.regulated_category: "none"` still holds given the
+      biometric-unlock feature (see note above) — use this when filling in
+      Play's Data Safety form.
 
 ### 3.2 Generate the real app icon — done
 

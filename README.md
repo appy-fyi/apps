@@ -47,7 +47,7 @@ Steady Gallery is a native Android app written in Kotlin with Jetpack
 Compose.
 
 - **Module:** `app`
-- **Application ID:** `com.appyfyi.steadygridgallery`
+- **Application ID:** `fyi.appy.steadygridgallery`
 - **Min SDK:** 33 · **Target SDK:** 35
 
 ```
