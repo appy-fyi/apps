@@ -1,5 +1,6 @@
 TODO:
 DONE:
+- Create a Taskfile.yml with common tasks: build, push to phone, etc...
 - Replace the "Hidden Folders" with "Hidden Photos":
 	- The app creates a hidden folder on the device
 	- Users can select indevidual photos and hide them, when they do the photos moves to the hidden folder.

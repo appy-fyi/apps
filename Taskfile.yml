@@ -1,0 +1,70 @@
+version: '3'
+
+vars:
+  APP_ID: fyi.appy.steadygridgallery
+  APK_DEBUG: app/build/outputs/apk/debug/app-debug.apk
+  APK_RELEASE: app/build/outputs/apk/release/app-release.apk
+
+tasks:
+  default:
+    cmds:
+      - task --list
+    silent: true
+
+  build:
+    desc: Build a debug APK
+    cmds:
+      - ./gradlew assembleDebug
+
+  build-release:
+    desc: Build a release APK (needs RELEASE_STORE_FILE/PASSWORD/KEY_ALIAS/KEY_PASSWORD env vars)
+    cmds:
+      - ./gradlew assembleRelease
+
+  clean:
+    desc: Clean build outputs
+    cmds:
+      - ./gradlew clean
+
+  test:
+    desc: Run unit tests
+    cmds:
+      - ./gradlew testDebugUnitTest
+
+  lint:
+    desc: Run Android lint
+    cmds:
+      - ./gradlew lintDebug
+
+  devices:
+    desc: List connected adb devices
+    cmds:
+      - adb devices -l
+
+  install-emulator:
+    desc: Build and install the debug APK on the running emulator
+    cmds:
+      - task: build
+      - |
+        SERIAL=$(adb devices | awk '/^emulator-/{print $1; exit}')
+        if [ -z "$SERIAL" ]; then echo "No emulator running" >&2; exit 1; fi
+        adb -s "$SERIAL" install -r {{.APK_DEBUG}}
+
+  push:
+    desc: Build and install the debug APK on a connected physical phone
+    cmds:
+      - task: build
+      - |
+        SERIAL=$(adb devices | awk '$2=="device" && $1 !~ /^emulator-/{print $1; exit}')
+        if [ -z "$SERIAL" ]; then echo "No physical device connected" >&2; exit 1; fi
+        adb -s "$SERIAL" install -r {{.APK_DEBUG}}
+
+  launch:
+    desc: Launch the app on the default adb target
+    cmds:
+      - adb shell monkey -p {{.APP_ID}} -c android.intent.category.LAUNCHER 1
+
+  logcat:
+    desc: Tail logcat filtered to this app on the default adb target
+    cmds:
+      - adb logcat --pid=$(adb shell pidof -s {{.APP_ID}})
