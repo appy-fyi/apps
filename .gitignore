@@ -17,3 +17,4 @@ app/build/
 *.jks
 *.keystore
 .env
+service-account.json

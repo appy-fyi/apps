@@ -68,3 +68,8 @@ tasks:
     desc: Tail logcat filtered to this app on the default adb target
     cmds:
       - adb logcat --pid=$(adb shell pidof -s {{.APP_ID}})
+
+  play-publish:
+    desc: Build the release bundle and upload it to the Play Console internal testing track (needs RELEASE_STORE_FILE/PASSWORD/KEY_ALIAS/KEY_PASSWORD env vars and service-account.json)
+    cmds:
+      - ./gradlew publishBundle

@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.devtools.ksp")
+    id("com.github.triplet.play")
 }
 
 android {
@@ -74,6 +75,12 @@ android {
             isReturnDefaultValues = true
         }
     }
+}
+
+play {
+    serviceAccountCredentials.set(rootProject.file("service-account.json"))
+    track.set("internal")
+    defaultToAppBundles.set(true)
 }
 
 dependencies {
