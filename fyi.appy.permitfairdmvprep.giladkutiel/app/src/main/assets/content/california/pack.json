@@ -1,0 +1,1083 @@
+{
+  "statePack": {
+    "stateId": "california",
+    "displayName": "California",
+    "handbookTitle": "California Driver's Handbook",
+    "handbookSourceUrl": "https://www.dmv.ca.gov/portal/handbook/california-driver-handbook/",
+    "version": "1.0.0"
+  },
+  "lessons": [
+    {
+      "id": "california_signs_signals",
+      "stateId": "california",
+      "title": "Traffic Signs and Signals",
+      "handbookSection": "Chapter 2: Signs, Signals, and Markings",
+      "bodyMarkdown": "Traffic signs and signals keep everyone moving safely and predictably.\n\n- A red octagonal sign always means a full stop, even if no other traffic is visible.\n- A solid yellow traffic light means the signal is about to turn red \u2014 prepare to stop if you can do so safely.\n- A flashing red signal is treated the same as a stop sign: stop, then proceed when safe.\n- A flashing yellow signal means slow down and proceed with caution; you do not need to stop.\n- Yellow diamond-shaped signs warn of upcoming road conditions such as curves, merges, or pedestrian crossings.\n\nLearning to recognize sign shapes and colors quickly is one of the fastest ways to build safe driving habits.",
+      "sortOrder": 0
+    },
+    {
+      "id": "california_right_of_way",
+      "stateId": "california",
+      "title": "Right-of-Way Rules",
+      "handbookSection": "Chapter 3: Right-of-Way",
+      "bodyMarkdown": "Right-of-way rules decide who moves first when two vehicles could otherwise arrive at the same place at the same time.\n\n- At an uncontrolled four-way intersection with no signs, the driver who arrives first goes first.\n- If two vehicles arrive at the same time, the driver on the right has the right-of-way.\n- Pedestrians in a marked or unmarked crosswalk generally have the right-of-way over vehicles.\n- When turning left, a driver must yield to oncoming traffic that is going straight or turning right.\n- Emergency vehicles with lights and sirens active always have the right-of-way; pull to the right and stop.\n\nRight-of-way is something you give, not something you take \u2014 never assume another driver will yield.",
+      "sortOrder": 1
+    },
+    {
+      "id": "california_speed_following",
+      "stateId": "california",
+      "title": "Speed Limits and Safe Following Distance",
+      "handbookSection": "Chapter 4: Speed and Space",
+      "bodyMarkdown": "Choosing a safe speed and keeping enough space around your vehicle gives you time to react.\n\n- The posted speed limit is a maximum under ideal conditions, not a target to always drive at.\n- In poor weather, reduced visibility, or heavy traffic, a safe speed may be well below the posted limit.\n- The three-second rule is a simple way to check following distance: pick a fixed point, and count three seconds after the vehicle ahead passes it.\n- Following distance should increase in rain, fog, or on unfamiliar roads.\n- Tailgating reduces your reaction time and is a leading cause of rear-end collisions.\n\nGood speed and space management is one of the most effective ways to avoid a crash.",
+      "sortOrder": 2
+    },
+    {
+      "id": "california_impaired_driving",
+      "stateId": "california",
+      "title": "Alcohol, Drugs, and Impaired Driving",
+      "handbookSection": "Chapter 6: Impaired Driving",
+      "bodyMarkdown": "Impairment from alcohol, drugs, or extreme fatigue slows reaction time and clouds judgment.\n\n- Any amount of alcohol can affect driving ability, even below the legal limit.\n- Drivers under 21 are subject to a zero-tolerance policy for alcohol in most states.\n- Certain prescription and over-the-counter medications can impair driving just like alcohol.\n- Driving while extremely drowsy shares many of the same risks as driving while impaired: slowed reaction time and poor judgment.\n- If you plan to drink, arrange a sober ride home before you start.\n\nThe safest choice is always to separate driving from impairment of any kind.",
+      "sortOrder": 3
+    }
+  ],
+  "questions": [
+    {
+      "id": "california_signs_signals_q1",
+      "stateId": "california",
+      "lessonId": "california_signs_signals",
+      "prompt": "What does a red octagonal (eight-sided) sign always mean?",
+      "explanation": "An octagonal red sign is reserved exclusively for stop signs, so its shape alone tells you to come to a full stop.",
+      "handbookSection": "Chapter 2: Signs, Signals, and Markings",
+      "sortOrder": 0
+    },
+    {
+      "id": "california_signs_signals_q2",
+      "stateId": "california",
+      "lessonId": "california_signs_signals",
+      "prompt": "A solid yellow traffic light means the signal is about to turn red. What should you do?",
+      "explanation": "Prepare to stop if you can do so safely; entering the intersection on a stale yellow light is a common cause of red-light violations.",
+      "handbookSection": "Chapter 2: Signs, Signals, and Markings",
+      "sortOrder": 1
+    },
+    {
+      "id": "california_signs_signals_q3",
+      "stateId": "california",
+      "lessonId": "california_signs_signals",
+      "prompt": "How should a flashing red traffic signal be treated?",
+      "explanation": "A flashing red signal functions exactly like a stop sign: stop completely, then proceed only when it is safe.",
+      "handbookSection": "Chapter 2: Signs, Signals, and Markings",
+      "sortOrder": 2
+    },
+    {
+      "id": "california_signs_signals_q4",
+      "stateId": "california",
+      "lessonId": "california_signs_signals",
+      "prompt": "What does a flashing yellow traffic signal mean?",
+      "explanation": "Flashing yellow means proceed with caution at a reduced speed; unlike flashing red, a full stop is not required.",
+      "handbookSection": "Chapter 2: Signs, Signals, and Markings",
+      "sortOrder": 3
+    },
+    {
+      "id": "california_signs_signals_q5",
+      "stateId": "california",
+      "lessonId": "california_signs_signals",
+      "prompt": "Yellow diamond-shaped signs are used to warn drivers about what?",
+      "explanation": "Diamond-shaped yellow signs are warning signs for upcoming conditions like curves, merges, or crossings, not regulatory commands.",
+      "handbookSection": "Chapter 2: Signs, Signals, and Markings",
+      "sortOrder": 4
+    },
+    {
+      "id": "california_signs_signals_q6",
+      "stateId": "california",
+      "lessonId": "california_signs_signals",
+      "prompt": "Why is it useful to recognize sign shapes, not just colors?",
+      "explanation": "Shape recognition lets a driver identify a sign's meaning even in poor visibility or when the color is hard to see, such as at night or from a distance.",
+      "handbookSection": "Chapter 2: Signs, Signals, and Markings",
+      "sortOrder": 5
+    },
+    {
+      "id": "california_signs_signals_q7",
+      "stateId": "california",
+      "lessonId": "california_signs_signals",
+      "prompt": "At an intersection with a stop sign, when should you proceed?",
+      "explanation": "After coming to a complete stop, you should proceed only once the intersection is clear and it is safe to do so.",
+      "handbookSection": "Chapter 2: Signs, Signals, and Markings",
+      "sortOrder": 6
+    },
+    {
+      "id": "california_right_of_way_q1",
+      "stateId": "california",
+      "lessonId": "california_right_of_way",
+      "prompt": "At an uncontrolled four-way intersection, who has the right-of-way?",
+      "explanation": "Without signs or signals, the first vehicle to arrive at the intersection has the right-of-way and should proceed first.",
+      "handbookSection": "Chapter 3: Right-of-Way",
+      "sortOrder": 0
+    },
+    {
+      "id": "california_right_of_way_q2",
+      "stateId": "california",
+      "lessonId": "california_right_of_way",
+      "prompt": "Two vehicles arrive at an uncontrolled intersection at the same time. Who yields?",
+      "explanation": "When arrival is simultaneous, the driver on the left must yield to the driver on the right.",
+      "handbookSection": "Chapter 3: Right-of-Way",
+      "sortOrder": 1
+    },
+    {
+      "id": "california_right_of_way_q3",
+      "stateId": "california",
+      "lessonId": "california_right_of_way",
+      "prompt": "Who generally has the right-of-way in a crosswalk, marked or unmarked?",
+      "explanation": "Pedestrians in a crosswalk, whether marked or unmarked, generally have the right-of-way over vehicles.",
+      "handbookSection": "Chapter 3: Right-of-Way",
+      "sortOrder": 2
+    },
+    {
+      "id": "california_right_of_way_q4",
+      "stateId": "california",
+      "lessonId": "california_right_of_way",
+      "prompt": "When making a left turn at an intersection, a driver must do what?",
+      "explanation": "A left-turning driver must yield to oncoming traffic that is going straight or turning right before completing the turn.",
+      "handbookSection": "Chapter 3: Right-of-Way",
+      "sortOrder": 3
+    },
+    {
+      "id": "california_right_of_way_q5",
+      "stateId": "california",
+      "lessonId": "california_right_of_way",
+      "prompt": "What should you do when an emergency vehicle approaches with lights and sirens active?",
+      "explanation": "You must pull to the right and stop to let emergency vehicles pass safely, since they always have the right-of-way in that situation.",
+      "handbookSection": "Chapter 3: Right-of-Way",
+      "sortOrder": 4
+    },
+    {
+      "id": "california_right_of_way_q6",
+      "stateId": "california",
+      "lessonId": "california_right_of_way",
+      "prompt": "Why is it dangerous to assume another driver will yield the right-of-way?",
+      "explanation": "Right-of-way is only ever given by another driver, never taken by assumption, so assuming a yield can lead to a collision if the other driver does not actually stop.",
+      "handbookSection": "Chapter 3: Right-of-Way",
+      "sortOrder": 5
+    },
+    {
+      "id": "california_right_of_way_q7",
+      "stateId": "california",
+      "lessonId": "california_right_of_way",
+      "prompt": "At a T-intersection with no signs, which vehicle typically has the right-of-way over a vehicle on the terminating road?",
+      "explanation": "A vehicle on the through road generally has the right-of-way over a vehicle approaching from the terminating (dead-end) road at an uncontrolled T-intersection.",
+      "handbookSection": "Chapter 3: Right-of-Way",
+      "sortOrder": 6
+    },
+    {
+      "id": "california_speed_following_q1",
+      "stateId": "california",
+      "lessonId": "california_speed_following",
+      "prompt": "Is the posted speed limit always the speed you should drive?",
+      "explanation": "The posted limit is a maximum allowed under ideal conditions, not a target speed \u2014 actual safe speed depends on conditions.",
+      "handbookSection": "Chapter 4: Speed and Space",
+      "sortOrder": 0
+    },
+    {
+      "id": "california_speed_following_q2",
+      "stateId": "california",
+      "lessonId": "california_speed_following",
+      "prompt": "When should you drive below the posted speed limit?",
+      "explanation": "In poor weather, reduced visibility, or heavy traffic, driving below the posted limit is often the safer choice.",
+      "handbookSection": "Chapter 4: Speed and Space",
+      "sortOrder": 1
+    },
+    {
+      "id": "california_speed_following_q3",
+      "stateId": "california",
+      "lessonId": "california_speed_following",
+      "prompt": "How does the three-second rule work?",
+      "explanation": "Pick a fixed point on the road; when the vehicle ahead passes it, count three seconds. If you reach that point before three seconds pass, you are following too closely.",
+      "handbookSection": "Chapter 4: Speed and Space",
+      "sortOrder": 2
+    },
+    {
+      "id": "california_speed_following_q4",
+      "stateId": "california",
+      "lessonId": "california_speed_following",
+      "prompt": "When should following distance be increased beyond the standard three-second rule?",
+      "explanation": "In rain, fog, or on unfamiliar roads, stopping distances increase, so following distance should increase as well.",
+      "handbookSection": "Chapter 4: Speed and Space",
+      "sortOrder": 3
+    },
+    {
+      "id": "california_speed_following_q5",
+      "stateId": "california",
+      "lessonId": "california_speed_following",
+      "prompt": "What is a major risk of tailgating?",
+      "explanation": "Tailgating reduces the time available to react to sudden braking ahead, making rear-end collisions much more likely.",
+      "handbookSection": "Chapter 4: Speed and Space",
+      "sortOrder": 4
+    },
+    {
+      "id": "california_speed_following_q6",
+      "stateId": "california",
+      "lessonId": "california_speed_following",
+      "prompt": "What is the main danger of driving at the posted speed limit in heavy fog?",
+      "explanation": "Fog reduces visibility, so a speed that is normally safe can leave too little time to react to hazards you cannot see until very close.",
+      "handbookSection": "Chapter 4: Speed and Space",
+      "sortOrder": 5
+    },
+    {
+      "id": "california_speed_following_q7",
+      "stateId": "california",
+      "lessonId": "california_speed_following",
+      "prompt": "What should you do if a vehicle is tailgating you?",
+      "explanation": "Safely increasing distance from the vehicle ahead, such as by gently slowing, gives more total space and reduces the chance of a chain-reaction crash if you need to brake.",
+      "handbookSection": "Chapter 4: Speed and Space",
+      "sortOrder": 6
+    },
+    {
+      "id": "california_impaired_driving_q1",
+      "stateId": "california",
+      "lessonId": "california_impaired_driving",
+      "prompt": "Can alcohol affect driving ability even below the legal limit?",
+      "explanation": "Yes, even small amounts of alcohol can measurably slow reaction time and impair judgment before a driver reaches the legal limit.",
+      "handbookSection": "Chapter 6: Impaired Driving",
+      "sortOrder": 0
+    },
+    {
+      "id": "california_impaired_driving_q2",
+      "stateId": "california",
+      "lessonId": "california_impaired_driving",
+      "prompt": "What policy applies to drivers under 21 regarding alcohol in most states?",
+      "explanation": "Most states apply a zero-tolerance policy for drivers under 21, meaning any detectable alcohol can result in a violation.",
+      "handbookSection": "Chapter 6: Impaired Driving",
+      "sortOrder": 1
+    },
+    {
+      "id": "california_impaired_driving_q3",
+      "stateId": "california",
+      "lessonId": "california_impaired_driving",
+      "prompt": "Can over-the-counter or prescription medication impair driving?",
+      "explanation": "Yes, certain medications can cause drowsiness or slowed reaction time comparable to the effects of alcohol.",
+      "handbookSection": "Chapter 6: Impaired Driving",
+      "sortOrder": 2
+    },
+    {
+      "id": "california_impaired_driving_q4",
+      "stateId": "california",
+      "lessonId": "california_impaired_driving",
+      "prompt": "How does extreme drowsiness compare to impaired driving?",
+      "explanation": "Extreme drowsiness produces many of the same effects as impairment: slowed reaction time and poor judgment.",
+      "handbookSection": "Chapter 6: Impaired Driving",
+      "sortOrder": 3
+    },
+    {
+      "id": "california_impaired_driving_q5",
+      "stateId": "california",
+      "lessonId": "california_impaired_driving",
+      "prompt": "What is the safest plan if you intend to drink alcohol?",
+      "explanation": "Arranging a sober ride home before drinking removes the temptation to drive while impaired later.",
+      "handbookSection": "Chapter 6: Impaired Driving",
+      "sortOrder": 4
+    },
+    {
+      "id": "california_impaired_driving_q6",
+      "stateId": "california",
+      "lessonId": "california_impaired_driving",
+      "prompt": "What is the core message of impaired-driving rules?",
+      "explanation": "The safest choice is to always separate driving from impairment of any kind, whether from alcohol, drugs, or extreme fatigue.",
+      "handbookSection": "Chapter 6: Impaired Driving",
+      "sortOrder": 5
+    },
+    {
+      "id": "california_impaired_driving_q7",
+      "stateId": "california",
+      "lessonId": "california_impaired_driving",
+      "prompt": "Why do zero-tolerance laws exist for drivers under 21?",
+      "explanation": "Because younger and less experienced drivers face a higher crash risk from any level of alcohol impairment, zero-tolerance laws set the threshold at essentially zero.",
+      "handbookSection": "Chapter 6: Impaired Driving",
+      "sortOrder": 6
+    }
+  ],
+  "answerOptions": [
+    {
+      "id": "california_signs_signals_q1_opt1",
+      "questionId": "california_signs_signals_q1",
+      "text": "Come to a complete stop",
+      "isCorrect": true,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_signs_signals_q1_opt2",
+      "questionId": "california_signs_signals_q1",
+      "text": "Slow down only",
+      "isCorrect": false,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_signs_signals_q1_opt3",
+      "questionId": "california_signs_signals_q1",
+      "text": "Yield to oncoming traffic only",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_signs_signals_q1_opt4",
+      "questionId": "california_signs_signals_q1",
+      "text": "Merge with caution",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_signs_signals_q2_opt1",
+      "questionId": "california_signs_signals_q2",
+      "text": "Speed up to beat the red light",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_signs_signals_q2_opt2",
+      "questionId": "california_signs_signals_q2",
+      "text": "Stop if you can do so safely",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_signs_signals_q2_opt3",
+      "questionId": "california_signs_signals_q2",
+      "text": "Come to a complete stop no matter what",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_signs_signals_q2_opt4",
+      "questionId": "california_signs_signals_q2",
+      "text": "Treat it exactly like a green light",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_signs_signals_q3_opt1",
+      "questionId": "california_signs_signals_q3",
+      "text": "Like a yield sign",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_signs_signals_q3_opt2",
+      "questionId": "california_signs_signals_q3",
+      "text": "Like a stop sign",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_signs_signals_q3_opt3",
+      "questionId": "california_signs_signals_q3",
+      "text": "Like a flashing yellow signal",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_signs_signals_q3_opt4",
+      "questionId": "california_signs_signals_q3",
+      "text": "As out of service and safe to ignore",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_signs_signals_q4_opt1",
+      "questionId": "california_signs_signals_q4",
+      "text": "Stop completely before proceeding",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_signs_signals_q4_opt2",
+      "questionId": "california_signs_signals_q4",
+      "text": "Slow down and proceed with caution",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_signs_signals_q4_opt3",
+      "questionId": "california_signs_signals_q4",
+      "text": "Signal malfunction, drive normally",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_signs_signals_q4_opt4",
+      "questionId": "california_signs_signals_q4",
+      "text": "Yield only to pedestrians",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_signs_signals_q5_opt1",
+      "questionId": "california_signs_signals_q5",
+      "text": "Upcoming road conditions or hazards",
+      "isCorrect": true,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_signs_signals_q5_opt2",
+      "questionId": "california_signs_signals_q5",
+      "text": "Speed limits in the area",
+      "isCorrect": false,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_signs_signals_q5_opt3",
+      "questionId": "california_signs_signals_q5",
+      "text": "Parking restrictions",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_signs_signals_q5_opt4",
+      "questionId": "california_signs_signals_q5",
+      "text": "Toll charges ahead",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_signs_signals_q6_opt1",
+      "questionId": "california_signs_signals_q6",
+      "text": "Shapes have no real meaning",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_signs_signals_q6_opt2",
+      "questionId": "california_signs_signals_q6",
+      "text": "Shape helps identify meaning even when color is hard to see",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_signs_signals_q6_opt3",
+      "questionId": "california_signs_signals_q6",
+      "text": "Only color determines meaning",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_signs_signals_q6_opt4",
+      "questionId": "california_signs_signals_q6",
+      "text": "Signs no longer use standardized shapes",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_signs_signals_q7_opt1",
+      "questionId": "california_signs_signals_q7",
+      "text": "Immediately after slowing down",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_signs_signals_q7_opt2",
+      "questionId": "california_signs_signals_q7",
+      "text": "Only after a complete stop and when safe",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_signs_signals_q7_opt3",
+      "questionId": "california_signs_signals_q7",
+      "text": "Whenever another car waves you through",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_signs_signals_q7_opt4",
+      "questionId": "california_signs_signals_q7",
+      "text": "As soon as you see the sign",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_right_of_way_q1_opt1",
+      "questionId": "california_right_of_way_q1",
+      "text": "The driver who arrives first",
+      "isCorrect": true,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_right_of_way_q1_opt2",
+      "questionId": "california_right_of_way_q1",
+      "text": "The driver in the larger vehicle",
+      "isCorrect": false,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_right_of_way_q1_opt3",
+      "questionId": "california_right_of_way_q1",
+      "text": "The driver turning left",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_right_of_way_q1_opt4",
+      "questionId": "california_right_of_way_q1",
+      "text": "Whoever honks first",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_right_of_way_q2_opt1",
+      "questionId": "california_right_of_way_q2",
+      "text": "The driver on the right yields",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_right_of_way_q2_opt2",
+      "questionId": "california_right_of_way_q2",
+      "text": "The driver on the left yields to the driver on the right",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_right_of_way_q2_opt3",
+      "questionId": "california_right_of_way_q2",
+      "text": "Both vehicles proceed together",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_right_of_way_q2_opt4",
+      "questionId": "california_right_of_way_q2",
+      "text": "The faster vehicle goes first",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_right_of_way_q3_opt1",
+      "questionId": "california_right_of_way_q3",
+      "text": "Vehicles turning right",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_right_of_way_q3_opt2",
+      "questionId": "california_right_of_way_q3",
+      "text": "Pedestrians",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_right_of_way_q3_opt3",
+      "questionId": "california_right_of_way_q3",
+      "text": "Bicyclists only",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_right_of_way_q3_opt4",
+      "questionId": "california_right_of_way_q3",
+      "text": "Whichever party is moving faster",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_right_of_way_q4_opt1",
+      "questionId": "california_right_of_way_q4",
+      "text": "Yield to oncoming traffic going straight or turning right",
+      "isCorrect": true,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_right_of_way_q4_opt2",
+      "questionId": "california_right_of_way_q4",
+      "text": "Proceed immediately if the light is green",
+      "isCorrect": false,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_right_of_way_q4_opt3",
+      "questionId": "california_right_of_way_q4",
+      "text": "Only yield to pedestrians",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_right_of_way_q4_opt4",
+      "questionId": "california_right_of_way_q4",
+      "text": "Have the right-of-way over all oncoming traffic",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_right_of_way_q5_opt1",
+      "questionId": "california_right_of_way_q5",
+      "text": "Speed up to clear the area",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_right_of_way_q5_opt2",
+      "questionId": "california_right_of_way_q5",
+      "text": "Pull to the right and stop",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_right_of_way_q5_opt3",
+      "questionId": "california_right_of_way_q5",
+      "text": "Stop immediately in your current lane",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_right_of_way_q5_opt4",
+      "questionId": "california_right_of_way_q5",
+      "text": "Continue driving normally",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_right_of_way_q6_opt1",
+      "questionId": "california_right_of_way_q6",
+      "text": "It is never dangerous to assume this",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_right_of_way_q6_opt2",
+      "questionId": "california_right_of_way_q6",
+      "text": "Because right-of-way must be given, not assumed",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_right_of_way_q6_opt3",
+      "questionId": "california_right_of_way_q6",
+      "text": "Because all drivers are legally required to yield to you",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_right_of_way_q6_opt4",
+      "questionId": "california_right_of_way_q6",
+      "text": "Because signals always guarantee a yield",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_right_of_way_q7_opt1",
+      "questionId": "california_right_of_way_q7",
+      "text": "The vehicle on the through road",
+      "isCorrect": true,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_right_of_way_q7_opt2",
+      "questionId": "california_right_of_way_q7",
+      "text": "The vehicle on the terminating road",
+      "isCorrect": false,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_right_of_way_q7_opt3",
+      "questionId": "california_right_of_way_q7",
+      "text": "Whichever vehicle is closer to the intersection",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_right_of_way_q7_opt4",
+      "questionId": "california_right_of_way_q7",
+      "text": "Neither vehicle has right-of-way",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_speed_following_q1_opt1",
+      "questionId": "california_speed_following_q1",
+      "text": "Yes, always drive at the posted limit",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_speed_following_q1_opt2",
+      "questionId": "california_speed_following_q1",
+      "text": "No, it is a maximum under ideal conditions",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_speed_following_q1_opt3",
+      "questionId": "california_speed_following_q1",
+      "text": "No, you should always drive below it",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_speed_following_q1_opt4",
+      "questionId": "california_speed_following_q1",
+      "text": "Speed limits are only suggestions with no real meaning",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_speed_following_q2_opt1",
+      "questionId": "california_speed_following_q2",
+      "text": "Only when a police officer is present",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_speed_following_q2_opt2",
+      "questionId": "california_speed_following_q2",
+      "text": "In poor weather, low visibility, or heavy traffic",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_speed_following_q2_opt3",
+      "questionId": "california_speed_following_q2",
+      "text": "Never, the posted limit is always safe",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_speed_following_q2_opt4",
+      "questionId": "california_speed_following_q2",
+      "text": "Only on highways",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_speed_following_q3_opt1",
+      "questionId": "california_speed_following_q3",
+      "text": "Count three seconds after a fixed point and compare to your arrival",
+      "isCorrect": true,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_speed_following_q3_opt2",
+      "questionId": "california_speed_following_q3",
+      "text": "Maintain exactly three car lengths at all times",
+      "isCorrect": false,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_speed_following_q3_opt3",
+      "questionId": "california_speed_following_q3",
+      "text": "Wait three seconds before changing lanes",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_speed_following_q3_opt4",
+      "questionId": "california_speed_following_q3",
+      "text": "Brake for three seconds before stopping",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_speed_following_q4_opt1",
+      "questionId": "california_speed_following_q4",
+      "text": "Only when driving downhill",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_speed_following_q4_opt2",
+      "questionId": "california_speed_following_q4",
+      "text": "In rain, fog, or unfamiliar roads",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_speed_following_q4_opt3",
+      "questionId": "california_speed_following_q4",
+      "text": "Only in stop-and-go traffic",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_speed_following_q4_opt4",
+      "questionId": "california_speed_following_q4",
+      "text": "Following distance never needs to change",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_speed_following_q5_opt1",
+      "questionId": "california_speed_following_q5",
+      "text": "It saves fuel",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_speed_following_q5_opt2",
+      "questionId": "california_speed_following_q5",
+      "text": "It reduces your reaction time",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_speed_following_q5_opt3",
+      "questionId": "california_speed_following_q5",
+      "text": "It has no real safety impact",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_speed_following_q5_opt4",
+      "questionId": "california_speed_following_q5",
+      "text": "It only matters at low speeds",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_speed_following_q6_opt1",
+      "questionId": "california_speed_following_q6",
+      "text": "There is no added danger in fog",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_speed_following_q6_opt2",
+      "questionId": "california_speed_following_q6",
+      "text": "Reduced visibility leaves too little reaction time at that speed",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_speed_following_q6_opt3",
+      "questionId": "california_speed_following_q6",
+      "text": "Fog only affects nighttime driving",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_speed_following_q6_opt4",
+      "questionId": "california_speed_following_q6",
+      "text": "Speed limits are automatically lowered in fog",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_speed_following_q7_opt1",
+      "questionId": "california_speed_following_q7",
+      "text": "Brake hard to warn them",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_speed_following_q7_opt2",
+      "questionId": "california_speed_following_q7",
+      "text": "Safely increase space ahead of you if possible",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_speed_following_q7_opt3",
+      "questionId": "california_speed_following_q7",
+      "text": "Speed up to lose them",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_speed_following_q7_opt4",
+      "questionId": "california_speed_following_q7",
+      "text": "Ignore it completely",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_impaired_driving_q1_opt1",
+      "questionId": "california_impaired_driving_q1",
+      "text": "No, only at or above the legal limit",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_impaired_driving_q1_opt2",
+      "questionId": "california_impaired_driving_q1",
+      "text": "Yes, even small amounts can impair driving",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_impaired_driving_q1_opt3",
+      "questionId": "california_impaired_driving_q1",
+      "text": "Only for drivers under 21",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_impaired_driving_q1_opt4",
+      "questionId": "california_impaired_driving_q1",
+      "text": "Only after multiple drinks in one hour",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_impaired_driving_q2_opt1",
+      "questionId": "california_impaired_driving_q2",
+      "text": "The same legal limit as adult drivers",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_impaired_driving_q2_opt2",
+      "questionId": "california_impaired_driving_q2",
+      "text": "A zero-tolerance policy for any alcohol",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_impaired_driving_q2_opt3",
+      "questionId": "california_impaired_driving_q2",
+      "text": "No special restrictions",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_impaired_driving_q2_opt4",
+      "questionId": "california_impaired_driving_q2",
+      "text": "A higher legal limit than adults",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_impaired_driving_q3_opt1",
+      "questionId": "california_impaired_driving_q3",
+      "text": "No, only illegal drugs impair driving",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_impaired_driving_q3_opt2",
+      "questionId": "california_impaired_driving_q3",
+      "text": "Yes, some medications can impair driving like alcohol",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_impaired_driving_q3_opt3",
+      "questionId": "california_impaired_driving_q3",
+      "text": "Only injected medications count",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_impaired_driving_q3_opt4",
+      "questionId": "california_impaired_driving_q3",
+      "text": "Only medications taken while driving count",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_impaired_driving_q4_opt1",
+      "questionId": "california_impaired_driving_q4",
+      "text": "It has no effect on driving safety",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_impaired_driving_q4_opt2",
+      "questionId": "california_impaired_driving_q4",
+      "text": "It shares risks with impaired driving: slowed reaction and poor judgment",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_impaired_driving_q4_opt3",
+      "questionId": "california_impaired_driving_q4",
+      "text": "It only affects long-haul truck drivers",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_impaired_driving_q4_opt4",
+      "questionId": "california_impaired_driving_q4",
+      "text": "It is only dangerous on highways",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_impaired_driving_q5_opt1",
+      "questionId": "california_impaired_driving_q5",
+      "text": "Wait one hour before driving",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_impaired_driving_q5_opt2",
+      "questionId": "california_impaired_driving_q5",
+      "text": "Arrange a sober ride before you start drinking",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_impaired_driving_q5_opt3",
+      "questionId": "california_impaired_driving_q5",
+      "text": "Drink coffee before driving",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_impaired_driving_q5_opt4",
+      "questionId": "california_impaired_driving_q5",
+      "text": "Drive slowly to compensate",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_impaired_driving_q6_opt1",
+      "questionId": "california_impaired_driving_q6",
+      "text": "Small amounts of impairment are always acceptable",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_impaired_driving_q6_opt2",
+      "questionId": "california_impaired_driving_q6",
+      "text": "Driving and any form of impairment should always be kept separate",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_impaired_driving_q6_opt3",
+      "questionId": "california_impaired_driving_q6",
+      "text": "Only alcohol counts as impairment",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_impaired_driving_q6_opt4",
+      "questionId": "california_impaired_driving_q6",
+      "text": "Impairment rules only apply on highways",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "california_impaired_driving_q7_opt1",
+      "questionId": "california_impaired_driving_q7",
+      "text": "Younger drivers face higher crash risk from any impairment",
+      "isCorrect": true,
+      "sortOrder": 0
+    },
+    {
+      "id": "california_impaired_driving_q7_opt2",
+      "questionId": "california_impaired_driving_q7",
+      "text": "They are unrelated to safety and only about age",
+      "isCorrect": false,
+      "sortOrder": 1
+    },
+    {
+      "id": "california_impaired_driving_q7_opt3",
+      "questionId": "california_impaired_driving_q7",
+      "text": "They apply only to commercial licenses",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "california_impaired_driving_q7_opt4",
+      "questionId": "california_impaired_driving_q7",
+      "text": "They replace all other traffic laws for that age group",
+      "isCorrect": false,
+      "sortOrder": 3
+    }
+  ]
+}

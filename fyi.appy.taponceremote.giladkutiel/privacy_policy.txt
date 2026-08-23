@@ -1,0 +1,25 @@
+Privacy Policy for TapOnce Remote
+
+Last updated: 2026-08-24
+
+TapOnce Remote ("the app") is a free universal TV remote for nearby WiFi TVs, Google Cast devices, and infrared-equipped Android phones. This policy describes what information the app collects and how it is used.
+
+Information stored locally on your device
+The app stores the following information only on your own device, using local app storage. It is not transmitted to us or to any third party:
+- Saved TV device names, IP addresses, and Cast device identifiers, so you can reconnect to a TV without rescanning.
+- Selected IR profile names, so the app remembers which infrared TV profile you chose.
+
+What we do not do
+- The app is completely free: it shows no advertising and offers no in-app purchases or subscriptions, so no advertising or payment data is collected.
+- We do not operate a server or cloud account for this app; there is no sign-in and no user account.
+- We do not sell your information.
+- The app does not request access to contacts, location, camera, or microphone.
+
+Regulated data categories
+This app does not knowingly collect any specially regulated category of personal data (such as health, financial account, or precise location data).
+
+Your choices
+You can delete any saved TV device from the app's Settings screen at any time, which removes it from local storage on your device. Uninstalling the app removes all locally stored data.
+
+Contact
+If you have questions about this policy, please contact us through the app's Google Play Store listing.

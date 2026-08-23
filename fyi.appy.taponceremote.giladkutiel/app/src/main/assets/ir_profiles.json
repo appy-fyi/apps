@@ -1,0 +1,43 @@
+{
+  "profiles": [
+    {
+      "name": "Generic TV A",
+      "protocol": "NEC",
+      "carrierFrequencyHz": 38000,
+      "commands": {
+        "Power": "0x20DF10EF",
+        "VolumeUp": "0x20DF40BF",
+        "VolumeDown": "0x20DFC03F",
+        "VolumeMute": "0x20DF906F",
+        "ChannelUp": "0x20DF00FF",
+        "ChannelDown": "0x20DF807F"
+      }
+    },
+    {
+      "name": "Generic TV B",
+      "protocol": "NEC",
+      "carrierFrequencyHz": 38000,
+      "commands": {
+        "Power": "0x00FF629D",
+        "VolumeUp": "0x00FF9867",
+        "VolumeDown": "0x00FFE817",
+        "VolumeMute": "0x00FF22DD",
+        "ChannelUp": "0x00FFA25D",
+        "ChannelDown": "0x00FF12ED"
+      }
+    },
+    {
+      "name": "Generic TV C",
+      "protocol": "NEC",
+      "carrierFrequencyHz": 38000,
+      "commands": {
+        "Power": "0x02FD48B7",
+        "VolumeUp": "0x02FD08F7",
+        "VolumeDown": "0x02FD8877",
+        "VolumeMute": "0x02FD28D7",
+        "ChannelUp": "0x02FD9867",
+        "ChannelDown": "0x02FD18E7"
+      }
+    }
+  ]
+}

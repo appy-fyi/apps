@@ -1,0 +1,1083 @@
+{
+  "statePack": {
+    "stateId": "texas",
+    "displayName": "Texas",
+    "handbookTitle": "Texas Driver Handbook (DL-7)",
+    "handbookSourceUrl": "https://www.dps.texas.gov/internetforms/forms/dl-7.pdf",
+    "version": "1.0.0"
+  },
+  "lessons": [
+    {
+      "id": "texas_signs_signals",
+      "stateId": "texas",
+      "title": "Traffic Signs and Signals",
+      "handbookSection": "Chapter 2: Signs and Signals",
+      "bodyMarkdown": "Texas roads use the same nationally standardized sign shapes and colors as the rest of the country.\n\n- A red octagon always means stop, regardless of the state you are driving in.\n- A yellow traffic light warns that the signal is changing to red; stop if you can do so safely.\n- Orange diamond-shaped signs mark construction or work zones and often carry reduced speed limits.\n- A green arrow allows a protected turn in the direction shown, with no oncoming traffic to yield to.\n- Railroad crossing signs and flashing lights require a full stop when a train is approaching.\n\nRecognizing these signs quickly is essential on Texas's mix of rural highways and busy city streets.",
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_right_of_way",
+      "stateId": "texas",
+      "title": "Right-of-Way Rules",
+      "handbookSection": "Chapter 3: Right-of-Way",
+      "bodyMarkdown": "Right-of-way rules apply the same way across Texas's intersections, from rural crossroads to busy city grids.\n\n- At an intersection with no signs or signals, the first vehicle to arrive proceeds first.\n- If two vehicles arrive together, the vehicle on the right goes first.\n- Pedestrians crossing at a marked or unmarked crosswalk have the right-of-way over vehicles.\n- A driver turning left must yield to all oncoming traffic before completing the turn.\n- Vehicles already in a roundabout have the right-of-way over vehicles entering it.\n\nRight-of-way rules exist to remove guesswork, but they only work if every driver follows them.",
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_speed_following",
+      "stateId": "texas",
+      "title": "Speed Limits and Safe Following Distance",
+      "handbookSection": "Chapter 4: Speed and Space",
+      "bodyMarkdown": "Texas has some of the highest posted speed limits in the country on certain highways, which makes safe following distance even more important.\n\n- The posted speed limit is a maximum for ideal conditions, not a guarantee of safety in all conditions.\n- Rural highways may have higher limits, but wildlife, gravel shoulders, and limited lighting can require slower speeds.\n- The three-second rule for following distance should be extended to four or more seconds at highway speeds.\n- Reduce speed in construction zones even when no workers are visible, since conditions can change quickly.\n- Sudden West Texas dust storms can drop visibility to near zero; slow down and, if needed, pull off the road safely.\n\nMatching your speed and following distance to real conditions, not just the posted number, is the core safety skill.",
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_impaired_driving",
+      "stateId": "texas",
+      "title": "Alcohol, Drugs, and Impaired Driving",
+      "handbookSection": "Chapter 6: Impaired Driving",
+      "bodyMarkdown": "Impaired driving remains one of the leading causes of serious crashes on Texas roads.\n\n- Any amount of alcohol can measurably slow reaction time and reduce judgment.\n- Texas applies a zero-tolerance policy to any detectable alcohol for drivers under 21.\n- Certain allergy, pain, and sleep medications carry warnings against operating a vehicle.\n- Long, monotonous highway driving increases the risk of drowsy driving, which shares many effects with impairment.\n- Planning a sober ride home before drinking removes the decision entirely once impairment sets in.\n\nSeparating driving from any form of impairment is the single most effective way to avoid a preventable crash.",
+      "sortOrder": 3
+    }
+  ],
+  "questions": [
+    {
+      "id": "texas_signs_signals_q1",
+      "stateId": "texas",
+      "lessonId": "texas_signs_signals",
+      "prompt": "What does a red octagon-shaped sign mean?",
+      "explanation": "A red octagon is used exclusively for stop signs and always means come to a complete stop.",
+      "handbookSection": "Chapter 2: Signs and Signals",
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_signs_signals_q2",
+      "stateId": "texas",
+      "lessonId": "texas_signs_signals",
+      "prompt": "What do orange diamond-shaped signs indicate on Texas roads?",
+      "explanation": "Orange diamond signs mark construction or work zones, which often include reduced speed limits and changed traffic patterns.",
+      "handbookSection": "Chapter 2: Signs and Signals",
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_signs_signals_q3",
+      "stateId": "texas",
+      "lessonId": "texas_signs_signals",
+      "prompt": "What does a green arrow signal allow?",
+      "explanation": "A green arrow permits a protected turn in the direction shown, meaning oncoming traffic is stopped and does not need to be yielded to.",
+      "handbookSection": "Chapter 2: Signs and Signals",
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_signs_signals_q4",
+      "stateId": "texas",
+      "lessonId": "texas_signs_signals",
+      "prompt": "What must a driver do at an active railroad crossing with flashing lights?",
+      "explanation": "Flashing lights at a railroad crossing require a full stop, since a train may be approaching.",
+      "handbookSection": "Chapter 2: Signs and Signals",
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_signs_signals_q5",
+      "stateId": "texas",
+      "lessonId": "texas_signs_signals",
+      "prompt": "A solid yellow traffic light means what?",
+      "explanation": "A yellow light warns that the signal is about to turn red; drivers should stop if they can do so safely.",
+      "handbookSection": "Chapter 2: Signs and Signals",
+      "sortOrder": 4
+    },
+    {
+      "id": "texas_signs_signals_q6",
+      "stateId": "texas",
+      "lessonId": "texas_signs_signals",
+      "prompt": "Why are sign shapes standardized nationally, including in Texas?",
+      "explanation": "Standardized shapes let drivers recognize a sign's meaning at a glance, even across state lines or in low visibility.",
+      "handbookSection": "Chapter 2: Signs and Signals",
+      "sortOrder": 5
+    },
+    {
+      "id": "texas_signs_signals_q7",
+      "stateId": "texas",
+      "lessonId": "texas_signs_signals",
+      "prompt": "In a construction zone marked with orange signs, what usually changes?",
+      "explanation": "Work zones commonly bring reduced speed limits and altered lane patterns to protect workers and drivers.",
+      "handbookSection": "Chapter 2: Signs and Signals",
+      "sortOrder": 6
+    },
+    {
+      "id": "texas_right_of_way_q1",
+      "stateId": "texas",
+      "lessonId": "texas_right_of_way",
+      "prompt": "At an uncontrolled intersection with no signs, who proceeds first?",
+      "explanation": "The first vehicle to arrive at an uncontrolled intersection has the right-of-way and proceeds first.",
+      "handbookSection": "Chapter 3: Right-of-Way",
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_right_of_way_q2",
+      "stateId": "texas",
+      "lessonId": "texas_right_of_way",
+      "prompt": "If two vehicles reach an uncontrolled intersection at the same moment, who yields?",
+      "explanation": "The vehicle on the left yields to the vehicle on the right when arrival is simultaneous.",
+      "handbookSection": "Chapter 3: Right-of-Way",
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_right_of_way_q3",
+      "stateId": "texas",
+      "lessonId": "texas_right_of_way",
+      "prompt": "Do pedestrians have the right-of-way at an unmarked crosswalk?",
+      "explanation": "Yes, pedestrians generally have the right-of-way at both marked and unmarked crosswalks.",
+      "handbookSection": "Chapter 3: Right-of-Way",
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_right_of_way_q4",
+      "stateId": "texas",
+      "lessonId": "texas_right_of_way",
+      "prompt": "What must a driver do before completing a left turn?",
+      "explanation": "A left-turning driver must yield to all oncoming traffic before completing the turn.",
+      "handbookSection": "Chapter 3: Right-of-Way",
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_right_of_way_q5",
+      "stateId": "texas",
+      "lessonId": "texas_right_of_way",
+      "prompt": "Who has the right-of-way in a roundabout: vehicles already inside or vehicles entering?",
+      "explanation": "Vehicles already circulating inside a roundabout have the right-of-way over vehicles waiting to enter.",
+      "handbookSection": "Chapter 3: Right-of-Way",
+      "sortOrder": 4
+    },
+    {
+      "id": "texas_right_of_way_q6",
+      "stateId": "texas",
+      "lessonId": "texas_right_of_way",
+      "prompt": "Why do right-of-way rules only work if every driver follows them?",
+      "explanation": "Right-of-way rules assign an order, but a driver still has to actually yield for the system to prevent a collision \u2014 one driver following the rule is not enough if the other does not.",
+      "handbookSection": "Chapter 3: Right-of-Way",
+      "sortOrder": 5
+    },
+    {
+      "id": "texas_right_of_way_q7",
+      "stateId": "texas",
+      "lessonId": "texas_right_of_way",
+      "prompt": "At a four-way stop, after stopping, when should a driver proceed?",
+      "explanation": "After a complete stop, a driver should proceed in the order vehicles arrived, or according to right-of-way rules if arrival was simultaneous.",
+      "handbookSection": "Chapter 3: Right-of-Way",
+      "sortOrder": 6
+    },
+    {
+      "id": "texas_speed_following_q1",
+      "stateId": "texas",
+      "lessonId": "texas_speed_following",
+      "prompt": "Is a high posted speed limit on a rural Texas highway always safe to drive at?",
+      "explanation": "The posted limit is a maximum for ideal conditions; wildlife, gravel shoulders, or poor lighting can make a lower speed safer.",
+      "handbookSection": "Chapter 4: Speed and Space",
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_speed_following_q2",
+      "stateId": "texas",
+      "lessonId": "texas_speed_following",
+      "prompt": "At highway speeds, how should the standard three-second following rule be adjusted?",
+      "explanation": "At higher speeds, stopping distance increases, so the following interval should be extended to four seconds or more.",
+      "handbookSection": "Chapter 4: Speed and Space",
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_speed_following_q3",
+      "stateId": "texas",
+      "lessonId": "texas_speed_following",
+      "prompt": "Should you slow down in a construction zone even if no workers are visible?",
+      "explanation": "Yes, because conditions in a work zone can change quickly and workers or equipment may appear without warning.",
+      "handbookSection": "Chapter 4: Speed and Space",
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_speed_following_q4",
+      "stateId": "texas",
+      "lessonId": "texas_speed_following",
+      "prompt": "What should a driver do if visibility drops sharply during a dust storm?",
+      "explanation": "Slow down, and if visibility becomes too low to drive safely, pull off the road in a safe location rather than continuing.",
+      "handbookSection": "Chapter 4: Speed and Space",
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_speed_following_q5",
+      "stateId": "texas",
+      "lessonId": "texas_speed_following",
+      "prompt": "What is the core safety skill described for matching speed to conditions?",
+      "explanation": "Matching speed and following distance to real, current conditions, not just the posted speed limit, is the core safety skill.",
+      "handbookSection": "Chapter 4: Speed and Space",
+      "sortOrder": 4
+    },
+    {
+      "id": "texas_speed_following_q6",
+      "stateId": "texas",
+      "lessonId": "texas_speed_following",
+      "prompt": "Why are gravel shoulders on rural highways relevant to speed choice?",
+      "explanation": "Gravel shoulders reduce traction if a vehicle drifts off the paved surface, so higher speeds leave less margin for safe recovery.",
+      "handbookSection": "Chapter 4: Speed and Space",
+      "sortOrder": 5
+    },
+    {
+      "id": "texas_speed_following_q7",
+      "stateId": "texas",
+      "lessonId": "texas_speed_following",
+      "prompt": "What following distance mistake is most likely to cause a rear-end crash at highway speed?",
+      "explanation": "Keeping only the minimum three-second gap at high speed leaves too little time to react if traffic ahead slows suddenly.",
+      "handbookSection": "Chapter 4: Speed and Space",
+      "sortOrder": 6
+    },
+    {
+      "id": "texas_impaired_driving_q1",
+      "stateId": "texas",
+      "lessonId": "texas_impaired_driving",
+      "prompt": "Can a small amount of alcohol affect driving ability?",
+      "explanation": "Yes, even a small amount of alcohol can measurably slow reaction time and reduce judgment before reaching any legal limit.",
+      "handbookSection": "Chapter 6: Impaired Driving",
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_impaired_driving_q2",
+      "stateId": "texas",
+      "lessonId": "texas_impaired_driving",
+      "prompt": "What alcohol policy applies to drivers under 21 in Texas?",
+      "explanation": "Texas applies a zero-tolerance policy, meaning any detectable alcohol for a driver under 21 is a violation.",
+      "handbookSection": "Chapter 6: Impaired Driving",
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_impaired_driving_q3",
+      "stateId": "texas",
+      "lessonId": "texas_impaired_driving",
+      "prompt": "Why might certain allergy or sleep medications be dangerous before driving?",
+      "explanation": "These medications often carry explicit warnings against operating machinery or vehicles because they can cause drowsiness or slowed reaction time.",
+      "handbookSection": "Chapter 6: Impaired Driving",
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_impaired_driving_q4",
+      "stateId": "texas",
+      "lessonId": "texas_impaired_driving",
+      "prompt": "What increases the risk of drowsy driving on long highway trips?",
+      "explanation": "Long, monotonous stretches of highway driving increase fatigue and the chance of drowsy driving, which shares many effects with impairment.",
+      "handbookSection": "Chapter 6: Impaired Driving",
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_impaired_driving_q5",
+      "stateId": "texas",
+      "lessonId": "texas_impaired_driving",
+      "prompt": "What is the benefit of planning a sober ride home before drinking?",
+      "explanation": "Deciding in advance removes the need to make a judgment call about driving after impairment has already set in.",
+      "handbookSection": "Chapter 6: Impaired Driving",
+      "sortOrder": 4
+    },
+    {
+      "id": "texas_impaired_driving_q6",
+      "stateId": "texas",
+      "lessonId": "texas_impaired_driving",
+      "prompt": "What is described as the single most effective way to avoid a preventable crash?",
+      "explanation": "Separating driving from any form of impairment, whether alcohol, drugs, or extreme fatigue, is the most effective preventive step.",
+      "handbookSection": "Chapter 6: Impaired Driving",
+      "sortOrder": 5
+    },
+    {
+      "id": "texas_impaired_driving_q7",
+      "stateId": "texas",
+      "lessonId": "texas_impaired_driving",
+      "prompt": "Why do impaired-driving rules treat drowsiness similarly to alcohol or drug impairment?",
+      "explanation": "Extreme drowsiness produces effects similar to alcohol or drug impairment, including slowed reaction time and poor judgment, so it carries comparable risk.",
+      "handbookSection": "Chapter 6: Impaired Driving",
+      "sortOrder": 6
+    }
+  ],
+  "answerOptions": [
+    {
+      "id": "texas_signs_signals_q1_opt1",
+      "questionId": "texas_signs_signals_q1",
+      "text": "Come to a complete stop",
+      "isCorrect": true,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_signs_signals_q1_opt2",
+      "questionId": "texas_signs_signals_q1",
+      "text": "Yield to cross traffic",
+      "isCorrect": false,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_signs_signals_q1_opt3",
+      "questionId": "texas_signs_signals_q1",
+      "text": "Reduce speed only",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_signs_signals_q1_opt4",
+      "questionId": "texas_signs_signals_q1",
+      "text": "Proceed with caution",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_signs_signals_q2_opt1",
+      "questionId": "texas_signs_signals_q2",
+      "text": "Construction or work zones",
+      "isCorrect": true,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_signs_signals_q2_opt2",
+      "questionId": "texas_signs_signals_q2",
+      "text": "School zones",
+      "isCorrect": false,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_signs_signals_q2_opt3",
+      "questionId": "texas_signs_signals_q2",
+      "text": "Toll roads ahead",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_signs_signals_q2_opt4",
+      "questionId": "texas_signs_signals_q2",
+      "text": "Rest areas",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_signs_signals_q3_opt1",
+      "questionId": "texas_signs_signals_q3",
+      "text": "A protected turn with no oncoming traffic to yield to",
+      "isCorrect": true,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_signs_signals_q3_opt2",
+      "questionId": "texas_signs_signals_q3",
+      "text": "A turn only if no other cars are present",
+      "isCorrect": false,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_signs_signals_q3_opt3",
+      "questionId": "texas_signs_signals_q3",
+      "text": "Only pedestrian crossing",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_signs_signals_q3_opt4",
+      "questionId": "texas_signs_signals_q3",
+      "text": "A mandatory U-turn",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_signs_signals_q4_opt1",
+      "questionId": "texas_signs_signals_q4",
+      "text": "Slow down but continue driving",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_signs_signals_q4_opt2",
+      "questionId": "texas_signs_signals_q4",
+      "text": "Come to a complete stop",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_signs_signals_q4_opt3",
+      "questionId": "texas_signs_signals_q4",
+      "text": "Sound the horn and proceed",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_signs_signals_q4_opt4",
+      "questionId": "texas_signs_signals_q4",
+      "text": "Only stop if a train is visible",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_signs_signals_q5_opt1",
+      "questionId": "texas_signs_signals_q5",
+      "text": "The signal is broken",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_signs_signals_q5_opt2",
+      "questionId": "texas_signs_signals_q5",
+      "text": "The signal is about to change to red",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_signs_signals_q5_opt3",
+      "questionId": "texas_signs_signals_q5",
+      "text": "It is safe to speed up",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_signs_signals_q5_opt4",
+      "questionId": "texas_signs_signals_q5",
+      "text": "Pedestrians have the right-of-way only",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_signs_signals_q6_opt1",
+      "questionId": "texas_signs_signals_q6",
+      "text": "So the same meaning can be recognized instantly across states",
+      "isCorrect": true,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_signs_signals_q6_opt2",
+      "questionId": "texas_signs_signals_q6",
+      "text": "Because Texas requires unique shapes",
+      "isCorrect": false,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_signs_signals_q6_opt3",
+      "questionId": "texas_signs_signals_q6",
+      "text": "Standardization was recently discontinued",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_signs_signals_q6_opt4",
+      "questionId": "texas_signs_signals_q6",
+      "text": "Shapes only matter for pedestrians",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_signs_signals_q7_opt1",
+      "questionId": "texas_signs_signals_q7",
+      "text": "Nothing changes from normal driving",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_signs_signals_q7_opt2",
+      "questionId": "texas_signs_signals_q7",
+      "text": "Speed limits and lane patterns often change",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_signs_signals_q7_opt3",
+      "questionId": "texas_signs_signals_q7",
+      "text": "Only nighttime restrictions apply",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_signs_signals_q7_opt4",
+      "questionId": "texas_signs_signals_q7",
+      "text": "Only truck traffic is affected",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_right_of_way_q1_opt1",
+      "questionId": "texas_right_of_way_q1",
+      "text": "The first vehicle to arrive",
+      "isCorrect": true,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_right_of_way_q1_opt2",
+      "questionId": "texas_right_of_way_q1",
+      "text": "The vehicle turning left",
+      "isCorrect": false,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_right_of_way_q1_opt3",
+      "questionId": "texas_right_of_way_q1",
+      "text": "The larger vehicle",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_right_of_way_q1_opt4",
+      "questionId": "texas_right_of_way_q1",
+      "text": "Whichever driver honks first",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_right_of_way_q2_opt1",
+      "questionId": "texas_right_of_way_q2",
+      "text": "The vehicle on the right yields",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_right_of_way_q2_opt2",
+      "questionId": "texas_right_of_way_q2",
+      "text": "The vehicle on the left yields to the one on the right",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_right_of_way_q2_opt3",
+      "questionId": "texas_right_of_way_q2",
+      "text": "Neither vehicle has to yield",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_right_of_way_q2_opt4",
+      "questionId": "texas_right_of_way_q2",
+      "text": "The faster vehicle proceeds first",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_right_of_way_q3_opt1",
+      "questionId": "texas_right_of_way_q3",
+      "text": "No, only at marked crosswalks",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_right_of_way_q3_opt2",
+      "questionId": "texas_right_of_way_q3",
+      "text": "Yes, at both marked and unmarked crosswalks",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_right_of_way_q3_opt3",
+      "questionId": "texas_right_of_way_q3",
+      "text": "Only during school hours",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_right_of_way_q3_opt4",
+      "questionId": "texas_right_of_way_q3",
+      "text": "Only if a crossing guard is present",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_right_of_way_q4_opt1",
+      "questionId": "texas_right_of_way_q4",
+      "text": "Yield to all oncoming traffic",
+      "isCorrect": true,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_right_of_way_q4_opt2",
+      "questionId": "texas_right_of_way_q4",
+      "text": "Proceed immediately once the light turns green",
+      "isCorrect": false,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_right_of_way_q4_opt3",
+      "questionId": "texas_right_of_way_q4",
+      "text": "Only yield to buses",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_right_of_way_q4_opt4",
+      "questionId": "texas_right_of_way_q4",
+      "text": "Nothing, left turns always have priority",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_right_of_way_q5_opt1",
+      "questionId": "texas_right_of_way_q5",
+      "text": "Vehicles entering the roundabout",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_right_of_way_q5_opt2",
+      "questionId": "texas_right_of_way_q5",
+      "text": "Vehicles already inside the roundabout",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_right_of_way_q5_opt3",
+      "questionId": "texas_right_of_way_q5",
+      "text": "Whichever vehicle is larger",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_right_of_way_q5_opt4",
+      "questionId": "texas_right_of_way_q5",
+      "text": "Neither has priority",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_right_of_way_q6_opt1",
+      "questionId": "texas_right_of_way_q6",
+      "text": "Because they are optional suggestions",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_right_of_way_q6_opt2",
+      "questionId": "texas_right_of_way_q6",
+      "text": "Because yielding must actually happen for the rules to prevent a collision",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_right_of_way_q6_opt3",
+      "questionId": "texas_right_of_way_q6",
+      "text": "Because they only apply in cities",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_right_of_way_q6_opt4",
+      "questionId": "texas_right_of_way_q6",
+      "text": "Because they are enforced only by cameras",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_right_of_way_q7_opt1",
+      "questionId": "texas_right_of_way_q7",
+      "text": "Immediately after stopping, regardless of order",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_right_of_way_q7_opt2",
+      "questionId": "texas_right_of_way_q7",
+      "text": "In arrival order, following right-of-way rules if simultaneous",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_right_of_way_q7_opt3",
+      "questionId": "texas_right_of_way_q7",
+      "text": "Only after every other vehicle has gone",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_right_of_way_q7_opt4",
+      "questionId": "texas_right_of_way_q7",
+      "text": "Whenever the driver feels ready",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_speed_following_q1_opt1",
+      "questionId": "texas_speed_following_q1",
+      "text": "Yes, the posted limit is always safe",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_speed_following_q1_opt2",
+      "questionId": "texas_speed_following_q1",
+      "text": "No, real conditions may require a lower speed",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_speed_following_q1_opt3",
+      "questionId": "texas_speed_following_q1",
+      "text": "Only trucks need to slow down",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_speed_following_q1_opt4",
+      "questionId": "texas_speed_following_q1",
+      "text": "Rural highways have no speed limits",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_speed_following_q2_opt1",
+      "questionId": "texas_speed_following_q2",
+      "text": "It should be shortened to two seconds",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_speed_following_q2_opt2",
+      "questionId": "texas_speed_following_q2",
+      "text": "It should be extended to four seconds or more",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_speed_following_q2_opt3",
+      "questionId": "texas_speed_following_q2",
+      "text": "It does not need to change",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_speed_following_q2_opt4",
+      "questionId": "texas_speed_following_q2",
+      "text": "The rule only applies in cities",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_speed_following_q3_opt1",
+      "questionId": "texas_speed_following_q3",
+      "text": "No, only slow down when workers are visible",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_speed_following_q3_opt2",
+      "questionId": "texas_speed_following_q3",
+      "text": "Yes, conditions can change quickly",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_speed_following_q3_opt3",
+      "questionId": "texas_speed_following_q3",
+      "text": "Only at night",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_speed_following_q3_opt4",
+      "questionId": "texas_speed_following_q3",
+      "text": "Only if a police car is present",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_speed_following_q4_opt1",
+      "questionId": "texas_speed_following_q4",
+      "text": "Speed up to drive through it quickly",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_speed_following_q4_opt2",
+      "questionId": "texas_speed_following_q4",
+      "text": "Slow down and pull off the road safely if needed",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_speed_following_q4_opt3",
+      "questionId": "texas_speed_following_q4",
+      "text": "Turn on high-beam headlights only",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_speed_following_q4_opt4",
+      "questionId": "texas_speed_following_q4",
+      "text": "Continue at the posted speed limit",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_speed_following_q5_opt1",
+      "questionId": "texas_speed_following_q5",
+      "text": "Always driving exactly at the posted limit",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_speed_following_q5_opt2",
+      "questionId": "texas_speed_following_q5",
+      "text": "Matching speed and distance to real conditions",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_speed_following_q5_opt3",
+      "questionId": "texas_speed_following_q5",
+      "text": "Driving as fast as traffic allows",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_speed_following_q5_opt4",
+      "questionId": "texas_speed_following_q5",
+      "text": "Ignoring posted limits entirely",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_speed_following_q6_opt1",
+      "questionId": "texas_speed_following_q6",
+      "text": "They have no effect on safe speed",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_speed_following_q6_opt2",
+      "questionId": "texas_speed_following_q6",
+      "text": "They reduce recovery margin if a vehicle drifts off the road",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_speed_following_q6_opt3",
+      "questionId": "texas_speed_following_q6",
+      "text": "They only affect motorcycles",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_speed_following_q6_opt4",
+      "questionId": "texas_speed_following_q6",
+      "text": "They increase traction at high speed",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_speed_following_q7_opt1",
+      "questionId": "texas_speed_following_q7",
+      "text": "Leaving too much following distance",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_speed_following_q7_opt2",
+      "questionId": "texas_speed_following_q7",
+      "text": "Keeping only the minimum gap at high speed",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_speed_following_q7_opt3",
+      "questionId": "texas_speed_following_q7",
+      "text": "Changing lanes too early",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_speed_following_q7_opt4",
+      "questionId": "texas_speed_following_q7",
+      "text": "Using turn signals too often",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_impaired_driving_q1_opt1",
+      "questionId": "texas_impaired_driving_q1",
+      "text": "No, only large amounts matter",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_impaired_driving_q1_opt2",
+      "questionId": "texas_impaired_driving_q1",
+      "text": "Yes, even small amounts can impair driving",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_impaired_driving_q1_opt3",
+      "questionId": "texas_impaired_driving_q1",
+      "text": "Only if combined with medication",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_impaired_driving_q1_opt4",
+      "questionId": "texas_impaired_driving_q1",
+      "text": "Only after several hours of drinking",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_impaired_driving_q2_opt1",
+      "questionId": "texas_impaired_driving_q2",
+      "text": "The same limit as adult drivers",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_impaired_driving_q2_opt2",
+      "questionId": "texas_impaired_driving_q2",
+      "text": "Zero tolerance for any detectable alcohol",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_impaired_driving_q2_opt3",
+      "questionId": "texas_impaired_driving_q2",
+      "text": "No restriction until age 18",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_impaired_driving_q2_opt4",
+      "questionId": "texas_impaired_driving_q2",
+      "text": "A higher allowed limit than adults",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_impaired_driving_q3_opt1",
+      "questionId": "texas_impaired_driving_q3",
+      "text": "They have no effect on driving",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_impaired_driving_q3_opt2",
+      "questionId": "texas_impaired_driving_q3",
+      "text": "They can cause drowsiness or slowed reaction time",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_impaired_driving_q3_opt3",
+      "questionId": "texas_impaired_driving_q3",
+      "text": "They only affect eyesight, not reaction time",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_impaired_driving_q3_opt4",
+      "questionId": "texas_impaired_driving_q3",
+      "text": "They are illegal to take at any time",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_impaired_driving_q4_opt1",
+      "questionId": "texas_impaired_driving_q4",
+      "text": "Frequent rest stops",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_impaired_driving_q4_opt2",
+      "questionId": "texas_impaired_driving_q4",
+      "text": "Long, monotonous driving",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_impaired_driving_q4_opt3",
+      "questionId": "texas_impaired_driving_q4",
+      "text": "Driving with passengers",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_impaired_driving_q4_opt4",
+      "questionId": "texas_impaired_driving_q4",
+      "text": "Driving during the day only",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_impaired_driving_q5_opt1",
+      "questionId": "texas_impaired_driving_q5",
+      "text": "It has no real benefit",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_impaired_driving_q5_opt2",
+      "questionId": "texas_impaired_driving_q5",
+      "text": "It removes the decision once impairment sets in",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_impaired_driving_q5_opt3",
+      "questionId": "texas_impaired_driving_q5",
+      "text": "It is only useful for long trips",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_impaired_driving_q5_opt4",
+      "questionId": "texas_impaired_driving_q5",
+      "text": "It replaces the need to follow speed limits",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_impaired_driving_q6_opt1",
+      "questionId": "texas_impaired_driving_q6",
+      "text": "Driving faster to shorten trip time",
+      "isCorrect": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_impaired_driving_q6_opt2",
+      "questionId": "texas_impaired_driving_q6",
+      "text": "Separating driving from any form of impairment",
+      "isCorrect": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_impaired_driving_q6_opt3",
+      "questionId": "texas_impaired_driving_q6",
+      "text": "Only avoiding alcohol, not fatigue",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_impaired_driving_q6_opt4",
+      "questionId": "texas_impaired_driving_q6",
+      "text": "Relying on cruise control at all times",
+      "isCorrect": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "texas_impaired_driving_q7_opt1",
+      "questionId": "texas_impaired_driving_q7",
+      "text": "Drowsiness produces similar effects: slowed reaction and poor judgment",
+      "isCorrect": true,
+      "sortOrder": 0
+    },
+    {
+      "id": "texas_impaired_driving_q7_opt2",
+      "questionId": "texas_impaired_driving_q7",
+      "text": "Drowsiness is only dangerous for truck drivers",
+      "isCorrect": false,
+      "sortOrder": 1
+    },
+    {
+      "id": "texas_impaired_driving_q7_opt3",
+      "questionId": "texas_impaired_driving_q7",
+      "text": "Drowsiness is unrelated to reaction time",
+      "isCorrect": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "texas_impaired_driving_q7_opt4",
+      "questionId": "texas_impaired_driving_q7",
+      "text": "Only nighttime drowsiness counts",
+      "isCorrect": false,
+      "sortOrder": 3
+    }
+  ]
+}

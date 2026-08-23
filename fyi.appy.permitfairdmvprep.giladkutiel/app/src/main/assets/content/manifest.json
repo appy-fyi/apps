@@ -1,0 +1,23 @@
+{
+  "manifestVersion": "1.0.0",
+  "statePacks": [
+    {
+      "stateId": "california",
+      "displayName": "California",
+      "handbookTitle": "California Driver's Handbook",
+      "handbookSourceUrl": "https://www.dmv.ca.gov/portal/handbook/california-driver-handbook/",
+      "version": "1.0.0",
+      "lessonCount": 4,
+      "questionCount": 28
+    },
+    {
+      "stateId": "texas",
+      "displayName": "Texas",
+      "handbookTitle": "Texas Driver Handbook (DL-7)",
+      "handbookSourceUrl": "https://www.dps.texas.gov/internetforms/forms/dl-7.pdf",
+      "version": "1.0.0",
+      "lessonCount": 4,
+      "questionCount": 28
+    }
+  ]
+}

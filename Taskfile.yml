@@ -1,0 +1,12 @@
+version: '3'
+
+includes:
+  steady-gallery:
+    taskfile: ./steady-gallery/Taskfile.yml
+    dir: ./steady-gallery
+  fyi.appy.taponceremote.giladkutiel:
+    taskfile: ./fyi.appy.taponceremote.giladkutiel/Taskfile.yml
+    dir: ./fyi.appy.taponceremote.giladkutiel
+  fyi.appy.permitfairdmvprep.giladkutiel:
+    taskfile: ./fyi.appy.permitfairdmvprep.giladkutiel/Taskfile.yml
+    dir: ./fyi.appy.permitfairdmvprep.giladkutiel

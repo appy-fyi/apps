@@ -1,0 +1,37 @@
+Privacy Policy — PermitFair DMV Prep
+
+Last updated: 2026-08-23
+
+PermitFair DMV Prep ("the app") is a DMV permit study app. This policy describes what data the
+app collects and how it is used.
+
+No account required
+The app does not require you to create an account or sign in. There is no username, password,
+or personal profile of any kind.
+
+Data collected
+The app does not collect, transmit, or share any personal data. All study content (state
+selection, lesson progress, quiz attempts and answers, and purchase entitlement status) is
+stored only in a local database on your device and is never sent to any server operated by the
+app's developer.
+
+Google Play Billing
+If you choose to buy the optional one-time lifetime unlock, the purchase is processed entirely
+by Google Play Billing. The app receives a purchase confirmation from Google Play and stores a
+local record that the lifetime unlock is owned, plus a one-way hash of the purchase token for
+duplicate-purchase checks. The app does not receive or store your payment details — those are
+handled directly by Google Play under Google's own privacy policy.
+
+Content sources
+Lesson and quiz content is drawn from public state DMV handbooks. Loading this content does not
+require or use a network connection; it is bundled with the app itself.
+
+Children's privacy
+The app does not knowingly collect personal information from anyone, including children, because
+it does not collect personal information from any user.
+
+Changes to this policy
+If this policy changes, the updated version will be published at the same URL.
+
+Contact
+Questions about this policy can be sent to the developer via the app's Google Play Store listing.
