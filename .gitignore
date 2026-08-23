@@ -6,6 +6,10 @@ service-account.json
 *.keystore
 keystore.properties
 
+# Claude Code session-local ephemera (per app subfolder)
+**/.claude/RESUME.md
+**/.claude/scheduled_tasks.lock
+
 # Android/Gradle build artifacts (per app subfolder)
 *.iml
 .gradle/
