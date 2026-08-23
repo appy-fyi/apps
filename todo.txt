@@ -1,5 +1,7 @@
 TODO:
+
 DONE:
+- Open the google play console in a browser, make sure to login with play@appy.fyi and manage the release of this app. Use the email list I already have for the closed testing. Tell me shortly what is the status of the release cause I'm not sure I understand.
 - Create a Taskfile.yml with common tasks: build, push to phone, etc...
 - Replace the "Hidden Folders" with "Hidden Photos":
 	- The app creates a hidden folder on the device
