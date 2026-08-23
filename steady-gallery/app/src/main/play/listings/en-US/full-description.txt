@@ -1,0 +1,5 @@
+Steady Gallery is a maintained, privacy-first gallery for Android users who want local folders, predictable storage, and editing that completes.
+
+Browse your photos and videos by folder, find your Camera folder quickly, move unwanted items to a verified recycle bin, and protect hidden folders with PIN or biometric unlock. The basic editor supports crop, 90-degree rotate, simple filters, and reliable export with visible progress.
+
+Your media stays on your device. There is no account, no cloud sync, no AI processing, and no subscription. Unlock Pro once for $2.99.

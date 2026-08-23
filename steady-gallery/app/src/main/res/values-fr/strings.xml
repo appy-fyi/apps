@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Common / shared across screens -->
+    <string name="common_back">Retour</string>
+    <string name="common_more_options">Plus d\'options</string>
+    <string name="common_sort">Trier</string>
+    <string name="common_clear_selection">Effacer la sélection</string>
+    <string name="common_move_to_recycle_bin">Déplacer vers la corbeille</string>
+    <string name="common_share">Partager</string>
+    <string name="common_info">Infos</string>
+    <string name="common_edit">Modifier</string>
+    <string name="common_unlock">Déverrouiller</string>
+    <string name="common_continue">Continuer</string>
+    <string name="common_retry">Réessayer</string>
+    <string name="common_delete">Supprimer</string>
+    <string name="common_cancel">Annuler</string>
+    <string name="common_done">Terminé</string>
+    <string name="recycle_bin_title">Corbeille</string>
+    <string name="hidden_photos_title">Photos masquées</string>
+    <string name="settings_title">Paramètres</string>
+    <string name="purchase_title">Débloquer Pro</string>
+
+    <!-- Folders -->
+    <string name="folders_search_hint">Rechercher des dossiers</string>
+    <string name="folders_error_fallback">Une erreur s\'est produite lors du chargement de vos dossiers.</string>
+    <string name="folders_load_error_fallback">Impossible de charger les dossiers</string>
+    <string name="folders_empty">Aucun dossier de photos ou de vidéos trouvé sur cet appareil pour le moment.</string>
+    <string name="folder_camera_content_description">Dossier de l\'appareil photo</string>
+    <string name="folder_item_count_and_path_format">%1$d éléments • %2$s</string>
+
+    <!-- Media grid -->
+    <string name="media_grid_selected_count_format">%1$d sélectionnés</string>
+    <string name="media_grid_hide_selected">Masquer la sélection</string>
+    <string name="media_grid_folder_fallback_title">Dossier</string>
+    <string name="media_grid_error_fallback">Impossible de charger ce dossier.</string>
+    <string name="media_grid_load_error_fallback">Impossible de charger ce dossier</string>
+    <string name="media_grid_empty">Ce dossier ne contient aucune photo ni vidéo à afficher.</string>
+    <string name="media_grid_recycle_failed_format">Échec de la mise à la corbeille de %1$s</string>
+    <string name="media_grid_hide_failed_format">Échec du masquage de %1$s</string>
+    <string name="media_video_content_description">Vidéo</string>
+    <string name="media_selected_content_description">Sélectionné</string>
+    <string name="sort_mode_date_desc">Plus récents d\'abord</string>
+    <string name="sort_mode_date_asc">Plus anciens d\'abord</string>
+    <string name="sort_mode_name_asc">Nom (A–Z)</string>
+    <string name="sort_mode_name_desc">Nom (Z–A)</string>
+
+    <!-- Editor -->
+    <string name="editor_title">Éditeur</string>
+    <string name="editor_unlock_title">Déverrouiller l\'éditeur</string>
+    <string name="editor_unlock_message">Le recadrage, la rotation, les filtres et l\'exportation font partie de Steady Gallery Pro.</string>
+    <string name="editor_exporting">Enregistrement…</string>
+    <string name="editor_export_percent_format">%1$d%%</string>
+    <string name="editor_export_success_title">Copie enregistrée</string>
+    <string name="editor_export_success_message">Enregistré dans Pictures/Steady Gallery.</string>
+    <string name="editor_save_success_title">Enregistré</string>
+    <string name="editor_save_success_message">Modifications enregistrées dans la photo originale.</string>
+    <string name="editor_export_failed_title">Échec de l\'enregistrement</string>
+    <string name="editor_export_error_fallback">Une erreur s\'est produite lors de l\'enregistrement.</string>
+    <string name="editor_image_being_edited">Image en cours de modification</string>
+    <string name="editor_rotate_clockwise">Rotation horaire</string>
+    <string name="editor_rotate_counterclockwise">Rotation antihoraire</string>
+    <string name="editor_save_button">Enregistrer</string>
+    <string name="editor_save_copy_button">Enregistrer une copie</string>
+    <string name="editor_media_not_found">Fichier introuvable</string>
+    <string name="editor_export_timed_out">Délai d\'enregistrement dépassé</string>
+    <string name="editor_export_failed_fallback">Échec de l\'enregistrement</string>
+    <string name="edit_filter_original">Original</string>
+    <string name="edit_filter_grayscale">Niveaux de gris</string>
+    <string name="edit_filter_sepia">Sépia</string>
+    <string name="edit_filter_high_contrast">Contraste élevé</string>
+
+    <!-- Settings -->
+    <string name="settings_error_fallback">Impossible de charger les paramètres.</string>
+    <string name="settings_load_error_fallback">Impossible de charger les paramètres</string>
+    <string name="settings_section_display">Affichage</string>
+    <string name="settings_sort_order_label">Ordre de tri</string>
+    <string name="settings_grid_column_size_label">Taille de la grille</string>
+    <string name="settings_grid_cell_size_format">%1$ddp</string>
+    <string name="settings_theme_label">Thème</string>
+    <string name="settings_section_privacy">Confidentialité</string>
+    <string name="settings_privacy_local_only">Vos photos et vidéos restent sur cet appareil. Aucun compte ni synchronisation cloud.</string>
+    <string name="settings_privacy_target_sdk">Conçue pour les autorisations multimédias actuelles d\'Android. SDK cible : 35.</string>
+    <string name="settings_section_security">Sécurité et autorisations</string>
+    <string name="settings_manage_hidden_lock">Gérer le verrouillage des photos masquées</string>
+    <string name="settings_hide_all_now">Masquer les photos déverrouillées maintenant</string>
+    <string name="settings_review_media_permission">Vérifier l\'autorisation multimédia</string>
+    <string name="settings_version_format">Version %1$s</string>
+    <string name="settings_language_label">Langue</string>
+    <string name="theme_mode_system">Système</string>
+    <string name="theme_mode_light">Clair</string>
+    <string name="theme_mode_dark">Sombre</string>
+    <string name="language_system">Système</string>
+    <string name="language_english">English</string>
+    <string name="language_spanish">Español</string>
+    <string name="language_french">Français</string>
+
+    <!-- Recycle bin -->
+    <string name="recycle_bin_error_fallback">Impossible de charger la corbeille.</string>
+    <string name="recycle_bin_empty">La corbeille est vide.</string>
+    <string name="recycle_bin_restore_selected">Restaurer la sélection</string>
+    <string name="recycle_bin_delete_permanently">Supprimer définitivement</string>
+    <string name="recycle_bin_delete_dialog_title">Supprimer définitivement ?</string>
+    <string name="recycle_bin_delete_dialog_message">Cette action est irréversible. La copie protégée dans la corbeille sera supprimée.</string>
+
+    <!-- Hidden photos -->
+    <string name="hidden_photos_session_locked">Session verrouillée.</string>
+    <string name="hidden_photos_error_fallback">Impossible de charger les photos masquées.</string>
+    <string name="hidden_photos_empty">Aucune photo n\'est masquée.</string>
+    <string name="hidden_photos_unlocked_banner">Déverrouillé</string>
+    <string name="hidden_photos_unhide">Afficher la photo</string>
+
+    <!-- Hidden unlock -->
+    <string name="hidden_unlock_setup_prompt">Configurez un code PIN pour protéger les photos masquées.</string>
+    <string name="hidden_unlock_new_pin_label">Nouveau code PIN</string>
+    <string name="hidden_unlock_confirm_pin_label">Confirmer le code PIN</string>
+    <string name="hidden_unlock_enable_biometric">Activer le déverrouillage biométrique</string>
+    <string name="hidden_unlock_create_pin_button">Créer un code PIN</string>
+    <string name="hidden_unlock_enter_pin_label">Saisir le code PIN</string>
+    <string name="hidden_unlock_incorrect_pin_fallback">Code PIN incorrect</string>
+    <string name="hidden_unlock_use_biometric">Utiliser la biométrie</string>
+    <string name="hidden_unlock_unlocked">Déverrouillé.</string>
+    <string name="hidden_unlock_prompt_title">Déverrouiller les photos masquées</string>
+    <string name="hidden_unlock_use_pin_instead">Utiliser un code PIN à la place</string>
+    <string name="hidden_unlock_pin_length_error">Le code PIN doit comporter de 4 à 12 chiffres</string>
+    <string name="hidden_unlock_pin_mismatch_error">Les codes PIN ne correspondent pas</string>
+
+    <!-- Permission onboarding -->
+    <string name="permission_tagline">Une galerie maintenue et respectueuse de la vie privée, conçue pour les autorisations multimédias actuelles d\'Android.</string>
+    <string name="permission_privacy_note">Vos photos et vidéos restent sur cet appareil. Aucun compte, synchronisation cloud ou envoi.</string>
+    <string name="permission_checking">Vérification de l\'état de l\'autorisation…</string>
+    <string name="permission_denied_message">L\'accès aux photos et vidéos est requis pour parcourir votre galerie.</string>
+    <string name="permission_grant_button">Autoriser l\'accès aux photos et vidéos</string>
+    <string name="permission_permanently_denied_message">L\'accès aux photos et vidéos a été refusé. Activez-le depuis les paramètres système pour continuer.</string>
+    <string name="permission_open_settings_button">Ouvrir les paramètres</string>
+    <string name="permission_granted_message">Autorisation accordée.</string>
+
+    <!-- Purchase -->
+    <string name="purchase_description">Déverrouillez l\'éditeur et les photos masquées pour toujours avec un achat unique. Sans abonnement, sans compte.</string>
+    <string name="purchase_one_time">Achat unique</string>
+    <string name="purchase_buy_button">Acheter le déblocage</string>
+    <string name="purchase_restore_button">Restaurer l\'achat</string>
+    <string name="purchase_thank_you">Version Pro débloquée. Merci !</string>
+    <string name="purchase_billing_unavailable">Google Play Billing n\'est pas disponible sur cet appareil pour le moment.</string>
+    <string name="purchase_debug_tools_label">Outils de débogage (absents des versions de production)</string>
+    <string name="purchase_debug_simulate">DÉBOGAGE : simuler l\'achat</string>
+    <string name="purchase_debug_revoke">DÉBOGAGE : révoquer l\'achat</string>
+    <string name="purchase_default_price">2,99 $</string>
+    <string name="purchase_product_not_loaded">Détails du produit pas encore chargés</string>
+
+    <!-- Viewer -->
+    <string name="viewer_error_fallback">Impossible d\'afficher cet élément.</string>
+    <string name="viewer_media_not_found">Fichier introuvable</string>
+    <string name="viewer_recycle_failed_format">Échec de la mise à la corbeille de %1$s</string>
+    <string name="viewer_moved_to_recycle_bin">Déplacé vers la corbeille.</string>
+    <string name="viewer_back_to_folder">Retour au dossier</string>
+    <string name="viewer_pause">Pause</string>
+    <string name="viewer_play">Lecture</string>
+    <string name="viewer_info_date_format">Date : %1$s</string>
+    <string name="viewer_info_dimensions_format">Dimensions : %1$d x %2$d</string>
+    <string name="viewer_info_type_format">Type : %1$s</string>
+    <string name="viewer_info_path_format">Chemin : %1$s</string>
+    <string name="viewer_info_date_unknown">Inconnue</string>
+</resources>

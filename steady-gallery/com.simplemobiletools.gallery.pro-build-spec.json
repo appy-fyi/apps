@@ -1,0 +1,825 @@
+{
+  "ai": {
+    "calls": [],
+    "needed": false
+  },
+  "legal": {
+    "data_collected": [],
+    "privacy_policy_url": "https://appy.fyi/app/com.appyfyi.steadygridgallery/privacy",
+    "regulated_category": "none",
+    "privacy_policy_accurate": true
+  },
+  "backend": "none",
+  "min_sdk": 33,
+  "pricing": {
+    "model": "one_time",
+    "price_usd": 2.99,
+    "billing_lib": "play_billing_direct"
+  },
+  "screens": [
+    {
+      "name": "PermissionOnboarding",
+      "route": "permissions",
+      "states": [
+        "checking_permission",
+        "needs_permission",
+        "permission_denied",
+        "permission_permanently_denied",
+        "ready"
+      ],
+      "purpose": "Explain the privacy-first local gallery model and request Android media permissions before showing folders.",
+      "entry_points": [
+        "app launch when READ_MEDIA_IMAGES or READ_MEDIA_VIDEO is not granted",
+        "Settings screen tap Review media permission"
+      ],
+      "key_ui_elements": [
+        "App title and maintained-current-Android message",
+        "Short explanation that media stays on device",
+        "Grant Photos and Videos button",
+        "Open Settings button shown after permanent denial",
+        "Continue button shown only after permissions are granted"
+      ]
+    },
+    {
+      "name": "Folders",
+      "route": "folders",
+      "states": [
+        "loading",
+        "empty",
+        "error",
+        "populated"
+      ],
+      "purpose": "Show all visible local media folders with stable folder identity and a clearly findable Camera folder.",
+      "entry_points": [
+        "app launch after permissions are granted",
+        "back navigation from MediaGrid",
+        "bottom or overflow navigation from Settings, RecycleBin, HiddenFolders, or Purchase"
+      ],
+      "key_ui_elements": [
+        "Top app bar with title Steady Gallery",
+        "Search field for folder name",
+        "Camera folder quick tile when present",
+        "Folder grid with cover thumbnail, folder name, media count, and relative path",
+        "Overflow menu entries for Recycle Bin, Hidden Folders, Settings, and Unlock Pro"
+      ]
+    },
+    {
+      "name": "MediaGrid",
+      "route": "folder/{folderKey}",
+      "states": [
+        "loading",
+        "empty",
+        "error",
+        "populated",
+        "selection_active"
+      ],
+      "purpose": "Display the images and videos inside one folder, excluding recycled items and locked hidden folders.",
+      "entry_points": [
+        "tap a folder tile on Folders",
+        "tap a visible hidden folder after successful unlock on HiddenFolders",
+        "restore completes on RecycleBin and user taps View folder"
+      ],
+      "key_ui_elements": [
+        "Top app bar with folder name and relative path",
+        "Sort button",
+        "Selectable adaptive thumbnail grid",
+        "Empty-folder explanation",
+        "Selection toolbar with delete-to-recycle action and hide-folder action"
+      ]
+    },
+    {
+      "name": "Viewer",
+      "route": "viewer/{mediaId}",
+      "states": [
+        "loading",
+        "displaying_image",
+        "displaying_video",
+        "error",
+        "deleted_to_recycle"
+      ],
+      "purpose": "Show one image or video from a folder with actions for edit, recycle, share through Android sharesheet, and metadata.",
+      "entry_points": [
+        "tap a media thumbnail on MediaGrid",
+        "tap a restored item from RecycleBin"
+      ],
+      "key_ui_elements": [
+        "Full-screen media display",
+        "Previous and next navigation gestures",
+        "Edit button for images",
+        "Move to Recycle Bin button",
+        "Info sheet with display name, date, dimensions, mime type, and relative path"
+      ]
+    },
+    {
+      "name": "Editor",
+      "route": "editor/{mediaId}",
+      "states": [
+        "loading",
+        "purchase_required",
+        "editing",
+        "exporting",
+        "export_success",
+        "export_error"
+      ],
+      "purpose": "Provide the paid basic editor: crop, rotate, simple filters, and reliable export with visible progress.",
+      "entry_points": [
+        "tap Edit on Viewer for an image",
+        "tap Retry after export_error"
+      ],
+      "key_ui_elements": [
+        "Image preview canvas",
+        "Crop rectangle handles",
+        "Rotate 90 degrees button",
+        "Filter chips for Original, Grayscale, Sepia, and High Contrast",
+        "Export button",
+        "Progress indicator with percent text",
+        "Error banner with retry"
+      ]
+    },
+    {
+      "name": "RecycleBin",
+      "route": "recycle_bin",
+      "states": [
+        "loading",
+        "empty",
+        "error",
+        "populated",
+        "restoring",
+        "permanently_deleting"
+      ],
+      "purpose": "List locally protected recycled media and allow restore or permanent delete without silent data loss.",
+      "entry_points": [
+        "Folders overflow menu tap Recycle Bin",
+        "Settings tap Recycle Bin"
+      ],
+      "key_ui_elements": [
+        "Top app bar with Recycle Bin title",
+        "List of recycled items with thumbnail, original folder path, and deletion date",
+        "Restore selected button",
+        "Delete permanently button with confirmation dialog",
+        "Empty recycle bin message"
+      ]
+    },
+    {
+      "name": "HiddenUnlock",
+      "route": "hidden_unlock",
+      "states": [
+        "no_lock_configured",
+        "locked",
+        "authenticating",
+        "auth_error",
+        "unlocked"
+      ],
+      "purpose": "Require PIN or biometric authentication before hidden folders are listed.",
+      "entry_points": [
+        "Folders overflow menu tap Hidden Folders",
+        "MediaGrid hide-folder action when no PIN exists"
+      ],
+      "key_ui_elements": [
+        "PIN setup fields when no PIN exists",
+        "PIN entry keypad",
+        "Use biometric button when device biometric is available and PIN is configured",
+        "Unlock button",
+        "Error text for wrong PIN or biometric failure"
+      ]
+    },
+    {
+      "name": "HiddenFolders",
+      "route": "hidden_folders",
+      "states": [
+        "loading",
+        "locked",
+        "empty",
+        "error",
+        "populated"
+      ],
+      "purpose": "Show folders hidden from the normal gallery after a successful lock-screen unlock.",
+      "entry_points": [
+        "successful unlock on HiddenUnlock",
+        "back navigation from a hidden MediaGrid"
+      ],
+      "key_ui_elements": [
+        "Unlocked status banner",
+        "Hidden folder grid",
+        "Unhide folder action",
+        "Open folder action",
+        "Empty hidden folders message"
+      ]
+    },
+    {
+      "name": "Settings",
+      "route": "settings",
+      "states": [
+        "loading",
+        "populated",
+        "error"
+      ],
+      "purpose": "Persist user options and state plainly that the app is local-only and built for current Android versions.",
+      "entry_points": [
+        "Folders overflow menu tap Settings",
+        "Purchase screen tap Back to Settings"
+      ],
+      "key_ui_elements": [
+        "Sort order selector",
+        "Grid column size selector",
+        "Theme selector: System, Light, Dark",
+        "Privacy note: media stays on this device",
+        "Current Android support note showing target SDK 35",
+        "Manage hidden lock button",
+        "Review media permission button",
+        "App version row"
+      ]
+    },
+    {
+      "name": "Purchase",
+      "route": "purchase",
+      "states": [
+        "loading_products",
+        "not_purchased",
+        "purchasing",
+        "purchased",
+        "billing_unavailable",
+        "error"
+      ],
+      "purpose": "Sell and restore the one-time $2.99 Pro unlock for editor export and hidden folders.",
+      "entry_points": [
+        "Folders overflow menu tap Unlock Pro",
+        "Editor purchase_required state tap Unlock",
+        "HiddenUnlock purchase_required flow tap Unlock"
+      ],
+      "key_ui_elements": [
+        "One-time unlock explanation",
+        "$2.99 price text",
+        "Buy unlock button",
+        "Restore purchase button",
+        "Purchased status message",
+        "Billing error message with retry"
+      ]
+    }
+  ],
+  "features": [
+    {
+      "name": "Current Android media permission flow",
+      "screens": [
+        "PermissionOnboarding",
+        "Folders",
+        "Settings"
+      ],
+      "est_hours": 10,
+      "description": "Requests Android 13+ image and video permissions and routes users only after access is granted.",
+      "answers_complaint": "Abandonment / no updates",
+      "acceptance_criteria": [
+        "On a fresh Android 13+ install, Folders is not reachable until READ_MEDIA_IMAGES and READ_MEDIA_VIDEO are granted.",
+        "After granting both permissions, relaunching the app opens Folders without showing PermissionOnboarding.",
+        "After permanent denial, PermissionOnboarding shows Open Settings and does not repeatedly launch the permission dialog.",
+        "The app manifest contains READ_MEDIA_IMAGES and READ_MEDIA_VIDEO and does not contain MANAGE_EXTERNAL_STORAGE."
+      ],
+      "implementation_notes": "Set minSdk 33 and targetSdk 35. On app start, check ContextCompat.checkSelfPermission for READ_MEDIA_IMAGES and READ_MEDIA_VIDEO. If either is missing, show PermissionOnboarding and launch ActivityResultContracts.RequestMultiplePermissions with both permission strings. If both are granted, navigate to folders with popUpTo('permissions') inclusive. If denied once, show a retry button; if ActivityCompat.shouldShowRequestPermissionRationale returns false after denial, show an Open Settings button using Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse('package:' + packageName)). Do not request MANAGE_EXTERNAL_STORAGE."
+    },
+    {
+      "name": "Stable folder browsing and Camera discovery",
+      "screens": [
+        "Folders",
+        "MediaGrid",
+        "Viewer"
+      ],
+      "est_hours": 40,
+      "description": "Builds a local folder grid from MediaStore with deterministic folder keys so folders do not randomly disappear or reset.",
+      "answers_complaint": "Data-loss anxiety",
+      "acceptance_criteria": [
+        "A media item in DCIM/Camera produces a visible Camera folder tile when permissions are granted.",
+        "If MediaStore query throws an exception, the screen shows an error state and does not delete existing FolderState rows.",
+        "Opening a folder shows only media whose computed folderKey matches the selected route argument.",
+        "Hidden folders do not appear in Folders until accessed through HiddenUnlock and HiddenFolders."
+      ],
+      "implementation_notes": "Query MediaStore.Images.Media.EXTERNAL_CONTENT_URI and MediaStore.Video.Media.EXTERNAL_CONTENT_URI on Dispatchers.IO using projection [_ID, VOLUME_NAME, BUCKET_ID, BUCKET_DISPLAY_NAME, RELATIVE_PATH, DISPLAY_NAME, MIME_TYPE, DATE_TAKEN, DATE_ADDED, WIDTH, HEIGHT, SIZE]. For each row, compute folderKey as volumeName + ':' + bucketId + ':' + relativePath.trim('/').lowercase(Locale.US). Merge image and video rows by folderKey. Persist or update FolderState for each seen folder without deleting unseen FolderState rows during a single failed query. Exclude FolderState.isHidden rows from the normal Folders screen. Sort folders with any relativePath containing 'DCIM/Camera' first, then by displayName ascending. MediaGrid queries items by the selected folderKey components and excludes any originalMediaStoreId whose RecycleItem.deleteState is RECYCLED or COPIED_PENDING_SYSTEM_DELETE."
+    },
+    {
+      "name": "Bulletproof recycle bin",
+      "screens": [
+        "Viewer",
+        "MediaGrid",
+        "RecycleBin"
+      ],
+      "est_hours": 25,
+      "description": "Moves media to an app-managed recycle bin through a copy-verify-delete flow so deletion never silently loses the only copy.",
+      "answers_complaint": "Make the recycle bin and folder model bulletproof.",
+      "acceptance_criteria": [
+        "The original MediaStore item is not requested for deletion until the app-private copy hash has been verified.",
+        "If the user cancels the Android delete confirmation, the RecycleItem remains visible with state COPIED_PENDING_SYSTEM_DELETE.",
+        "Restoring a recycled JPEG creates a visible MediaStore item with the original display name and relative path.",
+        "Permanent delete removes the app-private file and the item no longer appears in RecycleBin."
+      ],
+      "implementation_notes": "When the user taps Move to Recycle Bin, open the source content URI with ContentResolver.openInputStream and copy bytes to getExternalFilesDir(null)/RecycleBin/{UUID}_{displayName}. Compute SHA-256 while copying. Re-open the copied file, compute SHA-256 again, and compare it with the first hash and expected byte count. Insert RecycleItem with deleteState COPIED_PENDING_SYSTEM_DELETE inside a Room transaction only after verification passes. Then call MediaStore.createDeleteRequest(contentResolver, listOf(sourceUri)) and launch the returned IntentSender. If the system delete result is OK, update deleteState to RECYCLED; if the user cancels, keep deleteState COPIED_PENDING_SYSTEM_DELETE and show a message that the original remains in the library and the protected copy is in Recycle Bin. Restore inserts a new MediaStore row with DISPLAY_NAME, MIME_TYPE, RELATIVE_PATH, IS_PENDING=1, copies bytes from trashedCopyPath, sets IS_PENDING=0, verifies restored size is greater than 0, then marks RESTORED. Permanent delete removes the app-private file first and then marks PERMANENTLY_DELETED."
+    },
+    {
+      "name": "Reliable crop rotate filter export",
+      "screens": [
+        "Viewer",
+        "Editor",
+        "Purchase"
+      ],
+      "est_hours": 60,
+      "description": "Provides a basic image editor whose export has an explicit progress state and saves through MediaStore without hanging at 0%.",
+      "answers_complaint": "Advanced Editor broken",
+      "acceptance_criteria": [
+        "After tapping Export, the visible progress text changes from 0 to a nonzero value within 1 second on a 3000x2000 JPEG test image.",
+        "A crop plus 90-degree rotation exports a new image visible in MediaStore under Pictures/Steady Gallery.",
+        "If export throws an exception, the pending MediaStore row is deleted and Editor shows export_error instead of spinning forever.",
+        "Original, Grayscale, Sepia, and High Contrast filter choices produce four visually different exported images for a color test bitmap."
+      ],
+      "implementation_notes": "Gate Editor behind PurchaseEntitlement.isPurchased; if false show purchase_required. For purchased users, decode the source URI on Dispatchers.IO using ImageDecoder.createSource(contentResolver, uri) and ImageDecoder.decodeBitmap with allocator SOFTWARE and mutable copy. Respect EXIF orientation by reading ExifInterface from contentResolver.openInputStream and applying the corresponding Matrix before user edits. Store edit state as cropRectPx, rotationDegrees limited to 0/90/180/270, and filter enum ORIGINAL/GRAYSCALE/SEPIA/HIGH_CONTRAST. On Export, run a single coroutine with state updates: 5 percent before decode, 20 after decode/orientation, 40 after crop with Bitmap.createBitmap, 60 after rotation Matrix, 75 after filter pixel transform, 90 after writing to MediaStore with IS_PENDING=1, and 100 only after IS_PENDING is set to 0. For JPEG output use Bitmap.compress(Bitmap.CompressFormat.JPEG, 95, outputStream); for PNG sources use PNG. Wrap the export in withTimeout(60000). On any exception or timeout, delete the pending MediaStore row if it was created and show export_error with the exception message. Never leave the UI at 0 percent after Export is tapped."
+    },
+    {
+      "name": "Hidden folders with PIN and biometric unlock",
+      "screens": [
+        "MediaGrid",
+        "HiddenUnlock",
+        "HiddenFolders",
+        "Purchase"
+      ],
+      "est_hours": 40,
+      "description": "Lets users hide folders from the normal gallery and reveal them only after PIN or biometric authentication.",
+      "answers_complaint": "Data-loss anxiety",
+      "acceptance_criteria": [
+        "Hiding a folder changes only FolderState.isHidden and does not change the source MediaStore URI, display name, relative path, or size.",
+        "A hidden folder disappears from Folders immediately after hiding.",
+        "Entering the correct PIN navigates to HiddenFolders and shows hidden folder rows.",
+        "Entering an incorrect PIN keeps the user on HiddenUnlock and shows auth_error.",
+        "If biometric authentication succeeds, HiddenFolders opens without PIN entry."
+      ],
+      "implementation_notes": "Do not move, rename, encrypt, or delete media files when hiding a folder; set FolderState.isHidden=true in Room so hidden items cannot vanish due to file operations. Require Pro entitlement before allowing new hidden folders. On first hide action or Hidden Folders entry, if LockCredential is absent, show no_lock_configured and require a 4-to-12 digit PIN entered twice. Generate 16-byte salt with SecureRandom and store PBKDF2WithHmacSHA256(PIN, salt, 120000 iterations, 256-bit) in EncryptedSharedPreferences created with MasterKey AES256_GCM. To unlock, hash the entered PIN and compare using MessageDigest.isEqual. If biometricEnabled and BiometricManager.canAuthenticate(BIOMETRIC_STRONG) returns success, show BiometricPrompt with title 'Unlock hidden folders'; biometric success sets an in-memory unlocked flag until app process death or 5 minutes of background time. HiddenFolders reads FolderState rows where isHidden=true only while unlocked."
+    },
+    {
+      "name": "Persistent options that do not reset",
+      "screens": [
+        "Folders",
+        "MediaGrid",
+        "Settings"
+      ],
+      "est_hours": 10,
+      "description": "Stores sort, grid size, and theme choices locally so user options survive process death and app relaunch.",
+      "answers_complaint": "many of the options stop working or get reset for no reason",
+      "acceptance_criteria": [
+        "Changing theme to Dark, killing the app process, and relaunching shows the dark theme.",
+        "Changing grid cell size in Settings changes MediaGrid thumbnail size and persists after relaunch.",
+        "Changing a folder sort mode updates that FolderState row and does not alter other folders' sortMode.",
+        "Deleting no media and changing settings never creates or removes RecycleItem rows."
+      ],
+      "implementation_notes": "Implement AppPreferenceDao with upsertPreference(key, value, updatedAt) using Room OnConflictStrategy.REPLACE. Supported keys are default_sort, grid_cell_dp, and theme_mode. Settings writes each change immediately on Dispatchers.IO and exposes a StateFlow loaded from Room. Folder-specific sort changes update FolderState.sortMode for that folder. On startup, read AppPreference before first Folders query; if no row exists use DATE_DESC, 128dp grid cells, and System theme. Never keep the only copy of a setting in Compose remember state."
+    },
+    {
+      "name": "One-time Pro unlock billing",
+      "screens": [
+        "Purchase",
+        "Editor",
+        "HiddenUnlock"
+      ],
+      "est_hours": 25,
+      "description": "Implements the $2.99 one-time unlock assumed by the report, without subscription or server-side accounts.",
+      "answers_complaint": "baseline parity",
+      "acceptance_criteria": [
+        "Purchase screen queries ProductType.INAPP and never queries ProductType.SUBS.",
+        "After a test purchase returns PURCHASED and acknowledgement succeeds, Editor no longer shows purchase_required.",
+        "Restore purchase updates local entitlement when Play Billing returns an existing purchased product.",
+        "If BillingClient reports billing unavailable, Purchase shows billing_unavailable and editor/hidden features remain locked."
+      ],
+      "implementation_notes": "Use BillingClient from com.android.billingclient:billing-ktx. Product id is steady_gallery_pro_unlock and ProductType.INAPP. On Purchase screen startConnection, queryProductDetailsAsync for that product, and show the returned formatted price; fallback display text is '$2.99' only while product details are loading or unavailable. Launch BillingFlowParams with the selected ProductDetails. In PurchasesUpdatedListener, for each purchase with purchaseState PURCHASED, call acknowledgePurchase if not acknowledged. After acknowledge succeeds, write PurchaseEntitlement(productId='steady_gallery_pro_unlock', isPurchased=true, purchaseTokenHash=SHA-256(token), updatedAt=now) to EncryptedSharedPreferences. On every app start and Restore purchase tap, call queryPurchasesAsync(INAPP) and update entitlement from Play's current result. Do not implement subscriptions, accounts, credits, or server receipt validation in v1."
+    },
+    {
+      "name": "Maintained privacy-first messaging",
+      "screens": [
+        "PermissionOnboarding",
+        "Settings"
+      ],
+      "est_hours": 30,
+      "description": "Makes the abandonment counter-position visible in app and listing by stating current Android support and local-only media handling.",
+      "answers_complaint": "Support current Android versions on day one and say so loudly.",
+      "acceptance_criteria": [
+        "Settings displays target SDK 35 and the installed app version.",
+        "PermissionOnboarding states that photos and videos stay on device before requesting permissions.",
+        "The app manifest does not contain INTERNET.",
+        "No analytics, crash reporting, or remote config dependency is present in the Gradle dependency graph."
+      ],
+      "implementation_notes": "Add a Settings card with static text: 'Built for current Android media permissions. Target Android SDK: 35. Your photos and videos stay on this device; there is no account or cloud sync.' Show the same privacy-first positioning in PermissionOnboarding before the permission button. Populate app version from BuildConfig.VERSION_NAME. This feature is informational only and must not add INTERNET permission or any analytics SDK."
+    }
+  ],
+  "non_goals": [
+    "No cloud backup, cloud sync, accounts, or server-side media storage in v1.",
+    "No AI duplicate detection, blur detection, or smart-hide suggestions in v1.",
+    "No full file-manager replacement or MANAGE_EXTERNAL_STORAGE broad storage access in v1.",
+    "No Android 12 or lower support in v1; v1 targets current Android scoped-media permissions starting at Android 13.",
+    "No advanced editor beyond crop, 90-degree rotate, simple filters, and reliable export in v1."
+  ],
+  "test_plan": [
+    {
+      "kind": "instrumented",
+      "steps": [
+        "On an API 35 emulator, grant READ_MEDIA_IMAGES and READ_MEDIA_VIDEO with UiAutomation.",
+        "Insert a 3000x2000 solid-color JPEG into MediaStore under Pictures/EditorTest using ContentResolver with IS_PENDING=1, write bitmap bytes, then set IS_PENDING=0.",
+        "Write PurchaseEntitlement isPurchased=true into encrypted local storage for product steady_gallery_pro_unlock.",
+        "Launch the app and navigate to folders, then open Pictures/EditorTest, tap the JPEG, and tap Edit.",
+        "Set a crop rectangle covering the center half of the image, tap Rotate 90, choose Sepia, and tap Export.",
+        "Observe the Editor progress text every 250 milliseconds for up to 2 seconds, then wait up to 15 seconds for completion."
+      ],
+      "expected": "Progress becomes greater than 0 within 1 second, reaches export_success within 15 seconds, and a new image appears in MediaStore under Pictures/Steady Gallery with nonzero size.",
+      "scenario": "Advanced Editor broken: editing and exporting hangs at 0% and never completes"
+    },
+    {
+      "kind": "instrumented",
+      "steps": [
+        "Grant media permissions on an API 35 emulator.",
+        "Insert one JPEG into DCIM/Camera and one JPEG into Pictures/Trips through MediaStore.",
+        "Launch the app and wait for Folders populated state.",
+        "Open Pictures/Trips, select the folder hide action, configure PIN 1234 if prompted, and confirm hiding.",
+        "Query MediaStore directly for the Pictures/Trips JPEG by DISPLAY_NAME and RELATIVE_PATH.",
+        "Return to Folders, open Hidden Folders, enter PIN 1234, and wait for HiddenFolders populated state."
+      ],
+      "expected": "The Pictures/Trips JPEG remains present in MediaStore with the same RELATIVE_PATH, it is absent from normal Folders, and the Trips folder is visible in HiddenFolders after unlock.",
+      "scenario": "Data-loss anxiety: folders and hidden files intermittently vanish"
+    },
+    {
+      "kind": "instrumented",
+      "steps": [
+        "Grant media permissions on an API 35 emulator.",
+        "Insert one JPEG into DCIM/Camera and one JPEG into Pictures/Other through MediaStore.",
+        "Launch the app and wait for Folders populated state.",
+        "Read the first folder tile text and the list of folder tile labels."
+      ],
+      "expected": "A Camera folder tile is present and appears before the Pictures/Other folder tile.",
+      "scenario": "Images keep on disappearing, you cannot find the camera folder easily"
+    },
+    {
+      "kind": "instrumented",
+      "steps": [
+        "Grant media permissions on an API 35 emulator.",
+        "Insert a JPEG named recycle_test.jpg into Pictures/RecycleSource through MediaStore.",
+        "Launch the app, open Pictures/RecycleSource, open recycle_test.jpg in Viewer, and tap Move to Recycle Bin.",
+        "Accept the Android system delete confirmation.",
+        "Open RecycleBin and select recycle_test.jpg, then tap Restore.",
+        "Query MediaStore for DISPLAY_NAME recycle_test.jpg and RELATIVE_PATH Pictures/RecycleSource/."
+      ],
+      "expected": "RecycleBin shows the item after deletion, restore completes without error, and MediaStore contains recycle_test.jpg at the original relative path with size greater than 0.",
+      "scenario": "Make the recycle bin and folder model bulletproof"
+    },
+    {
+      "kind": "unit",
+      "steps": [
+        "Create a temporary source file with bytes [0,1,2,3,4,5,6,7,8,9].",
+        "Run the recycle copy function to copy it to a temporary RecycleBin directory while computing SHA-256.",
+        "Run the verification function on the copied file.",
+        "Repeat with a deliberately truncated copied file containing only [0,1,2]."
+      ],
+      "expected": "The full copy verification returns matching hash and size 10; the truncated copy verification returns failure and the delete-request step is not invoked.",
+      "scenario": "Make the recycle bin and folder model bulletproof"
+    },
+    {
+      "kind": "unit",
+      "steps": [
+        "Create an in-memory Room database.",
+        "Insert AppPreference key theme_mode value DARK and key grid_cell_dp value 160.",
+        "Close and recreate the repository using the same in-memory database instance in the test scope.",
+        "Load settings through the repository StateFlow."
+      ],
+      "expected": "Loaded settings contain theme_mode DARK and grid_cell_dp 160 rather than default values.",
+      "scenario": "many of the options stop working or get reset for no reason"
+    },
+    {
+      "kind": "manual",
+      "steps": [
+        "Install the release build on a physical Android 15 device or API 35 emulator.",
+        "Launch the app from a fresh install.",
+        "Grant Photos and Videos permissions when prompted.",
+        "Browse folders, open an image, return to folders, open Settings.",
+        "Inspect Settings current Android support card."
+      ],
+      "expected": "The app runs without scoped-storage permission errors, media folders load, and Settings displays Target Android SDK: 35.",
+      "scenario": "Abandonment / no updates: broken on newer Android versions"
+    },
+    {
+      "kind": "manual",
+      "steps": [
+        "Install an internal-test build from Play Console with product steady_gallery_pro_unlock configured as a one-time in-app product priced at $2.99.",
+        "Launch the app, open Purchase, and tap Buy unlock using a Play license tester account.",
+        "Complete the test purchase.",
+        "Force stop and relaunch the app.",
+        "Open an image and tap Edit."
+      ],
+      "expected": "Purchase completes as a one-time in-app product, Restore is not required after relaunch, and Editor opens in editing state rather than purchase_required.",
+      "scenario": "baseline parity"
+    },
+    {
+      "kind": "manual",
+      "steps": [
+        "Install the release build.",
+        "Launch the app before granting permissions.",
+        "Read the PermissionOnboarding text.",
+        "Grant permissions, open Settings, and read the privacy/current-Android card.",
+        "Open the generated AndroidManifest.xml from the release build output or use aapt dump permissions on the APK extracted from the AAB."
+      ],
+      "expected": "PermissionOnboarding and Settings both state that media stays on device and current Android media permissions are supported; the manifest does not request INTERNET or MANAGE_EXTERNAL_STORAGE.",
+      "scenario": "Support current Android versions on day one and say so loudly."
+    }
+  ],
+  "api_access": {
+    "base_url": "https://appy.fyi",
+    "endpoints": {
+      "ownership": "https://appy.fyi/api/ownership",
+      "app_info": "https://appy.fyi/api/app_info/com.simplemobiletools.gallery.pro",
+      "reviews": "https://appy.fyi/api/reviews/com.simplemobiletools.gallery.pro",
+      "app_photos": "https://appy.fyi/api/app_photos/com.simplemobiletools.gallery.pro",
+      "privacy_policy": "https://appy.fyi/api/privacy_policy/:user_play_id",
+      "app_page": "https://appy.fyi/api/app_page/:user_play_id",
+      "app_page_icon": "https://appy.fyi/api/app_page/:user_play_id/icon",
+      "app_page_screenshot": "https://appy.fyi/api/app_page/:user_play_id/screenshot"
+    },
+    "instructions": "Send `Authorization: Bearer <key>` using the key in the APPY_API_KEY environment variable if it's set. Get a key free, self-serve \u2014 sign in at https://appy.fyi/profile with Google and generate one there (one active key per account, no approval or waiting). Call `ownership` FIRST: POST JSON {\"origin_play_id\": \"com.simplemobiletools.gallery.pro\", \"user_play_id\": \"<package_id above>\"} \u2014 this permanently claims that pair for this account (max 2 claims per account, user_play_id can never change once claimed) and every other endpoint below 403s until it succeeds. Every `:user_play_id` in the endpoint URLs above is a literal placeholder \u2014 replace it with that same package_id, never with com.simplemobiletools.gallery.pro (the incumbent's own id, only valid for the three GET endpoints). app_info/reviews/app_photos are GET requests, no body, optional enrichment scoped to com.simplemobiletools.gallery.pro (the incumbent) \u2014 if APPY_API_KEY isn't set, ownership hasn't been claimed, or a call 401s/403s, skip them and proceed with the spec as-is rather than treating it as a blocker. privacy_policy is a POST with the drafted privacy policy as the plain-text request body; on success its JSON response's `url` field is a real, hosted privacy policy URL, replacing legal.privacy_policy_url below (which is only ever a suggestion, never actually hosted). app_page is a POST with JSON body {\"name\", \"description\"} that publishes a Google-Play-style page for the app you build from this spec; app_page_icon and app_page_screenshot (append /1 through /5 to that URL for the slot) are POSTs with the raw image bytes as the body and a Content-Type of image/png, image/jpeg, or image/webp \u2014 call app_page first, since the icon/screenshot uploads require the page to already exist. All of privacy_policy/app_page/app_page_icon/app_page_screenshot need a real account's key, not just any key, and act on the user_play_id you claimed above, not com.simplemobiletools.gallery.pro \u2014 like the GET endpoints, treat all four (plus ownership itself) as enrichment: skip them if APPY_API_KEY isn't set, never a build blocker."
+  },
+  "data_model": [
+    {
+      "entity": "FolderState",
+      "fields": [
+        {
+          "name": "folderKey",
+          "type": "String",
+          "notes": "primary key; value is volumeName + ':' + bucketId + ':' + normalized relativePath"
+        },
+        {
+          "name": "displayName",
+          "type": "String",
+          "notes": "latest folder name from MediaStore BUCKET_DISPLAY_NAME or final path segment"
+        },
+        {
+          "name": "relativePath",
+          "type": "String",
+          "notes": "latest MediaStore RELATIVE_PATH for display and restore hints"
+        },
+        {
+          "name": "isHidden",
+          "type": "Boolean",
+          "notes": "true means hidden from normal Folders and MediaGrid; source media files are not moved"
+        },
+        {
+          "name": "sortMode",
+          "type": "String",
+          "notes": "one of DATE_DESC, DATE_ASC, NAME_ASC, NAME_DESC"
+        },
+        {
+          "name": "updatedAt",
+          "type": "Instant",
+          "notes": "last time this folder state row was inserted or changed"
+        }
+      ],
+      "storage": "room_local"
+    },
+    {
+      "entity": "RecycleItem",
+      "fields": [
+        {
+          "name": "id",
+          "type": "Long",
+          "notes": "primary key, autogenerate"
+        },
+        {
+          "name": "originalMediaStoreId",
+          "type": "Long",
+          "notes": "MediaStore _ID at time of recycle; may no longer exist after delete"
+        },
+        {
+          "name": "originalUri",
+          "type": "String",
+          "notes": "content URI string used before recycle"
+        },
+        {
+          "name": "displayName",
+          "type": "String",
+          "notes": "original DISPLAY_NAME"
+        },
+        {
+          "name": "mimeType",
+          "type": "String",
+          "notes": "original MIME_TYPE"
+        },
+        {
+          "name": "relativePath",
+          "type": "String",
+          "notes": "original RELATIVE_PATH used as restore destination"
+        },
+        {
+          "name": "dateTakenMillis",
+          "type": "Long",
+          "notes": "original DATE_TAKEN when available; 0 if unavailable"
+        },
+        {
+          "name": "trashedCopyPath",
+          "type": "String",
+          "notes": "absolute path inside app-specific external files recycle directory"
+        },
+        {
+          "name": "sha256",
+          "type": "String",
+          "notes": "hash of app-private recycled copy, verified before deleting original and before restoring"
+        },
+        {
+          "name": "sizeBytes",
+          "type": "Long",
+          "notes": "byte count of recycled copy"
+        },
+        {
+          "name": "deletedAt",
+          "type": "Instant",
+          "notes": "time user moved item to recycle bin"
+        },
+        {
+          "name": "deleteState",
+          "type": "String",
+          "notes": "one of COPIED_PENDING_SYSTEM_DELETE, RECYCLED, RESTORED, PERMANENTLY_DELETED, ERROR"
+        }
+      ],
+      "storage": "room_local"
+    },
+    {
+      "entity": "AppPreference",
+      "fields": [
+        {
+          "name": "key",
+          "type": "String",
+          "notes": "primary key"
+        },
+        {
+          "name": "value",
+          "type": "String",
+          "notes": "serialized primitive value; used for grid size, default sort, and theme"
+        },
+        {
+          "name": "updatedAt",
+          "type": "Instant",
+          "notes": "last write time"
+        }
+      ],
+      "storage": "room_local"
+    },
+    {
+      "entity": "LockCredential",
+      "fields": [
+        {
+          "name": "pinSaltBase64",
+          "type": "String",
+          "notes": "16 random bytes generated with SecureRandom and Base64 encoded"
+        },
+        {
+          "name": "pinHashBase64",
+          "type": "String",
+          "notes": "PBKDF2WithHmacSHA256 hash of PIN using 120000 iterations and 256-bit output"
+        },
+        {
+          "name": "biometricEnabled",
+          "type": "Boolean",
+          "notes": "true after PIN setup if user allows BiometricPrompt unlock"
+        },
+        {
+          "name": "createdAt",
+          "type": "Instant",
+          "notes": "credential creation time"
+        }
+      ],
+      "storage": "encrypted_local"
+    },
+    {
+      "entity": "PurchaseEntitlement",
+      "fields": [
+        {
+          "name": "productId",
+          "type": "String",
+          "notes": "steady_gallery_pro_unlock"
+        },
+        {
+          "name": "isPurchased",
+          "type": "Boolean",
+          "notes": "true only after Play Billing reports PURCHASED and purchase is acknowledged"
+        },
+        {
+          "name": "purchaseTokenHash",
+          "type": "String",
+          "notes": "SHA-256 of Play purchase token; no server validation in v1"
+        },
+        {
+          "name": "updatedAt",
+          "type": "Instant",
+          "notes": "last successful billing query or purchase update time"
+        }
+      ],
+      "storage": "encrypted_local"
+    }
+  ],
+  "package_id": "com.appyfyi.steadygridgallery",
+  "target_sdk": 35,
+  "tech_stack": {
+    "language": "Kotlin",
+    "libraries": [
+      {
+        "purpose": "Android Kotlin extensions and compatibility helpers",
+        "gradle_coordinate": "androidx.core:core-ktx:1.13.1"
+      },
+      {
+        "purpose": "Compose host Activity and Activity Result permission launchers",
+        "gradle_coordinate": "androidx.activity:activity-compose:1.9.3"
+      },
+      {
+        "purpose": "Material 3 Compose components",
+        "gradle_coordinate": "androidx.compose.material3:material3:1.3.0"
+      },
+      {
+        "purpose": "Compose navigation graph for all app screens",
+        "gradle_coordinate": "androidx.navigation:navigation-compose:2.8.3"
+      },
+      {
+        "purpose": "ViewModel integration with Compose",
+        "gradle_coordinate": "androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6"
+      },
+      {
+        "purpose": "Lifecycle-aware StateFlow collection in Compose",
+        "gradle_coordinate": "androidx.lifecycle:lifecycle-runtime-compose:2.8.6"
+      },
+      {
+        "purpose": "Coroutine dispatchers for MediaStore queries, bitmap editing, and file copy work",
+        "gradle_coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0"
+      },
+      {
+        "purpose": "Local Room database for folder state, recycle-bin records, and persistent settings",
+        "gradle_coordinate": "androidx.room:room-runtime:2.6.1"
+      },
+      {
+        "purpose": "Coroutine extensions for Room DAOs",
+        "gradle_coordinate": "androidx.room:room-ktx:2.6.1"
+      },
+      {
+        "purpose": "Room annotation processor for generated DAO/database code",
+        "gradle_coordinate": "androidx.room:room-compiler:2.6.1"
+      },
+      {
+        "purpose": "Efficient thumbnail and full-size image loading from content URIs in Compose grids and viewers",
+        "gradle_coordinate": "io.coil-kt:coil-compose:2.7.0"
+      },
+      {
+        "purpose": "PIN-protected hidden-folder unlock with optional system biometric authentication",
+        "gradle_coordinate": "androidx.biometric:biometric:1.1.0"
+      },
+      {
+        "purpose": "Encrypted local storage for PIN hash metadata and cached purchase entitlement",
+        "gradle_coordinate": "androidx.security:security-crypto:1.1.0-alpha06"
+      },
+      {
+        "purpose": "One-time in-app purchase unlock through Google Play Billing",
+        "gradle_coordinate": "com.android.billingclient:billing-ktx:7.1.1"
+      },
+      {
+        "purpose": "Read and preserve image EXIF orientation/date metadata during reliable editor export",
+        "gradle_coordinate": "androidx.exifinterface:exifinterface:1.3.7"
+      }
+    ],
+    "ui_toolkit": "Jetpack Compose",
+    "gradle_version": "8.9",
+    "kotlin_version": "2.0.21",
+    "compose_bom_version": "2024.10.01"
+  },
+  "permissions": [
+    "READ_MEDIA_IMAGES",
+    "READ_MEDIA_VIDEO",
+    "USE_BIOMETRIC"
+  ],
+  "positioning": "A maintained, privacy-first Android gallery focused on reliable local folders, a recycle bin, hidden folders, and crop/rotate/export that completes instead of hanging.",
+  "working_name": "Steady Gallery",
+  "design_system": {
+    "icon_name": "images",
+    "typography": "Material 3 default type scale, no custom font",
+    "theme_notes": "Use Material 3 light and dark themes. Light theme uses primary #1565C0, background #FAFAFA, surface #FFFFFF, on-background #1B1B1F. Dark theme uses primary #9ECAFF, background #101418, surface #1B1F24, on-background #E3E2E6. Photo grids use black gutters (#000000) in the viewer only so images remain visually neutral.",
+    "color_error_hex": "#B00020",
+    "color_primary_hex": "#1565C0",
+    "color_background_hex": "#FAFAFA"
+  },
+  "store_listing": {
+    "title": "Steady Gallery",
+    "category": "Photography",
+    "keywords": [
+      "gallery",
+      "photo gallery",
+      "local gallery",
+      "private gallery",
+      "recycle bin",
+      "hidden folders",
+      "photo editor",
+      "crop rotate"
+    ],
+    "icon_prompt": "Create a 1024x1024 Android app icon for a privacy-first photo gallery named Steady Gallery. Use a rounded-square adaptive icon style with a deep blue background (#1565C0), a simple white outlined photo frame, a small green shield badge in the lower-right corner, and a subtle circular arrow suggesting reliable restore. Flat vector design, high contrast, no text, no camera lens, no brand logos.",
+    "long_description": "Steady Gallery is a maintained, privacy-first gallery for Android users who want local folders, predictable storage, and editing that completes.\n\nBrowse your photos and videos by folder, find your Camera folder quickly, move unwanted items to a verified recycle bin, and protect hidden folders with PIN or biometric unlock. The basic editor supports crop, 90-degree rotate, simple filters, and reliable export with visible progress.\n\nYour media stays on your device. There is no account, no cloud sync, no AI processing, and no subscription. Unlock Pro once for $2.99.",
+    "short_description": "Private local gallery with reliable editor, recycle bin, and hidden folders."
+  },
+  "total_est_weeks": 6,
+  "trademark_cleared": false,
+  "build_instructions": "chmod +x ./gradlew\n./gradlew clean\n./gradlew testDebugUnitTest\n./gradlew connectedDebugAndroidTest\nkeytool -genkeypair -v -keystore steady-gallery-upload.jks -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias upload -dname \"CN=Steady Gallery Upload,O=AppyFYI,C=US\" -storepass changeit -keypass changeit\nRELEASE_STORE_FILE=\"$PWD/steady-gallery-upload.jks\" RELEASE_STORE_PASSWORD=\"changeit\" RELEASE_KEY_ALIAS=\"upload\" RELEASE_KEY_PASSWORD=\"changeit\" ./gradlew bundleRelease",
+  "human_gates_required": [
+    "trademark_and_privacy_review",
+    "closed_testing_recruitment"
+  ]
+}

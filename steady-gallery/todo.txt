@@ -1,0 +1,29 @@
+TODO:
+
+DONE:
+- Open the google play console in a browser, make sure to login with play@appy.fyi and manage the release of this app. Use the email list I already have for the closed testing. Tell me shortly what is the status of the release cause I'm not sure I understand.
+- Create a Taskfile.yml with common tasks: build, push to phone, etc...
+- Replace the "Hidden Folders" with "Hidden Photos":
+	- The app creates a hidden folder on the device
+	- Users can select indevidual photos and hide them, when they do the photos moves to the hidden folder.
+	- Photos can be un-hidden from the hidden folder.
+	- The hidden folder is only accissible via pin or biometric
+	- Once a user navigates outside the hidden folder he needs to unlock it again to view it
+- Download some real free to use photos for the testing, demo and screenshots. After you take new screenshots, upload them to appy.fyi
+- Make sure hidden photos are hidden! This is very important, once someone hide a photo do not show it unless unlocked. If a user unlocked hidden folders add a global switch to hide back all photos.
+- Replace the Export button with two buttons "Save" and "Save a Copy"
+- Cropping still not working smoothly. Also when I said vertical and horizontal I meant to add a dragging button on the edges of the crop box (and not just on the corners). Also add dragging buttons on all the corners.
+- You can remove the current Vertical and Horizontal buttons.
+- We should have 2 rotation buttons, one for rotating clockwise and one for counter-clockwise. Use an icon to illustrate the direction of rotation and remove the text for it.
+- Cropping not working well, I can start dragging the crop box but then it stuck.
+- Also add vertical and horizontal crop options.
+- When swiping to the next image show swipe transition.
+- Add an option to zoom in and out when pinching the image.
+- On the gallery grid view, show a small mark for videos.
+- Some of the preview images are black, need to fix that.
+- Generate a README.md file that
+    - advertise the app as an open source free alternative to Simple Gallery Pro (https://play.google.com/store/apps/details?id=com.simplemobiletools.gallery.pro).
+    - List the app features.
+- For videos, add player controls and a progress bar.
+- Fix all the strings in the menus and across the app
+- In the settings add 2 additional languages and translate all strings to those languages.

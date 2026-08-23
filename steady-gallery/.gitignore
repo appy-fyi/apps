@@ -1,0 +1,21 @@
+*.iml
+.gradle/
+.kotlin/
+/local.properties
+.idea/
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Build outputs
+app/build/
+
+# Disposable local signing artifacts -- never commit real release keystores/passwords
+*.jks
+*.keystore
+keystore.properties
+.env
+service-account.json

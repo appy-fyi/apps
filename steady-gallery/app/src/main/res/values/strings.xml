@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Steady Gallery</string>
+
+    <!-- Common / shared across screens -->
+    <string name="common_back">Back</string>
+    <string name="common_more_options">More options</string>
+    <string name="common_sort">Sort</string>
+    <string name="common_clear_selection">Clear selection</string>
+    <string name="common_move_to_recycle_bin">Move to Recycle Bin</string>
+    <string name="common_share">Share</string>
+    <string name="common_info">Info</string>
+    <string name="common_edit">Edit</string>
+    <string name="common_unlock">Unlock</string>
+    <string name="common_continue">Continue</string>
+    <string name="common_retry">Retry</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_done">Done</string>
+    <string name="recycle_bin_title">Recycle Bin</string>
+    <string name="hidden_photos_title">Hidden Photos</string>
+    <string name="settings_title">Settings</string>
+    <string name="purchase_title">Unlock Pro</string>
+
+    <!-- Folders -->
+    <string name="folders_search_hint">Search folders</string>
+    <string name="folders_error_fallback">Something went wrong loading your folders.</string>
+    <string name="folders_load_error_fallback">Unable to load folders</string>
+    <string name="folders_empty">No media folders found on this device yet.</string>
+    <string name="folder_camera_content_description">Camera folder</string>
+    <string name="folder_item_count_and_path_format">%1$d items • %2$s</string>
+
+    <!-- Media grid -->
+    <string name="media_grid_selected_count_format">%1$d selected</string>
+    <string name="media_grid_hide_selected">Hide selected</string>
+    <string name="media_grid_folder_fallback_title">Folder</string>
+    <string name="media_grid_error_fallback">Unable to load this folder.</string>
+    <string name="media_grid_load_error_fallback">Unable to load this folder</string>
+    <string name="media_grid_empty">This folder has no photos or videos to show.</string>
+    <string name="media_grid_recycle_failed_format">Recycle failed for %1$s</string>
+    <string name="media_grid_hide_failed_format">Hide failed for %1$s</string>
+    <string name="media_video_content_description">Video</string>
+    <string name="media_selected_content_description">Selected</string>
+    <string name="sort_mode_date_desc">Newest first</string>
+    <string name="sort_mode_date_asc">Oldest first</string>
+    <string name="sort_mode_name_asc">Name (A–Z)</string>
+    <string name="sort_mode_name_desc">Name (Z–A)</string>
+
+    <!-- Editor -->
+    <string name="editor_title">Editor</string>
+    <string name="editor_unlock_title">Unlock the Editor</string>
+    <string name="editor_unlock_message">Crop, rotate, filters, and export are part of Steady Gallery Pro.</string>
+    <string name="editor_exporting">Saving…</string>
+    <string name="editor_export_percent_format">%1$d%%</string>
+    <string name="editor_export_success_title">Copy saved</string>
+    <string name="editor_export_success_message">Saved to Pictures/Steady Gallery.</string>
+    <string name="editor_save_success_title">Saved</string>
+    <string name="editor_save_success_message">Saved changes to the original photo.</string>
+    <string name="editor_export_failed_title">Save failed</string>
+    <string name="editor_export_error_fallback">Something went wrong while saving.</string>
+    <string name="editor_image_being_edited">Image being edited</string>
+    <string name="editor_rotate_clockwise">Rotate clockwise</string>
+    <string name="editor_rotate_counterclockwise">Rotate counterclockwise</string>
+    <string name="editor_save_button">Save</string>
+    <string name="editor_save_copy_button">Save a Copy</string>
+    <string name="editor_media_not_found">Media not found</string>
+    <string name="editor_export_timed_out">Save timed out</string>
+    <string name="editor_export_failed_fallback">Save failed</string>
+    <string name="edit_filter_original">Original</string>
+    <string name="edit_filter_grayscale">Grayscale</string>
+    <string name="edit_filter_sepia">Sepia</string>
+    <string name="edit_filter_high_contrast">High Contrast</string>
+
+    <!-- Settings -->
+    <string name="settings_error_fallback">Unable to load settings.</string>
+    <string name="settings_load_error_fallback">Unable to load settings</string>
+    <string name="settings_section_display">Display</string>
+    <string name="settings_sort_order_label">Sort order</string>
+    <string name="settings_grid_column_size_label">Grid column size</string>
+    <string name="settings_grid_cell_size_format">%1$ddp</string>
+    <string name="settings_theme_label">Theme</string>
+    <string name="settings_section_privacy">Privacy</string>
+    <string name="settings_privacy_local_only">Your photos and videos stay on this device. There is no account or cloud sync.</string>
+    <string name="settings_privacy_target_sdk">Built for current Android media permissions. Target Android SDK: 35.</string>
+    <string name="settings_section_security">Security &amp; permissions</string>
+    <string name="settings_manage_hidden_lock">Manage hidden lock</string>
+    <string name="settings_hide_all_now">Hide unlocked photos now</string>
+    <string name="settings_review_media_permission">Review media permission</string>
+    <string name="settings_version_format">Version %1$s</string>
+    <string name="settings_language_label">Language</string>
+    <string name="theme_mode_system">System</string>
+    <string name="theme_mode_light">Light</string>
+    <string name="theme_mode_dark">Dark</string>
+    <string name="language_system">System</string>
+    <string name="language_english">English</string>
+    <string name="language_spanish">Español</string>
+    <string name="language_french">Français</string>
+
+    <!-- Recycle bin -->
+    <string name="recycle_bin_error_fallback">Unable to load Recycle Bin.</string>
+    <string name="recycle_bin_empty">Recycle Bin is empty.</string>
+    <string name="recycle_bin_restore_selected">Restore selected</string>
+    <string name="recycle_bin_delete_permanently">Delete permanently</string>
+    <string name="recycle_bin_delete_dialog_title">Delete permanently?</string>
+    <string name="recycle_bin_delete_dialog_message">This cannot be undone. The protected copy in Recycle Bin will be removed.</string>
+
+    <!-- Hidden photos -->
+    <string name="hidden_photos_session_locked">Session locked.</string>
+    <string name="hidden_photos_error_fallback">Unable to load hidden photos.</string>
+    <string name="hidden_photos_empty">No photos are hidden.</string>
+    <string name="hidden_photos_unlocked_banner">Unlocked</string>
+    <string name="hidden_photos_unhide">Unhide photo</string>
+
+    <!-- Hidden unlock -->
+    <string name="hidden_unlock_setup_prompt">Set up a PIN to protect hidden photos.</string>
+    <string name="hidden_unlock_new_pin_label">New PIN</string>
+    <string name="hidden_unlock_confirm_pin_label">Confirm PIN</string>
+    <string name="hidden_unlock_enable_biometric">Enable biometric unlock</string>
+    <string name="hidden_unlock_create_pin_button">Create PIN</string>
+    <string name="hidden_unlock_enter_pin_label">Enter PIN</string>
+    <string name="hidden_unlock_incorrect_pin_fallback">Incorrect PIN</string>
+    <string name="hidden_unlock_use_biometric">Use biometric</string>
+    <string name="hidden_unlock_unlocked">Unlocked.</string>
+    <string name="hidden_unlock_prompt_title">Unlock hidden photos</string>
+    <string name="hidden_unlock_use_pin_instead">Use PIN instead</string>
+    <string name="hidden_unlock_pin_length_error">PIN must be 4 to 12 digits</string>
+    <string name="hidden_unlock_pin_mismatch_error">PINs do not match</string>
+
+    <!-- Permission onboarding -->
+    <string name="permission_tagline">A maintained, privacy-first gallery built for current Android media permissions.</string>
+    <string name="permission_privacy_note">Your photos and videos stay on this device. There is no account, cloud sync, or upload.</string>
+    <string name="permission_checking">Checking permission status…</string>
+    <string name="permission_denied_message">Photos and Videos access is required to browse your gallery.</string>
+    <string name="permission_grant_button">Grant Photos and Videos</string>
+    <string name="permission_permanently_denied_message">Photos and Videos access was denied. Enable it from system settings to continue.</string>
+    <string name="permission_open_settings_button">Open Settings</string>
+    <string name="permission_granted_message">Permission granted.</string>
+
+    <!-- Purchase -->
+    <string name="purchase_description">Unlock the editor and hidden photos forever with a single, one-time purchase. No subscription, no account required.</string>
+    <string name="purchase_one_time">One-time purchase</string>
+    <string name="purchase_buy_button">Buy unlock</string>
+    <string name="purchase_restore_button">Restore purchase</string>
+    <string name="purchase_thank_you">Pro unlocked. Thank you!</string>
+    <string name="purchase_billing_unavailable">Play Billing is unavailable on this device right now.</string>
+    <string name="purchase_debug_tools_label">Debug tools (stripped from release builds)</string>
+    <string name="purchase_debug_simulate">DEBUG: simulate purchase</string>
+    <string name="purchase_debug_revoke">DEBUG: revoke purchase</string>
+    <string name="purchase_default_price">$2.99</string>
+    <string name="purchase_product_not_loaded">Product details not loaded yet</string>
+
+    <!-- Viewer -->
+    <string name="viewer_error_fallback">Unable to display this item.</string>
+    <string name="viewer_media_not_found">Media not found</string>
+    <string name="viewer_recycle_failed_format">Unable to recycle %1$s</string>
+    <string name="viewer_moved_to_recycle_bin">Moved to Recycle Bin.</string>
+    <string name="viewer_back_to_folder">Back to folder</string>
+    <string name="viewer_pause">Pause</string>
+    <string name="viewer_play">Play</string>
+    <string name="viewer_info_date_format">Date: %1$s</string>
+    <string name="viewer_info_dimensions_format">Dimensions: %1$d x %2$d</string>
+    <string name="viewer_info_type_format">Type: %1$s</string>
+    <string name="viewer_info_path_format">Path: %1$s</string>
+    <string name="viewer_info_date_unknown">Unknown</string>
+</resources>
