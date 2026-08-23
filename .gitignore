@@ -1,0 +1,19 @@
+# Secrets and credentials -- never commit these, in the root or in any app subfolder
+.env
+.env.*
+service-account.json
+*.jks
+*.keystore
+keystore.properties
+
+# Android/Gradle build artifacts (per app subfolder)
+*.iml
+.gradle/
+.kotlin/
+**/local.properties
+.idea/
+.DS_Store
+**/build/
+**/captures/
+.externalNativeBuild
+.cxx
