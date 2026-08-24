@@ -1,5 +1,7 @@
 version: '3'
 
+dotenv: ['.env']
+
 includes:
   steady-gallery:
     taskfile: ./steady-gallery/Taskfile.yml

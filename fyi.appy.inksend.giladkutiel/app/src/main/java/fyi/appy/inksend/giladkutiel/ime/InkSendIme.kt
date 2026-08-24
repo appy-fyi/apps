@@ -54,6 +54,16 @@ class InkSendIme : InputMethodService() {
     }
 
     override fun onCreateInputView(): View {
+        // The IME's window is backed by a Dialog, so Compose's window-level recomposer lookup
+        // climbs to that Dialog's decor view (the "parentPanel" root) — not just to this
+        // ComposeView — to find the ViewTree owners. They must be set there too, or Compose
+        // crashes with "ViewTreeLifecycleOwner not found" the moment the keyboard shows.
+        window?.window?.decorView?.let { decorView ->
+            decorView.setViewTreeLifecycleOwner(imeLifecycleOwner)
+            decorView.setViewTreeViewModelStoreOwner(imeLifecycleOwner)
+            decorView.setViewTreeSavedStateRegistryOwner(imeLifecycleOwner)
+        }
+
         val composeView = ComposeView(this)
         composeView.setViewTreeLifecycleOwner(imeLifecycleOwner)
         composeView.setViewTreeViewModelStoreOwner(imeLifecycleOwner)

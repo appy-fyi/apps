@@ -1,7 +1,5 @@
 version: '3'
 
-dotenv: ['../.env']
-
 vars:
   ORIGIN_PLAY_ID: com.boost.universal.remote
   PACKAGE_ID: fyi.appy.taponceremote.giladkutiel

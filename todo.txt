@@ -1,0 +1,5 @@
+TODO:
+    InkSend:
+        - When creating handwritten font, the glyph disappears once I removed my finger from the screen, fix this. 
+            Also, when done writing a glyph, there should be button "Save" at the same screen, when pressing on it move to the next glyph without a confirmation.
+        

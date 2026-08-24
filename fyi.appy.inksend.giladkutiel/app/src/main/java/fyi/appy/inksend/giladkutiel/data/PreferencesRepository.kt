@@ -24,8 +24,10 @@ class PreferencesRepository(private val context: Context) {
         val DEFAULT_STYLE_ID = longPreferencesKey("default_style_id")
     }
 
+    // TEMPORARY: app is free for now, so unpurchased users default to unlocked.
+    // Revert the `?: true` back to `?: false` to re-enable the paywall.
     val purchased: Flow<Boolean> =
-        context.dataStore.data.map { it[Keys.PURCHASED] ?: false }
+        context.dataStore.data.map { it[Keys.PURCHASED] ?: true }
 
     val defaultStyleId: Flow<Long?> =
         context.dataStore.data.map { it[Keys.DEFAULT_STYLE_ID] }
