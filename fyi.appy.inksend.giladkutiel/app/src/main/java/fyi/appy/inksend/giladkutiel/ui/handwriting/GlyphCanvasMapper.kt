@@ -30,4 +30,15 @@ class GlyphCanvasMapper(private val canvasWidthPx: Float, private val canvasHeig
         }
         return DesignPoint(designX.toInt(), designY.toInt())
     }
+
+    /** Inverse of [toDesignPoint], used to redraw already-committed strokes on the canvas. */
+    fun toOffset(point: DesignPoint): Offset {
+        val xFraction = (point.x - SIDE_BEARING) / (UNITS_PER_EM - 2 * SIDE_BEARING).toFloat()
+        val yFraction = if (point.y >= 0) {
+            BASELINE_FRACTION * (1f - point.y / ASCENT.toFloat())
+        } else {
+            BASELINE_FRACTION + (-point.y / DESCENT.toFloat()) * (1f - BASELINE_FRACTION)
+        }
+        return Offset(xFraction * canvasWidthPx, yFraction * canvasHeightPx)
+    }
 }

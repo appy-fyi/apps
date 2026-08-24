@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -65,13 +64,6 @@ fun HandwritingFontCreatorScreen(onDone: () -> Unit) {
                     viewModel = viewModel,
                 )
 
-                is HandwritingUiState.InProgressPartialSetSaved -> SavedGlyphBanner(
-                    char = s.char,
-                    progress = s.index + 1,
-                    total = s.total,
-                    onContinue = viewModel::acknowledgeSavedAndContinue,
-                )
-
                 is HandwritingUiState.CompleteAllGlyphsDrawn -> CompleteScreen(onSave = viewModel::saveFont)
 
                 is HandwritingUiState.CompilingFont -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -95,6 +87,12 @@ private fun DrawingSurface(char: Char, progress: Int, total: Int, viewModel: Han
     var currentPath by remember(char) { mutableStateOf<List<Offset>>(emptyList()) }
     var canvasWidth by remember { mutableStateOf(1f) }
     var canvasHeight by remember { mutableStateOf(1f) }
+    var committedStrokes by remember(char) { mutableStateOf<List<List<Offset>>>(emptyList()) }
+
+    fun refreshCommittedStrokes() {
+        val mapper = GlyphCanvasMapper(canvasWidth, canvasHeight)
+        committedStrokes = viewModel.currentGlyphStrokes().map { stroke -> stroke.map { mapper.toOffset(it) } }
+    }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text("Draw: $char", style = MaterialTheme.typography.headlineSmall)
@@ -128,6 +126,7 @@ private fun DrawingSurface(char: Char, progress: Int, total: Int, viewModel: Han
                                 viewModel.addStroke(currentPath.map { mapper.toDesignPoint(it) })
                                 currentPath = emptyList()
                                 strokeCount = viewModel.currentStrokeCount()
+                                refreshCommittedStrokes()
                             },
                         )
                     },
@@ -139,6 +138,15 @@ private fun DrawingSurface(char: Char, progress: Int, total: Int, viewModel: Han
                     end = Offset(size.width, baselineY),
                     strokeWidth = 2f,
                 )
+                committedStrokes.forEach { stroke ->
+                    if (stroke.size >= 2) {
+                        val path = androidx.compose.ui.graphics.Path().apply {
+                            moveTo(stroke.first().x, stroke.first().y)
+                            stroke.drop(1).forEach { lineTo(it.x, it.y) }
+                        }
+                        drawPath(path, color = Color.Black, style = Stroke(width = 10f, cap = StrokeCap.Round))
+                    }
+                }
                 if (currentPath.size >= 2) {
                     val path = androidx.compose.ui.graphics.Path().apply {
                         moveTo(currentPath.first().x, currentPath.first().y)
@@ -150,9 +158,9 @@ private fun DrawingSurface(char: Char, progress: Int, total: Int, viewModel: Han
         }
 
         Row(modifier = Modifier.fillMaxWidth()) {
-            OutlinedButton(onClick = { viewModel.undoLastStroke(); strokeCount = viewModel.currentStrokeCount() }) { Text("Undo") }
-            OutlinedButton(onClick = { viewModel.redoLastStroke(); strokeCount = viewModel.currentStrokeCount() }, modifier = Modifier.padding(start = 8.dp)) { Text("Redo") }
-            OutlinedButton(onClick = { viewModel.clearCurrentGlyph(); strokeCount = 0 }, modifier = Modifier.padding(start = 8.dp)) { Text("Clear") }
+            OutlinedButton(onClick = { viewModel.undoLastStroke(); strokeCount = viewModel.currentStrokeCount(); refreshCommittedStrokes() }) { Text("Undo") }
+            OutlinedButton(onClick = { viewModel.redoLastStroke(); strokeCount = viewModel.currentStrokeCount(); refreshCommittedStrokes() }, modifier = Modifier.padding(start = 8.dp)) { Text("Redo") }
+            OutlinedButton(onClick = { viewModel.clearCurrentGlyph(); strokeCount = 0; refreshCommittedStrokes() }, modifier = Modifier.padding(start = 8.dp)) { Text("Clear") }
         }
 
         Button(
@@ -162,27 +170,6 @@ private fun DrawingSurface(char: Char, progress: Int, total: Int, viewModel: Han
         ) {
             Text("Save Glyph")
         }
-    }
-}
-
-@Composable
-private fun SavedGlyphBanner(char: Char, progress: Int, total: Int, onContinue: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Surface(
-            color = MaterialTheme.colorScheme.primaryContainer,
-            shape = RoundedCornerShape(16.dp),
-            modifier = Modifier.padding(vertical = 32.dp),
-        ) {
-            Text(
-                "\"$char\" saved — $progress / $total",
-                modifier = Modifier.padding(24.dp),
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
-        }
-        Button(onClick = onContinue, modifier = Modifier.testTag(HandwritingTestTags.CONTINUE_BUTTON)) { Text("Continue") }
     }
 }
 

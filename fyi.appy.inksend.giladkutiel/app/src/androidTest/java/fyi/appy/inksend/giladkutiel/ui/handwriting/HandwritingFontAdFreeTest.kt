@@ -55,7 +55,6 @@ class HandwritingFontAdFreeTest {
                 swipe(start = Offset(center.x - 40f, center.y), end = Offset(center.x + 40f, center.y))
             }
             composeTestRule.onNodeWithTag(HandwritingTestTags.SAVE_GLYPH_BUTTON).performClick()
-            composeTestRule.onNodeWithTag(HandwritingTestTags.CONTINUE_BUTTON).performClick()
         }
 
         composeTestRule.onNodeWithTag(HandwritingTestTags.SAVE_FONT_BUTTON).performClick()

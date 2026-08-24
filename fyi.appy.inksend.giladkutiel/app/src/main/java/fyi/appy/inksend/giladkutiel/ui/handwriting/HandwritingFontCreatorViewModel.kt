@@ -18,7 +18,6 @@ import java.time.Instant
 
 sealed interface HandwritingUiState {
     data class DrawingCurrentGlyph(val char: Char, val index: Int, val total: Int) : HandwritingUiState
-    data class InProgressPartialSetSaved(val char: Char, val index: Int, val total: Int) : HandwritingUiState
     data object CompleteAllGlyphsDrawn : HandwritingUiState
     data object CompilingFont : HandwritingUiState
     data class Saved(val fontId: Long) : HandwritingUiState
@@ -67,20 +66,17 @@ class HandwritingFontCreatorViewModel(
 
     fun currentStrokeCount(): Int = currentStrokes.size
 
-    /** Commits the current glyph's strokes and advances — the actual per-glyph "save" action. */
+    fun currentGlyphStrokes(): List<List<DesignPoint>> = currentStrokes.toList()
+
+    /** Commits the current glyph's strokes and advances straight to the next glyph, no confirmation step. */
     fun confirmGlyphAndAdvance() {
         if (currentStrokes.isEmpty()) return
         val char = REQUIRED_GLYPH_CHARACTERS[currentIndex]
         completedGlyphs[char] = currentStrokes.toList()
         currentStrokes = mutableListOf()
         redoStack.clear()
-
-        _uiState.value = HandwritingUiState.InProgressPartialSetSaved(char, currentIndex, REQUIRED_GLYPH_CHARACTERS.size)
         currentIndex++
-    }
 
-    /** Called after the brief "saved" confirmation to move the UI to the next drawing surface. */
-    fun acknowledgeSavedAndContinue() {
         _uiState.value = currentGlyphState()
     }
 
