@@ -10,3 +10,6 @@ includes:
   fyi.appy.permitfairdmvprep.giladkutiel:
     taskfile: ./fyi.appy.permitfairdmvprep.giladkutiel/Taskfile.yml
     dir: ./fyi.appy.permitfairdmvprep.giladkutiel
+  fyi.appy.inksend.giladkutiel:
+    taskfile: ./fyi.appy.inksend.giladkutiel/Taskfile.yml
+    dir: ./fyi.appy.inksend.giladkutiel

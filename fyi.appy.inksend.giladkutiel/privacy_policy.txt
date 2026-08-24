@@ -1,0 +1,56 @@
+Privacy Policy for InkSend
+
+Last updated: 2026-08-24
+
+InkSend ("the app") is a text-styling keyboard app. This policy explains what data the app
+handles.
+
+No data collection
+
+InkSend does not collect, transmit, or share any personal data. The app has no backend server
+and no analytics or advertising SDKs. Everything you create in the app — your saved styles, your
+handwriting font, and your default-style preference — is stored only in local storage on your
+own device, using Android's standard app-local database and preferences storage.
+
+What stays entirely on your device
+
+- Style presets you create (font, text color, background) and which one is set as default.
+- Any personal handwriting font you draw and compile in the Handwriting Font Creator.
+- Text you type through InkSend's keyboard, only for as long as needed to render the styled
+  image you asked to send — it is never transmitted anywhere by InkSend itself, logged, or
+  stored beyond your device.
+
+Images you choose to send
+
+When you tap "Style & Send," InkSend renders a styled image of your typed text and hands it to
+WhatsApp (or, if WhatsApp isn't installed, the system share sheet) using Android's standard
+sharing mechanism. That image is written to a temporary, app-private cache location and shared
+only when you explicitly tap the send action — InkSend does not upload it anywhere itself. What
+happens to the image after you send it is governed by the receiving app's own privacy policy
+(e.g. WhatsApp's).
+
+In-app purchase
+
+InkSend offers a single one-time purchase to unlock custom colors and the handwriting font
+creator, processed entirely through Google Play Billing. InkSend does not receive or store your
+payment details — that is handled by Google Play. Purchase status (whether you've unlocked the
+app) is re-verified with Google Play Billing and cached locally on your device.
+
+In-app review
+
+InkSend may prompt you, at most once per session and only after a successful action like saving
+a style, to leave a Play Store review using Google Play's standard In-App Review API. This is
+handled entirely by Google Play; InkSend does not know whether you completed a review.
+
+Children's privacy
+
+InkSend is not directed at children and does not knowingly collect any information from anyone,
+regardless of age, since it does not collect information from any user.
+
+Changes to this policy
+
+If this policy changes, the updated version will be posted at this same location.
+
+Contact
+
+Questions about this policy can be directed to the developer via the app's Play Store listing.

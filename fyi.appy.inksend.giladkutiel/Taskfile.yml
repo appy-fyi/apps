@@ -1,0 +1,103 @@
+version: '3'
+
+dotenv: ['../.env']
+
+vars:
+  ORIGIN_PLAY_ID: com.takeofflabs.fontmaker
+  PACKAGE_ID: fyi.appy.inksend.giladkutiel
+
+tasks:
+  build:
+    desc: Assemble a debug APK
+    cmds:
+      - ./gradlew assembleDebug
+
+  test:
+    desc: Run unit tests
+    cmds:
+      - ./gradlew testDebugUnitTest
+
+  test-instrumented:
+    desc: Run instrumented tests on a connected device/emulator
+    cmds:
+      - ./gradlew connectedDebugAndroidTest
+
+  install:
+    desc: Build and push the debug APK to a connected device/emulator
+    deps: [build]
+    cmds:
+      - ./gradlew installDebug
+
+  release:
+    desc: Produce a signed release AAB
+    cmds:
+      - chmod +x ./gradlew
+      - ./gradlew clean
+      - ./gradlew testDebugUnitTest
+      - 'keytool -genkeypair -v -keystore inksend-upload.jks -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias upload -dname "CN=InkSend Upload,O=AppyFYI,C=US" -storepass changeit -keypass changeit || true'
+      - RELEASE_STORE_FILE="$PWD/inksend-upload.jks" RELEASE_STORE_PASSWORD="changeit" RELEASE_KEY_ALIAS="upload" RELEASE_KEY_PASSWORD="changeit" ./gradlew bundleRelease
+
+  clean:
+    desc: Clean all build outputs
+    cmds:
+      - ./gradlew clean
+
+  api-app-info:
+    desc: Fetch the incumbent's live app info
+    cmds:
+      - 'curl -sf https://appy.fyi/api/app_info/{{.ORIGIN_PLAY_ID}} -H "Authorization: Bearer $APPY_API_KEY"'
+
+  api-reviews:
+    desc: Fetch a digest of the incumbent's latest reviews
+    cmds:
+      - 'curl -sf https://appy.fyi/api/reviews/{{.ORIGIN_PLAY_ID}} -H "Authorization: Bearer $APPY_API_KEY"'
+
+  api-photos:
+    desc: Fetch the incumbent's preview-screenshot CDN URLs
+    cmds:
+      - 'curl -sf https://appy.fyi/api/app_photos/{{.ORIGIN_PLAY_ID}} -H "Authorization: Bearer $APPY_API_KEY"'
+
+  api-build-spec:
+    desc: Re-fetch this app's own Tier A build spec
+    cmds:
+      - 'curl -sf https://appy.fyi/api/build_spec/{{.ORIGIN_PLAY_ID}} -H "Authorization: Bearer $APPY_API_KEY"'
+
+  api-ownerships:
+    desc: List this account's claimed apps
+    cmds:
+      - 'curl -sf https://appy.fyi/api/ownerships -H "Authorization: Bearer $APPY_API_KEY"'
+
+  api-profile:
+    desc: Show this account's claim quota (allowance/used/left)
+    cmds:
+      - 'curl -sf https://appy.fyi/api/profile -H "Authorization: Bearer $APPY_API_KEY"'
+
+  api-privacy-policy:
+    desc: Upload the drafted privacy policy (FILE=path to plain text, default privacy_policy.txt)
+    vars:
+      FILE: '{{.FILE | default "privacy_policy.txt"}}'
+    cmds:
+      - 'curl -sf -X POST https://appy.fyi/api/privacy_policy/{{.PACKAGE_ID}} -H "Authorization: Bearer $APPY_API_KEY" --data-binary @{{.FILE}}'
+
+  api-app-page:
+    desc: Publish/update this app's Google-Play-style page (NAME/DESC override the spec defaults)
+    vars:
+      NAME: '{{.NAME | default "InkSend"}}'
+      DESC: '{{.DESC | default "InkSend turns anything you type into a beautifully styled image and sends it straight to WhatsApp in a single tap, right from your keyboard."}}'
+    cmds:
+      - >-
+        curl -sf -X POST https://appy.fyi/api/app_page/{{.PACKAGE_ID}}
+        -H "Authorization: Bearer $APPY_API_KEY" -H "Content-Type: application/json"
+        -d "$(jq -n --arg name {{.NAME | quote}} --arg description {{.DESC | quote}} '{name:$name,description:$description}')"
+
+  api-app-page-icon:
+    desc: Upload this app's page icon (FILE=path, default the generated launcher icon)
+    vars:
+      FILE: '{{.FILE | default "app/src/main/res/mipmap-xxxhdpi/ic_launcher.png"}}'
+    cmds:
+      - 'curl -sf -X POST https://appy.fyi/api/app_page/{{.PACKAGE_ID}}/icon -H "Authorization: Bearer $APPY_API_KEY" -H "Content-Type: image/png" --data-binary @{{.FILE}}'
+
+  api-app-page-screenshot:
+    desc: Upload a screenshot to slot POSITION=1..5 (FILE=path, required)
+    cmds:
+      - 'curl -sf -X POST https://appy.fyi/api/app_page/{{.PACKAGE_ID}}/screenshot/{{.POSITION}} -H "Authorization: Bearer $APPY_API_KEY" -H "Content-Type: image/png" --data-binary @{{.FILE}}'
