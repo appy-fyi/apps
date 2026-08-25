@@ -81,6 +81,7 @@ class InkSendIme : InputMethodService() {
                 onBackspace = ::onBackspace,
                 onSpace = { commitAndTrack(" ") },
                 onEnter = { commitAndTrack("\n") },
+                onSwitchKeyboard = ::onSwitchKeyboard,
                 onStyleSelected = { id -> activeStyleId = id },
                 onStyleAndSend = ::onStyleAndSend,
             )
@@ -112,14 +113,24 @@ class InkSendIme : InputMethodService() {
     }
 
     private fun onBackspace() {
-        if (typedText.isEmpty()) return
+        // Always forward to the InputConnection: the local typedText buffer can be out of sync
+        // with the field's real content (e.g. pre-existing text, or a fresh IME instance after
+        // the system recreated the service), and gating on it made backspace silently no-op in
+        // those cases even though there was visibly text to delete.
         currentInputConnection?.deleteSurroundingText(1, 0)
-        typedText = typedText.dropLast(1)
+        if (typedText.isNotEmpty()) {
+            typedText = typedText.dropLast(1)
+        }
     }
 
     private fun commitAndTrack(text: String) {
         currentInputConnection?.commitText(text, 1)
         typedText += text
+    }
+
+    private fun onSwitchKeyboard() {
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+        imm.showInputMethodPicker()
     }
 
     private fun onStyleAndSend() {

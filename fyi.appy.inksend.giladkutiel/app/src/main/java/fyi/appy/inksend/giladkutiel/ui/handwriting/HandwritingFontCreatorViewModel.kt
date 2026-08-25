@@ -17,8 +17,8 @@ import java.io.File
 import java.time.Instant
 
 sealed interface HandwritingUiState {
-    data class DrawingCurrentGlyph(val char: Char, val index: Int, val total: Int) : HandwritingUiState
-    data object CompleteAllGlyphsDrawn : HandwritingUiState
+    data class GlyphOverview(val completed: Map<Char, List<List<DesignPoint>>>, val allDrawn: Boolean) : HandwritingUiState
+    data class DrawingGlyph(val char: Char, val index: Int, val total: Int) : HandwritingUiState
     data object CompilingFont : HandwritingUiState
     data class Saved(val fontId: Long) : HandwritingUiState
 }
@@ -28,21 +28,40 @@ class HandwritingFontCreatorViewModel(
     private val fontsDir: File,
 ) : ViewModel() {
     private val completedGlyphs = LinkedHashMap<Char, List<List<DesignPoint>>>()
-    private var currentIndex = 0
+    private var currentChar: Char? = null
     private var currentStrokes: MutableList<List<DesignPoint>> = mutableListOf()
     private val redoStack: MutableList<List<DesignPoint>> = mutableListOf()
 
-    private val _uiState = MutableStateFlow<HandwritingUiState>(currentGlyphState())
+    private val _uiState = MutableStateFlow<HandwritingUiState>(overviewState())
     val uiState: StateFlow<HandwritingUiState> = _uiState.asStateFlow()
 
     val progressCount: Int get() = completedGlyphs.size
 
-    private fun currentGlyphState(): HandwritingUiState =
-        if (currentIndex < REQUIRED_GLYPH_CHARACTERS.size) {
-            HandwritingUiState.DrawingCurrentGlyph(REQUIRED_GLYPH_CHARACTERS[currentIndex], currentIndex, REQUIRED_GLYPH_CHARACTERS.size)
-        } else {
-            HandwritingUiState.CompleteAllGlyphsDrawn
-        }
+    private fun overviewState(): HandwritingUiState.GlyphOverview =
+        HandwritingUiState.GlyphOverview(
+            completed = completedGlyphs.toMap(),
+            allDrawn = completedGlyphs.size == REQUIRED_GLYPH_CHARACTERS.size,
+        )
+
+    /** Opens the given glyph for drawing/editing, preloading any strokes already drawn for it. */
+    fun selectGlyph(char: Char) {
+        currentChar = char
+        currentStrokes = completedGlyphs[char]?.toMutableList() ?: mutableListOf()
+        redoStack.clear()
+        _uiState.value = HandwritingUiState.DrawingGlyph(
+            char = char,
+            index = REQUIRED_GLYPH_CHARACTERS.indexOf(char),
+            total = REQUIRED_GLYPH_CHARACTERS.size,
+        )
+    }
+
+    /** Discards any in-progress edits and returns to the overview grid. */
+    fun cancelEditing() {
+        currentChar = null
+        currentStrokes = mutableListOf()
+        redoStack.clear()
+        _uiState.value = overviewState()
+    }
 
     fun addStroke(stroke: List<DesignPoint>) {
         if (stroke.size >= 2) {
@@ -68,16 +87,16 @@ class HandwritingFontCreatorViewModel(
 
     fun currentGlyphStrokes(): List<List<DesignPoint>> = currentStrokes.toList()
 
-    /** Commits the current glyph's strokes and advances straight to the next glyph, no confirmation step. */
-    fun confirmGlyphAndAdvance() {
+    /** Commits the current glyph's strokes and returns to the overview grid, no confirmation step. */
+    fun saveGlyph() {
+        val char = currentChar ?: return
         if (currentStrokes.isEmpty()) return
-        val char = REQUIRED_GLYPH_CHARACTERS[currentIndex]
         completedGlyphs[char] = currentStrokes.toList()
+        currentChar = null
         currentStrokes = mutableListOf()
         redoStack.clear()
-        currentIndex++
 
-        _uiState.value = currentGlyphState()
+        _uiState.value = overviewState()
     }
 
     fun saveFont(name: String) {

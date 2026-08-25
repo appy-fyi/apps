@@ -50,7 +50,8 @@ class HandwritingFontAdFreeTest {
             HandwritingFontCreatorScreen(onDone = { done.set(true) })
         }
 
-        repeat(REQUIRED_GLYPH_CHARACTERS.size) {
+        REQUIRED_GLYPH_CHARACTERS.forEach { char ->
+            composeTestRule.onNodeWithTag(HandwritingTestTags.glyphTile(char)).performClick()
             composeTestRule.onNodeWithTag(HandwritingTestTags.GLYPH_CANVAS).performTouchInput {
                 swipe(start = Offset(center.x - 40f, center.y), end = Offset(center.x + 40f, center.y))
             }

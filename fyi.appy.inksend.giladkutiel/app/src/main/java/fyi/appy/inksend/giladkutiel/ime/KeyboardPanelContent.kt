@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Backspace
 import androidx.compose.material.icons.filled.KeyboardCapslock
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -45,6 +46,7 @@ fun KeyboardPanelContent(
     onBackspace: () -> Unit,
     onSpace: () -> Unit,
     onEnter: () -> Unit,
+    onSwitchKeyboard: () -> Unit,
     onStyleSelected: (Long) -> Unit,
     onStyleAndSend: () -> Unit,
 ) {
@@ -83,7 +85,10 @@ fun KeyboardPanelContent(
                     }
                 }
                 Row(modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    KeyButton(modifier = Modifier.weight(5f), onClick = onSpace) { Text("space") }
+                    KeyButton(modifier = Modifier.weight(1f), onClick = onSwitchKeyboard) {
+                        Icon(Icons.Filled.Language, contentDescription = "Switch keyboard")
+                    }
+                    KeyButton(modifier = Modifier.weight(4f), onClick = onSpace) { Text("space") }
                     KeyButton(modifier = Modifier.weight(2f), onClick = onEnter) { Text("enter") }
                 }
             }
