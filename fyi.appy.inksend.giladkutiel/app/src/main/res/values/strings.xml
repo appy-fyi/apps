@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">InkSend</string>
+    <string name="accessibility_service_description">Lets InkSend detect when you\'re typing a message so it can offer to turn it into a styled image. InkSend only reads text in the field you\'re actively editing and never sends it anywhere.</string>
 </resources>

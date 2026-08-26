@@ -6,8 +6,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Requests Play's in-app review flow at most once per process lifetime, from
- * a genuine positive pause point (right after a style is saved in the Style
- * Editor — see `StyleEditorScreen`'s `saved_confirmation` state), never on
+ * a genuine positive pause point (right after both required permissions —
+ * overlay and accessibility — become granted, see `MainActivity`), never on
  * first launch or after an error. The real API is quota-limited server-side
  * and may silently no-op; nothing here assumes the dialog actually appeared.
  */

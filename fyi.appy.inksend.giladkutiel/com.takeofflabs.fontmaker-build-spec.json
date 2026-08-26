@@ -1,1 +1,236 @@
-{"ai":{"needed":false},"legal":{"data_collected":[],"privacy_policy_url":"https://www.appyfyi.com/privacy/inksend","regulated_category":"none","privacy_policy_accurate":false},"backend":"none","min_sdk":26,"pricing":{"model":"one_time","price_usd":4.99,"billing_lib":"play_billing_direct"},"screens":[{"name":"Home","route":"home","states":["loading","empty_no_custom_styles","populated","error_failed_to_load_presets"],"purpose":"Entry point showing all style presets, which one is default, and quick access to keyboard setup, the editor, and settings.","entry_points":["app launch","tapping back from Style Editor after saving"],"key_ui_elements":["Style preset grid (LazyVerticalGrid)","Default style badge on the active preset","'+ New Style' floating action button","'Enable Keyboard' banner shown until setup is complete","Settings gear icon in the top bar","'Create your own handwriting font' entry below the built-in styles"]},{"name":"StyleEditor","route":"style/{styleId}/edit","states":["new_style_blank","editing_existing_style","unsaved_changes_pending","saved_confirmation"],"purpose":"Create or edit one style preset's font, text color, and background.","entry_points":["tap '+ New Style' on Home","tap a preset's edit icon on Home"],"key_ui_elements":["Live text preview canvas","Font family dropdown (bundled fonts plus any saved handwriting fonts)","Text color picker","Background color/gradient picker","'Set as default' checkbox","Save button"]},{"name":"KeyboardSetup","route":"keyboard-setup","states":["not_enabled","enabled_not_selected","fully_configured"],"purpose":"Guide the user through enabling and selecting the app's custom keyboard system-wide, confirmed live.","entry_points":["first app launch if the keyboard isn't yet enabled","tapping the 'Enable Keyboard' banner on Home"],"key_ui_elements":["Step 1: 'Enable in Settings' button","Step 2: 'Choose Keyboard' button","Status chip (Not enabled / Enabled / Active)","Live test-typing text field"]},{"name":"KeyboardPanel","route":"keyboard/panel","states":["no_text_entered","text_entered","sending"],"purpose":"The persistent UI shown while this app's keyboard is active in any other app, exposing the one-tap style-and-send action inline while typing.","entry_points":["user switches to this app's keyboard via the system keyboard switcher from any text field"],"key_ui_elements":["Standard QWERTY key rows","'Style & Send to WhatsApp' action button","Horizontal quick-style swatch strip","Current default-style indicator chip"]},{"name":"HandwritingFontCreator","route":"handwriting/create","states":["drawing_current_glyph","in_progress_partial_set_saved","complete_all_glyphs_drawn","compiling_font"],"purpose":"Optional, secondary flow to draw each character by hand and compile them into a personal font usable as one more style.","entry_points":["tap 'Create your own handwriting font' entry on Home"],"key_ui_elements":["Glyph drawing canvas with baseline guide","Character prompt (e.g. 'Draw: A')","Progress indicator (e.g. '12 / 62')","Undo/Redo/Clear buttons","Save Font button (enabled once all glyphs are drawn)"]},{"name":"Settings","route":"settings","states":["loading","populated"],"purpose":"App-level preferences: default style, purchase status, privacy policy.","entry_points":["tap gear icon on Home top bar"],"key_ui_elements":["Default style selector","Purchase status row + 'Restore purchase' button","Privacy policy link","App version/about"]}],"features":[{"name":"Style Gallery & Presets","screens":["Home","StyleEditor"],"est_hours":50,"description":"Browse, create, and pick a default text style — a saved combination of font, text color, and background.","answers_complaint":"baseline parity","acceptance_criteria":["Home screen shows at least 3 built-in style presets (font+color+background combos) before any purchase or style creation.","Tapping a preset's 'Set as default' badge persists that preset as default across app restarts.","Style Editor lets the user change font family, text color, and background color/gradient and preview the change live before saving.","Saving a new style in the Style Editor adds it to the Home gallery grid immediately."],"implementation_notes":"Persist StylePreset rows in a local Room database (androidx.room). Home screen is a LazyVerticalGrid of preset cards, each rendering a small preview via the shared TextImageRenderer draw function (see the Text-to-Image Renderer & One-Tap Send feature) at low resolution for speed. 'Set as default' updates is_default=true on the tapped row and false on all others inside a single Room @Transaction DAO method. Style Editor uses an inline HSV color wheel + hex input (no third-party color-picker library needed) for text/background color, and a FontFamily dropdown backed by ~8 bundled .ttf assets under app/src/main/assets/fonts plus any completed handwriting fonts."},{"name":"Text-to-Image Renderer & One-Tap Send","screens":["KeyboardPanel"],"est_hours":70,"description":"Renders the currently typed text as a styled image and sends it to WhatsApp in a single tap from the keyboard panel.","answers_complaint":"Ads gate using the font, too","acceptance_criteria":["From the keyboard panel, tapping 'Style & Send' with non-empty typed text renders that exact text as a PNG image using the active style's font/color/background within 500ms on a mid-range device.","Tapping 'Style & Send' opens WhatsApp's share target (or the system share sheet if WhatsApp isn't installed) with the rendered image already attached, in one tap — no interstitial screen or ad.","The 'Style & Send' button is disabled, not just a no-op, when the text field is empty."],"implementation_notes":"Implement TextImageRenderer.render(text: String, style: StylePreset): Bitmap using android.graphics.Canvas + StaticLayout for text layout/wrapping, drawn onto a Bitmap sized to wrap content with 32dp padding, background as a solid color or 2-stop LinearGradient per style.background. Save the Bitmap to a cache file via FileProvider (content://<applicationId>.fileprovider/images/...), then start Intent(ACTION_SEND).setPackage(\"com.whatsapp\").putExtra(EXTRA_STREAM, uri).setType(\"image/png\") with FLAG_GRANT_READ_URI_PERMISSION; if resolveActivity() returns null (WhatsApp not installed), fall back to a plain ACTION_SEND without setPackage so the system share sheet appears instead."},{"name":"Custom Keyboard (IME) Integration","screens":["KeyboardSetup","KeyboardPanel"],"est_hours":90,"description":"A system-wide custom keyboard that embeds the Style & Send action inline while typing in any app.","answers_complaint":"baseline parity","acceptance_criteria":["After enabling the app's keyboard in system Settings > Languages & Input, switching to it in any third-party app (e.g. WhatsApp, Messenger) shows the standard QWERTY layout plus the Style & Send action bar.","Typing works identically to the system default keyboard (letters, numbers, backspace, enter) with no dropped or duplicated characters.","Switching away from this keyboard and back preserves the last-typed, not-yet-sent text in the input field."],"implementation_notes":"Implement InkSendIme : InputMethodService, registered in AndroidManifest.xml with android.permission.BIND_INPUT_METHOD and a method.xml under res/xml declaring supportsSwitchingToNextInputMethod. Host the visible keyboard UI as a ComposeView set via onCreateInputView(), embedding a standard QWERTY key layout (delegate key events through InputConnection.commitText/deleteSurroundingText) plus the persistent bottom action bar. Track composing/committed text via a local StringBuilder synced on each InputConnection call, since InputConnection.getExtractedText() alone is unreliable across host apps — this buffer is what the renderer receives as `text`."},{"name":"Guided Keyboard Setup with Live Test","screens":["KeyboardSetup"],"est_hours":30,"description":"Step-by-step onboarding that deep-links into system Settings to enable and select the keyboard, confirmed with a live test-typing box.","answers_complaint":"baseline parity","acceptance_criteria":["First app launch shows KeyboardSetup if the app's IME isn't yet enabled in system settings.","Tapping 'Enable in Settings' deep-links directly to Settings > Languages & Input > On-screen keyboard (via ACTION_INPUT_METHOD_SETTINGS), not just the Settings app root.","The live test-typing box only accepts input once the app's keyboard has actually been switched to, confirming end-to-end that setup succeeded."],"implementation_notes":"KeyboardSetup checks enablement via InputMethodManager.getEnabledInputMethodList() (contains this app's ComponentName) and current-selection via Settings.Secure.getString(contentResolver, DEFAULT_INPUT_METHOD) — both re-checked in onResume() so returning from Settings updates the UI live. 'Enable in Settings' launches startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)); 'Choose Keyboard' calls inputMethodManager.showInputMethodPicker() directly. The test-typing TextField below both steps is a real Compose TextField the user can tap into to confirm the switch worked."},{"name":"One-Time Purchase, No Ads","screens":["Settings"],"est_hours":25,"description":"A single $4.99 in-app purchase unlocks unlimited custom styles, custom colors, and the handwriting font creator — no ads anywhere, no subscription.","answers_complaint":"Trial/subscription confusion","acceptance_criteria":["The free tier allows using and sending the 3 built-in styles as images at zero cost, with zero ads shown anywhere in the app.","Attempting to set a custom color or open the Handwriting Font Creator while unpurchased shows a single one-time $4.99 purchase prompt via Play Billing, never a subscription.","After a successful one-time purchase, 'Restore purchase' on a fresh install (same Google account) unlocks all paid features without repurchasing."],"implementation_notes":"Integrate com.android.billingclient:billing-ktx with one non-consumable product id 'unlock_all_styles' at $4.99, queried via BillingClient.queryProductDetailsAsync and purchased via launchBillingFlow. Gate Style Editor's custom color pickers and the HandwritingFontCreator entry point behind a purchased-state flag cached in DataStore (androidx.datastore:datastore-preferences) and re-verified against BillingClient.queryPurchasesAsync(BillingClient.ProductType.INAPP) on app start. 'Restore purchase' in Settings re-runs queryPurchasesAsync and re-caches the flag — no server round-trip since backend is none."},{"name":"Personal Handwriting Font (secondary)","screens":["HandwritingFontCreator"],"est_hours":70,"description":"An optional flow to draw each character by hand and use the result as one more style — a nice extra, not the app's main focus.","answers_complaint":"Unskippable ads while creating the font","acceptance_criteria":["The glyph canvas prompts for all 62 required characters (A-Z, a-z, 0-9) one at a time with a visible progress count.","A completed set (all 62 glyphs drawn and saved) compiles into a valid, installable font file usable as a style option in the Style Gallery within 10 seconds on a mid-range device.","No ad, timer, or forced wait is shown between any two glyph-drawing steps."],"implementation_notes":"Present each of the 62 required glyphs (A-Z, a-z, 0-9) one at a time on a Compose Canvas with a baseline guideline drawn at 70% height; capture the drawn strokes as a List<Offset> path, convert to a cubic-bezier outline via fixed-width stroke expansion (no ML), then compile all 62 glyph outlines into a valid TrueType font file entirely on-device by writing the glyf/loca/cmap/hmtx tables directly with a small embedded OpenType table writer — no third-party font-compiler library needed since the glyph set and encoding are fixed and small. Save the resulting .ttf to internal storage and register it as one more FontFamily option in Style Editor's dropdown."}],"non_goals":["No AI-assisted glyph completion or AI image generation in v1 — the handwriting font creator requires drawing all 62 characters by hand, keeping v1 fully client-side and ad-free.","No dedicated one-tap send button for Instagram, Snapchat, TikTok, or Facebook in v1 — the keyboard panel's one-tap action targets WhatsApp specifically; other apps still work through the ordinary system share sheet.","No cloud backup or cross-device sync of saved styles or handwriting fonts in v1 — everything lives in local Room storage on the one device.","No animated or video styles, stickers, or GIFs in v1 — output is always a single static PNG image of the typed text.","No accounts, sign-in, or server-side anything in v1 — backend is none."],"test_plan":[{"kind":"instrumented","steps":["Launch InkSend on an API 35 emulator.","Open Handwriting Font Creator and draw and save all 62 glyphs back-to-back, logging a timestamp before the first glyph and after the last glyph is saved.","Assert no Activity from an ad SDK package, no WebView-hosted ad content, and no forced delay screen appears at any point during the 62-glyph sequence.","Compute elapsed wall time between the first and last timestamp."],"expected":"No ad or forced-wait screen is ever shown between glyphs, and a scripted 62-glyph sequence completes in well under 60 seconds of actual drawing time — unlike the incumbent's reported 90+ second ad every 3-5 letters.","scenario":"Unskippable ads while creating the font"},{"kind":"instrumented","steps":["With a stub package declaring the com.whatsapp application id present so resolveActivity can find it, switch the system input method to InkSend's keyboard inside a plain EditText test host app.","Type a short message into the test host's text field.","Tap the keyboard panel's 'Style & Send' button and capture the resulting launched Intent via an ActivityMonitor.","Assert the captured Intent's action, package, and MIME type, and that no intermediate Activity was started between the button tap and this Intent."],"expected":"Exactly one Intent(ACTION_SEND) targeting com.whatsapp with type image/png is launched within 1 second of the tap, with zero intermediate ad or interstitial screens.","scenario":"Ads gate using the font, too"},{"kind":"instrumented","steps":["Launch InkSend fresh (no prior purchase) and open Style Editor to attempt a custom color.","Assert Play Billing's launchBillingFlow is invoked with a single non-consumable (INAPP) product id, never a subscription product id.","Complete a test purchase via Play Billing's test-purchase flow.","Assert the purchased-state flag becomes true, no free trial or recurring billing is ever offered, and Style Editor's custom color picker becomes accessible immediately."],"expected":"The only purchase path offered anywhere in the app is the single $4.99 one-time unlock — no weekly/monthly price, no trial period, and no auto-renewing subscription language appears anywhere in the UI.","scenario":"Trial/subscription confusion"},{"kind":"instrumented","steps":["Enable InkSend's keyboard via InputMethodManager in test setup and select it as the active IME.","Open a plain EditText test host Activity and type a 50-character mixed-case string with punctuation and digits using UiAutomator key events.","Assert the EditText's final text exactly matches the 50-character input string."],"expected":"The EditText's committed text is character-for-character identical to what was typed, with zero drop/duplicate/reorder errors.","scenario":"baseline parity: the keyboard must type reliably across host apps"},{"kind":"manual","steps":["On a fresh device/emulator with InkSend just installed, follow only the in-app Keyboard Setup screen with no other instructions.","Tap 'Enable in Settings', enable the keyboard, return to the app, tap 'Choose Keyboard', select InkSend.","Type into the live test-typing box on the Keyboard Setup screen."],"expected":"A first-time user reaches a fully working, selected InkSend keyboard using only the in-app guided steps, confirmed by successfully typing in the live test box — unlike the incumbent's own reviews flagging missing Samsung setup directions.","scenario":"baseline parity: a first-time user must reach a working keyboard using only in-app guidance"}],"data_model":[{"entity":"StylePreset","fields":[{"name":"id","type":"Long","notes":"primary key, autogenerate"},{"name":"name","type":"String","notes":"user-facing label, e.g. 'Cursive Blue'"},{"name":"font_family","type":"String","notes":"bundled font asset id, or a HandwritingFont.file_path for a personal font"},{"name":"text_color_hex","type":"String","notes":"e.g. #1B6E5C"},{"name":"background_type","type":"String","notes":"'solid' or 'gradient'"},{"name":"background_color_hex","type":"String","notes":"solid color, or gradient start color"},{"name":"background_color_hex_2","type":"String","notes":"nullable — gradient end color, empty string when background_type is solid"},{"name":"is_default","type":"Boolean","notes":"exactly one row true at a time, enforced in the DAO transaction"},{"name":"is_built_in","type":"Boolean","notes":"true for the 3 free bundled presets, false for user-created ones"}],"storage":"room_local"},{"entity":"HandwritingFont","fields":[{"name":"id","type":"Long","notes":"primary key, autogenerate"},{"name":"name","type":"String","notes":"user-given label for their handwriting font"},{"name":"file_path","type":"String","notes":"internal storage path to the compiled .ttf"},{"name":"glyphs_completed","type":"Int","notes":"0-62, drives the resume/progress state on HandwritingFontCreator"},{"name":"created_at","type":"Instant","notes":""}],"storage":"room_local"}],"package_id":"fyi.appy.inksend.giladkutiel","target_sdk":35,"tech_stack":{"language":"Kotlin","libraries":[{"purpose":"Android Kotlin extensions and compatibility helpers","gradle_coordinate":"androidx.core:core-ktx:1.13.1"},{"purpose":"Compose host Activity","gradle_coordinate":"androidx.activity:activity-compose:1.9.3"},{"purpose":"Material 3 Compose components","gradle_coordinate":"androidx.compose.material3:material3:1.3.1"},{"purpose":"Compose Navigation for in-app screens","gradle_coordinate":"androidx.navigation:navigation-compose:2.8.5"},{"purpose":"ViewModel integration with Compose","gradle_coordinate":"androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6"},{"purpose":"Local Room database for style presets and handwriting fonts","gradle_coordinate":"androidx.room:room-runtime:2.7.1"},{"purpose":"Coroutine extensions for Room DAOs","gradle_coordinate":"androidx.room:room-ktx:2.7.1"},{"purpose":"Room annotation processing (KSP)","gradle_coordinate":"androidx.room:room-compiler:2.7.1"},{"purpose":"Local key-value storage for the purchase-flag cache and default-style id","gradle_coordinate":"androidx.datastore:datastore-preferences:1.1.1"},{"purpose":"One-time purchase billing via Play Billing","gradle_coordinate":"com.android.billingclient:billing-ktx:7.1.1"}],"ui_toolkit":"Jetpack Compose","gradle_version":"8.11.1","kotlin_version":"2.1.20","compose_bom_version":"2025.06.01"},"permissions":[],"positioning":"Turn any message you type into a styled image — pick a font, color, and background — and send it to WhatsApp in one tap, right from the keyboard, with no forced ads and no subscription.","original_app":{"name":"Fontmaker - Font Keyboard App","play_id":"com.takeofflabs.fontmaker","category":"Productivity","report_url":"https://appy.fyi/report/com.takeofflabs.fontmaker","play_store_url":"https://play.google.com/store/apps/details?id=com.takeofflabs.fontmaker"},"working_name":"InkSend","design_system":{"icon_name":"pen","typography":"Google Fonts 'Fraunces' (serif, expressive) for in-app headings/branding, Material 3 default type scale (Roboto Flex) for all other UI chrome and body text — never used for the rendered style output itself, which always uses the user's selected style font.","theme_notes":"Dark mode follows the system default: light theme uses background #F7F5FF / surface #FFFFFF / on-background #1C1B1F; dark theme uses background #16151F / surface #201F2C / on-background #E7E1FF. The Keyboard Panel always renders in a fixed dark theme regardless of system setting, matching common keyboard conventions and staying visually distinct from whatever app is being typed into.","color_error_hex":"#D64545","color_primary_hex":"#5B47E0","color_background_hex":"#F7F5FF"},"store_listing":{"title":"InkSend: Style & Send Text","category":"Productivity","keywords":["font keyboard","style text","whatsapp fonts","text styler","stylish text","handwriting font","custom keyboard","chat fonts"],"icon_prompt":"Create a 1024x1024 Android app icon for InkSend, a text-styling and WhatsApp-sharing app. Rounded-square adaptive icon style, indigo background (#5B47E0), a simple white fountain-pen nib icon with a short flowing ink stroke curling into a small rounded chat-bubble corner. Flat vector design, high contrast, no text, no brand logos, no photorealistic elements.","long_description":"InkSend turns anything you type into a beautifully styled image — your choice of font, text color, and background — and sends it straight to WhatsApp in a single tap, right from your keyboard.\n\nPick a default style once, then every message you want to stand out is one tap away: type, tap Style & Send, and WhatsApp opens with your image ready to send. Switch styles anytime from a quick strip built into the keyboard.\n\nWant something truly personal? Draw your own handwriting, letter by letter, and use it as one more style — it's a nice extra, not the main event.\n\nEverything happens on your device. No account, no ads, no weekly subscription — unlock every style and your own handwriting font once for $4.99.","short_description":"Style your text and send it to WhatsApp in one tap. No ads, no subscription."},"project_context":"This spec describes an independent, alternative Android app you are building from scratch to compete with an existing incumbent app on Google Play — not a modification, clone, or reskin of the incumbent's own code, assets, or branding. Use the incumbent only as a market reference (via the report data below), and design working_name/package_id/store_listing/design_system so the result is clearly its own product.","total_est_weeks":8.4,"trademark_cleared":false,"build_instructions":"chmod +x ./gradlew\n./gradlew clean\n./gradlew testDebugUnitTest\n./gradlew connectedDebugAndroidTest\nkeytool -genkeypair -v -keystore inksend-upload.jks -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias upload -dname \"CN=InkSend Upload,O=AppyFYI,C=US\" -storepass changeit -keypass changeit\nRELEASE_STORE_FILE=\"$PWD/inksend-upload.jks\" RELEASE_STORE_PASSWORD=\"changeit\" RELEASE_KEY_ALIAS=\"upload\" RELEASE_KEY_PASSWORD=\"changeit\" ./gradlew bundleRelease","human_gates_required":["trademark_and_privacy_review","closed_testing_recruitment"]}
+{
+  "ai": { "needed": false },
+  "legal": {
+    "data_collected": [],
+    "privacy_policy_url": "https://appy.fyi/app/fyi.appy.inksend.giladkutiel/privacy",
+    "regulated_category": "none",
+    "privacy_policy_accurate": false
+  },
+  "backend": "none",
+  "min_sdk": 26,
+  "pricing": {
+    "model": "free",
+    "billing_lib": "none"
+  },
+  "screens": [
+    {
+      "name": "Settings",
+      "route": "settings",
+      "states": [
+        "permissions_not_granted",
+        "permissions_partially_granted",
+        "permissions_fully_granted"
+      ],
+      "purpose": "The app's single screen: guides the user through granting the two required system permissions, lets them customize the rendered style (font, size, colors, gradient, text-length bounds), and shows a live preview of the current style.",
+      "entry_points": ["app launch"],
+      "key_ui_elements": [
+        "Required System Permissions card with an Overlay row and an Accessibility Service row, each showing a granted/not-granted status icon and an 'Open' button that deep-links to the matching system Settings screen",
+        "Live style preview rendering sample text with the current font/color/background/gradient",
+        "Min/Max text length fields that gate when the floating overlay appears",
+        "Font picker (Sans Serif / Serif / Monospace / Cursive) and a font-size slider",
+        "Text color and background color hex fields with inline swatch + validation",
+        "Gradient toggle and gradient end-color hex field"
+      ]
+    }
+  ],
+  "features": [
+    {
+      "name": "Floating Style Overlay Trigger",
+      "screens": ["Settings"],
+      "est_hours": 30,
+      "description": "A background AccessibilityService watches the actively focused editable field system-wide and shows a small floating overlay button whenever the typed text's trimmed length falls within the user-configured min/max bounds.",
+      "acceptance_criteria": [
+        "Typing in any editable field in any app shows the overlay once trimmed length is within [minTextLength, maxTextLength].",
+        "Overlay hides immediately when length falls back out of bounds or focus moves to a non-editable view.",
+        "Overlay position and visibility react live to settings changes without restarting the app."
+      ],
+      "implementation_notes": "TextMonitorAccessibilityService (AccessibilityService, @AndroidEntryPoint) listens for TYPE_VIEW_TEXT_CHANGED/TYPE_VIEW_FOCUSED, tracks the current AccessibilityNodeInfo + text, and delegates the length check to a pure TextLengthEvaluator.isWithinBounds() so the boundary logic is unit-testable outside the framework. OverlayWindowManager owns a WindowManager TYPE_APPLICATION_OVERLAY view (Gravity.BOTTOM|END) shown/hidden via addView/removeView."
+    },
+    {
+      "name": "Styled Image Rendering",
+      "screens": ["Settings"],
+      "est_hours": 20,
+      "description": "Renders the captured text into a PNG bitmap using the current TextStyleConfig — font, size, text color, solid or 2-stop gradient background, padding, and corner radius — sized to tightly fit the text rather than always filling a fixed canvas.",
+      "acceptance_criteria": [
+        "Short strings render a tight-fit bitmap, not a fixed max-width canvas.",
+        "Long strings wrap across multiple lines without overflowing the bitmap bounds.",
+        "An invalid hex color string falls back to a default color instead of crashing."
+      ],
+      "implementation_notes": "ImageRenderer.renderBitmap() measures the text's ideal width via Layout.getDesiredWidth() (capped at an 800dp-equivalent max), builds a StaticLayout at that width, and draws it centered onto a Canvas-backed Bitmap with a solid or LinearGradient rounded-rect background. generateStyledImageUri() writes the PNG to cacheDir/images and returns a FileProvider content URI."
+    },
+    {
+      "name": "Clipboard Copy & Field Clear",
+      "screens": ["Settings"],
+      "est_hours": 10,
+      "description": "Tapping the overlay copies the rendered image to the system clipboard as an image/png ClipData and clears the original text field, so the user can immediately paste the styled image in place of what they typed.",
+      "acceptance_criteria": [
+        "After tapping the overlay, the system clipboard holds a ClipData whose item URI resolves to image/png.",
+        "The originating text field is cleared via ACTION_SET_TEXT immediately after the copy.",
+        "A short confirmation Toast appears telling the user to paste."
+      ],
+      "implementation_notes": "ClipboardManagerHelper.copyImageToClipboard() uses ClipData.newUri(contentResolver, label, uri) so the MIME type is resolved from FileProvider's own getType(). TextMonitorAccessibilityService then calls AccessibilityNodeInfo.performAction(ACTION_SET_TEXT, empty string) on the tracked node."
+    },
+    {
+      "name": "Guided Permission Setup",
+      "screens": ["Settings"],
+      "est_hours": 8,
+      "description": "The Settings screen live-checks both required permissions (SYSTEM_ALERT_WINDOW via Settings.canDrawOverlays, the accessibility service via AccessibilityManager.getEnabledAccessibilityServiceList) on every onResume, and deep-links straight to the matching system Settings screen for whichever is missing.",
+      "acceptance_criteria": [
+        "Returning to the app after granting a permission in system Settings updates that row to 'Granted' without needing to relaunch the app.",
+        "Tapping 'Open' on the overlay row launches ACTION_MANAGE_OVERLAY_PERMISSION scoped to this app's package.",
+        "Tapping 'Open' on the accessibility row launches ACTION_ACCESSIBILITY_SETTINGS."
+      ],
+      "implementation_notes": "PermissionUtils centralizes both live checks. MainActivity re-checks both in a DefaultLifecycleObserver.onResume() and triggers Play's In-App Review flow (InAppReviewHelper) the first time both permissions transition from not-fully-granted to fully-granted — a genuine positive completion point."
+    },
+    {
+      "name": "Live Style Preview & Customization",
+      "screens": ["Settings"],
+      "est_hours": 12,
+      "description": "Every style control (font, size, text/background/gradient color, gradient toggle, min/max length) persists to DataStore and immediately re-renders a live preview bitmap of sample text so the user sees the effect of a change before it's ever used on real typed text.",
+      "acceptance_criteria": [
+        "Changing any style control updates the live preview image within one recomposition, without a manual 'apply' step.",
+        "Settings persist across app restarts.",
+        "An invalid hex color shows an inline error state on the field instead of silently discarding the input."
+      ],
+      "implementation_notes": "SettingsRepository wraps a single Preferences DataStore (`user_settings`) exposing TextStyleConfig as a Flow; SettingsViewModel exposes it as a StateFlow via stateIn(WhileSubscribed(5000)). SettingsScreen's LivePreview composable calls ImageRenderer.renderBitmap() on Dispatchers.Default inside produceState(config) and renders the result via Image(bitmap.asImageBitmap())."
+    }
+  ],
+  "non_goals": [
+    "No custom Input Method (IME) / system keyboard in this version — text is styled and cleared in place via AccessibilityService, not typed through a replacement keyboard.",
+    "No multiple saved style presets or a style gallery — there is exactly one active TextStyleConfig at a time, edited directly in Settings.",
+    "No in-app purchases, ads, or any billing integration — the app is entirely free with no monetization.",
+    "No handwriting font creation — only the four bundled system type families (Sans Serif, Serif, Monospace, Cursive) are offered.",
+    "No cloud backend, accounts, or sync — all settings live in local DataStore on the one device.",
+    "No app-specific one-tap share target (e.g. WhatsApp) — the styled image is placed on the system clipboard for the user to paste anywhere themselves.",
+    "No AI-assisted anything in v1."
+  ],
+  "test_plan": [
+    {
+      "kind": "unit",
+      "scenario": "Text-length boundary evaluation",
+      "steps": [
+        "Call TextLengthEvaluator.isWithinBounds with lengths below, at, and above the configured min/max bounds."
+      ],
+      "expected": "Lengths strictly below minLength or strictly above maxLength return false; lengths equal to either bound or in between return true."
+    },
+    {
+      "kind": "instrumented",
+      "scenario": "Multi-line wrapping stays within rendered bounds",
+      "steps": [
+        "Render a short string and a long multi-sentence string with the same TextStyleConfig via ImageRenderer.renderBitmap on a connected device.",
+        "Compare the resulting bitmap heights and widths."
+      ],
+      "expected": "The long string renders a taller bitmap than the short string, and neither bitmap's width exceeds the configured max canvas width."
+    },
+    {
+      "kind": "instrumented",
+      "scenario": "Short text renders a tight-fit box, not the max canvas width",
+      "steps": [
+        "Render a 2-character string via ImageRenderer.renderBitmap.",
+        "Compare its width against the max canvas width."
+      ],
+      "expected": "The short string's bitmap width is meaningfully smaller than the max canvas width."
+    },
+    {
+      "kind": "instrumented",
+      "scenario": "Invalid hex colors fall back instead of crashing",
+      "steps": [
+        "Render text with a TextStyleConfig whose textColorHex and backgroundColorHex are not valid hex strings."
+      ],
+      "expected": "Rendering completes and returns a non-empty bitmap instead of throwing."
+    },
+    {
+      "kind": "instrumented",
+      "scenario": "Clipboard paste integrity",
+      "steps": [
+        "Launch MainActivity via ActivityScenario so the process holds window focus.",
+        "From inside the resumed Activity, render an image and call ClipboardManagerHelper.copyImageToClipboard.",
+        "Read back ClipboardManager.primaryClip from the same focused Activity."
+      ],
+      "expected": "The primary clip's item URI matches the copied URI and its MIME type is image/png."
+    },
+    {
+      "kind": "manual",
+      "scenario": "Permission handling when revoked dynamically",
+      "steps": [
+        "Grant both the overlay and accessibility permissions, confirm the overlay appears while typing.",
+        "Revoke one permission from system Settings, return to the app."
+      ],
+      "expected": "The revoked permission's row reverts to 'not granted' on the very next onResume, and the overlay stops appearing until it's re-granted."
+    }
+  ],
+  "data_model": [
+    {
+      "entity": "TextStyleConfig",
+      "fields": [
+        { "name": "font", "type": "FontChoice enum (SANS_SERIF/SERIF/MONOSPACE/CURSIVE)", "notes": "maps to an Android generic Typeface family name" },
+        { "name": "fontSizeSp", "type": "Float", "notes": "default 28" },
+        { "name": "textColorHex", "type": "String", "notes": "e.g. #FFFFFF" },
+        { "name": "backgroundColorHex", "type": "String", "notes": "solid color, or gradient start color" },
+        { "name": "isGradientEnabled", "type": "Boolean", "notes": "" },
+        { "name": "gradientEndColorHex", "type": "String", "notes": "used only when isGradientEnabled" },
+        { "name": "paddingDp", "type": "Int", "notes": "default 32" },
+        { "name": "cornerRadiusDp", "type": "Float", "notes": "default 24" },
+        { "name": "minTextLength", "type": "Int", "notes": "default 3 — overlay trigger lower bound" },
+        { "name": "maxTextLength", "type": "Int", "notes": "default 280 — overlay trigger upper bound" }
+      ],
+      "storage": "datastore_preferences"
+    }
+  ],
+  "package_id": "fyi.appy.inksend.giladkutiel",
+  "target_sdk": 35,
+  "tech_stack": {
+    "language": "Kotlin",
+    "libraries": [
+      { "purpose": "Android Kotlin extensions and compatibility helpers", "gradle_coordinate": "androidx.core:core-ktx:1.13.1" },
+      { "purpose": "Compose host Activity", "gradle_coordinate": "androidx.activity:activity-compose:1.9.3" },
+      { "purpose": "Material 3 Compose components", "gradle_coordinate": "androidx.compose.material3:material3:1.3.1" },
+      { "purpose": "ViewModel integration with Compose", "gradle_coordinate": "androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6" },
+      { "purpose": "Lifecycle-aware coroutines (permission re-check on resume)", "gradle_coordinate": "androidx.lifecycle:lifecycle-runtime-ktx:2.8.6" },
+      { "purpose": "Local key-value storage for the one active TextStyleConfig", "gradle_coordinate": "androidx.datastore:datastore-preferences:1.1.1" },
+      { "purpose": "Coroutines for DataStore flows and the accessibility service's settings collector", "gradle_coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0" },
+      { "purpose": "Dependency injection into the Application, Activity, and AccessibilityService", "gradle_coordinate": "com.google.dagger:hilt-android:2.56.2" },
+      { "purpose": "Hilt annotation processing via KSP", "gradle_coordinate": "com.google.dagger:hilt-android-compiler:2.56.2" },
+      { "purpose": "Play In-App Review prompt after first successful permission setup", "gradle_coordinate": "com.google.android.play:review-ktx:2.0.2" }
+    ],
+    "ui_toolkit": "Jetpack Compose",
+    "gradle_version": "8.7.3",
+    "kotlin_version": "2.1.20",
+    "compose_bom_version": "2025.06.01"
+  },
+  "permissions": [
+    "SYSTEM_ALERT_WINDOW",
+    "FOREGROUND_SERVICE",
+    "FOREGROUND_SERVICE_SPECIAL_USE"
+  ],
+  "positioning": "Type anywhere — any app, any field — and turn what you typed into a beautifully styled image with one tap on a small floating button, ready to paste right back in.",
+  "original_app": {
+    "name": "Fontmaker - Font Keyboard App",
+    "play_id": "com.takeofflabs.fontmaker",
+    "category": "Productivity",
+    "report_url": "https://appy.fyi/report/com.takeofflabs.fontmaker",
+    "play_store_url": "https://play.google.com/store/apps/details?id=com.takeofflabs.fontmaker"
+  },
+  "working_name": "InkSend",
+  "design_system": {
+    "icon_name": "pen",
+    "typography": "Google Fonts 'Fraunces' (serif, expressive) for in-app headings/branding, Material 3 default type scale (Roboto Flex) for all other UI chrome and body text — never used for the rendered style output itself, which always uses the user's selected style font.",
+    "theme_notes": "Dark mode follows the system default: light theme uses background #F7F5FF / surface #FFFFFF / on-background #1C1B1F; dark theme uses background #16151F / surface #201F2C / on-background #E7E1FF.",
+    "color_error_hex": "#D64545",
+    "color_primary_hex": "#5B47E0",
+    "color_background_hex": "#F7F5FF"
+  },
+  "store_listing": {
+    "title": "InkSend: Style Any Text",
+    "category": "Productivity",
+    "keywords": ["style text", "text to image", "stylish text", "text styler", "custom text color", "text overlay", "chat styler"],
+    "icon_prompt": "Create a 1024x1024 Android app icon for InkSend, a text-styling utility app. Rounded-square adaptive icon style, indigo background (#5B47E0), a simple white fountain-pen nib icon with a short flowing ink stroke. Flat vector design, high contrast, no text, no brand logos, no photorealistic elements.",
+    "long_description": "InkSend turns anything you type, in any app, into a beautifully styled image — your choice of font, text color, and background — ready to paste back in with one tap.\n\nJust start typing in any text field. Once your message is long enough, a small floating button appears. Tap it, and InkSend renders your exact words as a styled image, copies it to your clipboard, and clears the field — so a long-press and Paste (or your keyboard's clipboard suggestion) drops the image right back in.\n\nCustomize everything from one simple settings screen: font, size, text color, background color or gradient, padding, corner rounding, and exactly which text lengths should trigger the button — with a live preview as you go.\n\nEverything happens on your device. No account, no ads, no subscription — InkSend is completely free.",
+    "short_description": "Style any text you type and paste it back in as an image — free, no ads, no account."
+  },
+  "project_context": "This spec describes an independent, alternative Android app you are building from scratch to compete with an existing incumbent app on Google Play — not a modification, clone, or reskin of the incumbent's own code, assets, or branding. Use the incumbent only as a market reference (via the report data below), and design working_name/package_id/store_listing/design_system so the result is clearly its own product.",
+  "total_est_weeks": 2.0,
+  "trademark_cleared": false,
+  "build_instructions": "chmod +x ./gradlew\n./gradlew clean\n./gradlew testDebugUnitTest\n./gradlew connectedDebugAndroidTest\nkeytool -genkeypair -v -keystore inksend-upload.jks -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias upload -dname \"CN=InkSend Upload,O=AppyFYI,C=US\" -storepass changeit -keypass changeit\nRELEASE_STORE_FILE=\"$PWD/inksend-upload.jks\" RELEASE_STORE_PASSWORD=\"changeit\" RELEASE_KEY_ALIAS=\"upload\" RELEASE_KEY_PASSWORD=\"changeit\" ./gradlew bundleRelease",
+  "human_gates_required": ["trademark_and_privacy_review", "closed_testing_recruitment"]
+}

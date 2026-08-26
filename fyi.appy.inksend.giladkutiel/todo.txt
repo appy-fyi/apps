@@ -1,4 +1,6 @@
 TODO:
+
+DONE:
     Rebuild InkSend:
         Ignore all files other than inksend.md, in particular ignore the com.takeofflabs.fontmaker-build-spec.json file and ignore all existing code.
         You task is to build from scratch a new version of InkSend, you need to:
@@ -6,5 +8,3 @@ TODO:
         2. Update the com.takeofflabs.fontmaker-build-spec.json file to reflect the new build specifications for InkSend.
         3. Build the first version of InkSend and push it to my phone.
         4. Wait for my feedback before proceeding to the next version.
-
-DONE:

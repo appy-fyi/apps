@@ -38,9 +38,3 @@ fun InkSendTheme(
         content = content,
     )
 }
-
-/** Always dark, regardless of system theme — used by the keyboard panel only. */
-@Composable
-fun InkSendKeyboardTheme(content: @Composable () -> Unit) {
-    InkSendTheme(darkTheme = true, content = content)
-}
