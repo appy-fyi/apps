@@ -68,13 +68,13 @@
       "name": "Clipboard Copy & Field Clear",
       "screens": ["Settings"],
       "est_hours": 10,
-      "description": "Tapping either overlay button copies that button's rendered image to the system clipboard as an image/png ClipData and clears the original text field, so the user can immediately paste the styled image in place of what they typed.",
+      "description": "Tapping any overlay button copies that button's rendered image to the system clipboard as an image/png ClipData and clears the original text field, so the user can immediately paste the styled image in place of what they typed.",
       "acceptance_criteria": [
-        "After tapping either overlay button, the system clipboard holds a ClipData whose item URI resolves to image/png, rendered with the tapped button's own style.",
+        "After tapping any overlay button, the system clipboard holds a ClipData whose item URI resolves to image/png, rendered with the tapped button's own style.",
         "The originating text field is cleared via ACTION_SET_TEXT immediately after the copy.",
         "A short confirmation Toast appears telling the user to paste."
       ],
-      "implementation_notes": "ClipboardManagerHelper.copyImageToClipboard() uses ClipData.newUri(contentResolver, label, uri) so the MIME type is resolved from FileProvider's own getType(). TextMonitorAccessibilityService.handleStyleButtonPressed(renderConfig) is shared by both buttons' click callbacks — each passes its own resolved TextStyleConfig — then calls AccessibilityNodeInfo.performAction(ACTION_SET_TEXT, empty string) on the tracked node."
+      "implementation_notes": "ClipboardManagerHelper.copyImageToClipboard() uses ClipData.newUri(contentResolver, label, uri) so the MIME type is resolved from FileProvider's own getType(). TextMonitorAccessibilityService.handleStyleButtonPressed(style: StyleConfig) is shared by every button's click callback — each closure passes its own StyleConfig from the current styles list — then calls AccessibilityNodeInfo.performAction(ACTION_SET_TEXT, empty string) on the tracked node."
     },
     {
       "name": "Guided Permission Setup",
@@ -91,14 +91,16 @@
     {
       "name": "Live Style Preview & Customization",
       "screens": ["Settings"],
-      "est_hours": 12,
-      "description": "Every style control across both Style 1 and Style 2 sections (font, emoji badge, text/background/gradient color, gradient toggle) plus the shared min/max length bounds persists to DataStore and immediately re-renders that style's live preview bitmap of sample text so the user sees the effect of a change before it's ever used on real typed text.",
+      "est_hours": 18,
+      "description": "The user manages an arbitrary-length list of styles: every style control (font, emoji badge, text/background/gradient color, gradient toggle) plus the shared min/max length bounds persists to DataStore and immediately re-renders that style's live preview bitmap of sample text so the user sees the effect of a change before it's ever used on real typed text. An 'Add Style' button appends a new style (and a matching overlay button); each style section carries its own 'Remove Style' button, hidden once only one style remains so the user can never delete the last one.",
       "acceptance_criteria": [
-        "Changing any Style 1 or Style 2 control updates that style's own live preview image within one recomposition, without a manual 'apply' step.",
-        "Settings for both styles persist independently across app restarts.",
+        "Changing any control in a Style N section updates that style's own live preview image within one recomposition, without a manual 'apply' step.",
+        "Tapping 'Add Style' appends a new Style N section (seeded with the Sans Serif defaults) to the list and persists it immediately; the new overlay button appears the next time the overlay is shown.",
+        "Tapping a style's 'Remove Style' button deletes only that style and persists the remaining list immediately; the 'Remove Style' button is hidden while exactly one style remains, so the list can never be emptied from the UI.",
+        "The full style list persists across app restarts, in the same order the user left it.",
         "Text, background, and gradient end colors are each chosen by tapping a swatch from a small predefined palette, so every persisted color value is always a valid hex string — there is no free-text color entry or invalid-color state to show."
       ],
-      "implementation_notes": "SettingsRepository wraps a single Preferences DataStore (`user_settings`) exposing TextStyleConfig (Style 1) and SecondaryStyleConfig (Style 2, under style2_* keys) as separate Flows; SettingsViewModel exposes each as its own StateFlow via stateIn(WhileSubscribed(5000)). SettingsScreen's LivePreview composable calls ImageRenderer.renderBitmap() on Dispatchers.Default inside produceState(config) and renders the result via Image(bitmap.asImageBitmap()) — called once per style, with Style 2's preview built via SecondaryStyleConfig.toRenderConfig(primaryConfig). The emoji field is a tap-to-select EmojiPicker (a FlowRow of EmojiChoiceChip boxes) over a fixed EMOJI_BADGE_CHOICES palette of 17 popular, category-diverse emoji plus a blank white chip (an empty box sized identically to the emoji choices) that sets emoji to blank — not a free-text field — so the persisted emoji string is always either blank or one of the palette entries. Text/background/gradient-end colors are each a tap-to-select ColorPicker (a FlowRow of circular ColorSwatch boxes, selected swatch marked with a checkmark whose black/white tint is chosen by isLightColor() luminance) over a fixed COLOR_PALETTE of 16 hex colors — not a free-text hex field — so the persisted color hex is always one of the palette entries."
+      "implementation_notes": "SettingsRepository wraps a single Preferences DataStore (`user_settings`) exposing stylesFlow: Flow<List<StyleConfig>> (styles serialized as a JSON array string under the `styles_json` key via org.json, decoded back with per-field fallbacks so a malformed or missing entry never crashes the flow) and a separate triggerConfigFlow: Flow<TriggerConfig> for the shared min/max bounds. Falling back to DEFAULT_STYLES (two fixed-id entries reproducing the original Style 1 / Style 2 look) covers both first launch and an explicitly emptied list. SettingsViewModel exposes stylesState/triggerState as StateFlows via stateIn(WhileSubscribed(5000)) and offers updateStyle(updated) (replaces by id), addStyle() (appends StyleConfig() with a fresh random id), removeStyle(id) (no-ops if it would empty the list), and updateTriggerConfig(). SettingsScreen renders styles.forEachIndexed { index, style -> StyleSection(...) } inside a Card per style, each wired to viewModel.updateStyle/removeStyle, followed by an 'Add Style' button; StyleSection's LivePreview composable calls ImageRenderer.renderBitmap() on Dispatchers.Default inside produceState(config) and renders the result via Image(bitmap.asImageBitmap()). The emoji field is a tap-to-select EmojiPicker (a FlowRow of EmojiChoiceChip boxes) over a fixed EMOJI_BADGE_CHOICES palette of 17 popular, category-diverse emoji plus a blank white chip (an empty box sized identically to the emoji choices) that sets emoji to blank — not a free-text field — so the persisted emoji string is always either blank or one of the palette entries. Text/background/gradient-end colors are each a tap-to-select ColorPicker (a FlowRow of circular ColorSwatch boxes, selected swatch marked with a checkmark whose black/white tint is chosen by isLightColor() luminance) over a fixed COLOR_PALETTE of 16 hex colors — not a free-text hex field — so the persisted color hex is always one of the palette entries."
     },
     {
       "name": "Multi-language UI Support",
@@ -116,7 +118,7 @@
   ],
   "non_goals": [
     "No custom Input Method (IME) / system keyboard in this version — text is styled and cleared in place via AccessibilityService, not typed through a replacement keyboard.",
-    "No arbitrary number of saved style presets or a style gallery — there are exactly two fixed style slots (Style 1 / Style 2), each edited directly in Settings and each backing its own overlay button.",
+    "No drag-to-reorder of the style list, and no per-style padding/corner-radius controls in the UI (both fields still exist on StyleConfig for the renderer but are fixed at their defaults) — the list only supports appending a style and removing one (down to a minimum of one).",
     "No in-app purchases, ads, or any billing integration — the app is entirely free with no monetization.",
     "No handwriting font creation — only the four bundled system type families (Sans Serif, Serif, Monospace, Cursive) are offered.",
     "No cloud backend, accounts, or sync — all settings live in local DataStore on the one device.",
@@ -137,7 +139,7 @@
       "kind": "instrumented",
       "scenario": "Rendered bitmap is always a fixed 512x512 square",
       "steps": [
-        "Render a short string and a long multi-sentence string with the same TextStyleConfig via ImageRenderer.renderBitmap on a connected device.",
+        "Render a short string and a long multi-sentence string with the same StyleConfig via ImageRenderer.renderBitmap on a connected device.",
         "Compare the resulting bitmap dimensions."
       ],
       "expected": "Both the short and long string bitmaps are exactly 512x512, regardless of text length."
@@ -155,7 +157,7 @@
       "kind": "instrumented",
       "scenario": "Invalid hex colors fall back instead of crashing",
       "steps": [
-        "Render text with a TextStyleConfig whose textColorHex and backgroundColorHex are not valid hex strings."
+        "Render text with a StyleConfig whose textColorHex and backgroundColorHex are not valid hex strings."
       ],
       "expected": "Rendering completes and returns a non-empty bitmap instead of throwing."
     },
@@ -163,7 +165,7 @@
       "kind": "instrumented",
       "scenario": "Emoji badge renders without breaking the fixed square",
       "steps": [
-        "Render the same text with a TextStyleConfig whose emoji is a non-blank string, and again with emoji blank."
+        "Render the same text with a StyleConfig whose emoji is a non-blank string, and again with emoji blank."
       ],
       "expected": "Both renders succeed and return an exact 512x512 bitmap; the non-blank case has a visible glyph badge in the top-left corner, the blank case has none."
     },
@@ -199,7 +201,7 @@
     },
     {
       "kind": "manual",
-      "scenario": "Two overlay buttons with independent styles",
+      "scenario": "Multiple overlay buttons with independent styles",
       "steps": [
         "Set clearly different fonts/colors for Style 1 and Style 2 in Settings.",
         "Type qualifying text in a monitored field and observe both floating buttons.",
@@ -207,37 +209,44 @@
         "Tap the Style 1 button, paste, then repeat typing and tap the Style 2 button, paste."
       ],
       "expected": "Both buttons appear together and stay paired while dragging; pasting after the Style 1 tap shows an image in Style 1's look, and pasting after the Style 2 tap shows an image in Style 2's distinct look."
+    },
+    {
+      "kind": "manual",
+      "scenario": "Adding and removing styles",
+      "steps": [
+        "In Settings, tap 'Add Style' twice to grow the list to four styles, giving each a distinct font/color/emoji.",
+        "Type qualifying text in a monitored field and confirm four overlay buttons appear, stacked together.",
+        "Back in Settings, remove styles one at a time down to a single remaining style.",
+        "Type qualifying text again."
+      ],
+      "expected": "After adding, four independently-tappable overlay buttons appear, each rendering its own style when tapped. The 'Remove Style' button disappears from the last remaining style's section, and once down to one style, only a single overlay button appears when typing."
     }
   ],
   "data_model": [
     {
-      "entity": "TextStyleConfig",
+      "entity": "StyleConfig",
       "fields": [
+        { "name": "id", "type": "String", "notes": "stable UUID (or a fixed id for the two seeded defaults); identifies the style across list edits independent of position" },
         { "name": "font", "type": "FontChoice enum (SANS_SERIF/SERIF/MONOSPACE/CURSIVE)", "notes": "maps to an Android generic Typeface family name" },
         { "name": "textColorHex", "type": "String", "notes": "e.g. #FFFFFF" },
-        { "name": "backgroundColorHex", "type": "String", "notes": "solid color, or gradient start color" },
+        { "name": "backgroundColorHex", "type": "String", "notes": "solid color, or gradient start color; also tints this style's overlay button background" },
         { "name": "isGradientEnabled", "type": "Boolean", "notes": "" },
         { "name": "gradientEndColorHex", "type": "String", "notes": "used only when isGradientEnabled" },
-        { "name": "paddingDp", "type": "Int", "notes": "default 32" },
-        { "name": "cornerRadiusDp", "type": "Float", "notes": "default 24" },
-        { "name": "minTextLength", "type": "Int", "notes": "default 3 — overlay trigger lower bound, shared by both style buttons" },
-        { "name": "maxTextLength", "type": "Int", "notes": "default 280 — overlay trigger upper bound, shared by both style buttons" },
+        { "name": "paddingDp", "type": "Int", "notes": "default 32 — not currently exposed in the Settings UI" },
+        { "name": "cornerRadiusDp", "type": "Float", "notes": "default 24 — unused by the renderer (square always has sharp corners); not exposed in the Settings UI" },
         { "name": "emoji", "type": "String", "notes": "default \"✨\" — optional badge drawn in the image's top-left corner; blank means no badge" }
       ],
-      "storage": "datastore_preferences"
+      "storage": "datastore_preferences",
+      "notes": "One StyleConfig backs one overlay button. The full ordered list is persisted as a single JSON array string (key `styles_json`) under the `user_settings` Preferences DataStore, decoded via SettingsRepository.decodeStyles(); falls back to two fixed-id defaults (matching the original Style 1 / Style 2 look) on first launch, malformed JSON, or an explicitly emptied list. The Settings UI can append entries (Add Style) and remove any but the last remaining one (Remove Style)."
     },
     {
-      "entity": "SecondaryStyleConfig",
+      "entity": "TriggerConfig",
       "fields": [
-        { "name": "font", "type": "FontChoice enum (SANS_SERIF/SERIF/MONOSPACE/CURSIVE)", "notes": "default SERIF, independent of the primary style's font" },
-        { "name": "textColorHex", "type": "String", "notes": "default #1E1E2E" },
-        { "name": "backgroundColorHex", "type": "String", "notes": "default #F5E9DA — solid color, or gradient start color" },
-        { "name": "isGradientEnabled", "type": "Boolean", "notes": "default false" },
-        { "name": "gradientEndColorHex", "type": "String", "notes": "default #F7B267 — used only when isGradientEnabled" },
-        { "name": "emoji", "type": "String", "notes": "default \"🎨\" — optional badge, independent of the primary style's emoji" }
+        { "name": "minTextLength", "type": "Int", "notes": "default 3 — overlay trigger lower bound, shared by every style button" },
+        { "name": "maxTextLength", "type": "Int", "notes": "default 280 — overlay trigger upper bound, shared by every style button" }
       ],
       "storage": "datastore_preferences",
-      "notes": "Backs the second overlay button. Only visual fields — paddingDp, minTextLength, and maxTextLength are borrowed from TextStyleConfig via SecondaryStyleConfig.toRenderConfig(base) when rendering."
+      "notes": "One shared instance, independent of the style list, since only one overlay set triggers for a given typed text regardless of how many styles are configured."
     }
   ],
   "package_id": "fyi.appy.inksend.giladkutiel",

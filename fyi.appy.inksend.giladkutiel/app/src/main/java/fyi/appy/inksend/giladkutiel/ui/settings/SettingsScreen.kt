@@ -370,7 +370,11 @@ private fun EmojiPicker(selected: String, onSelect: (String) -> Unit) {
             )
             EMOJI_BADGE_CHOICES.forEach { emoji ->
                 EmojiChoiceChip(
-                    content = { Text(emoji, fontSize = 22.sp) },
+                    content = {
+                        Box(modifier = Modifier.size(22.dp), contentAlignment = Alignment.Center) {
+                            Text(emoji, fontSize = 22.sp)
+                        }
+                    },
                     isSelected = selected == emoji,
                     onClick = { onSelect(emoji) },
                 )
