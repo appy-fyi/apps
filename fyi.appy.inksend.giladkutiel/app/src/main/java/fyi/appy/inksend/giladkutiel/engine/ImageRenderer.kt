@@ -15,9 +15,11 @@ import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
 import androidx.core.content.FileProvider
+import fyi.appy.inksend.giladkutiel.data.model.FontChoice
 import fyi.appy.inksend.giladkutiel.data.model.StyleConfig
 import java.io.File
 import java.io.FileOutputStream
+import kotlin.math.abs
 
 /**
  * Renders arbitrary text into a styled PNG bitmap using native Canvas/StaticLayout,
@@ -32,6 +34,9 @@ object ImageRenderer {
     private val EMOJI_SIZE_PX = CANVAS_SIZE_PX * 0.14f
     private val EMOJI_MARGIN_PX = CANVAS_SIZE_PX * 0.06f
 
+    /** How many non-whitespace chars of the text to sample when checking font coverage. */
+    private const val TYPEFACE_SAMPLE_CHARS = 32
+
     fun renderBitmap(context: Context, text: String, config: StyleConfig): Bitmap {
         val density = context.resources.displayMetrics.density
         val paddingPx = (config.paddingDp * density).toInt().coerceIn(0, CANVAS_SIZE_PX / 4)
@@ -39,7 +44,7 @@ object ImageRenderer {
 
         val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             color = parseColorOrDefault(config.textColorHex, Color.WHITE)
-            typeface = Typeface.create(config.font.typefaceName, Typeface.BOLD)
+            typeface = resolveTypeface(config.font, text)
         }
 
         // Always render onto a fixed 512x512 square, so font size is the only free
@@ -206,4 +211,45 @@ object ImageRenderer {
         fun mix(channel: Int) = (channel + (target - channel) * amount).toInt().coerceIn(0, 255)
         return Color.rgb(mix(Color.red(color)), mix(Color.green(color)), mix(Color.blue(color)))
     }
+
+    /**
+     * Resolves [font] to a concrete [Typeface] for [text], guarding the two families that
+     * ship no non-Latin faces. Android's `serif` and `sans-serif` fall back across the full
+     * Noto Serif / Noto Sans set and render every bundled script well, but `cursive` (a
+     * Latin-only display face) and `monospace` silently fall back to a plain sans-serif face
+     * for scripts they don't cover — so Hindi, CJK, Thai, Arabic, etc. text picked out in
+     * the "Cursive" look would render as flat Noto Sans with none of the intended character.
+     *
+     * When the chosen family measures the same as plain sans-serif for [text] — i.e. it has
+     * already silently fallen back and is contributing nothing — this swaps in a
+     * coverage-complete family with a compatible flavour: Cursive -> Serif (the most
+     * expressive shape that still covers the script), Monospace -> Sans Serif. Latin text,
+     * where the decorative family does render distinctly, is left untouched.
+     */
+    internal fun resolveTypeface(font: FontChoice, text: String): Typeface {
+        val chosen = Typeface.create(font.typefaceName, Typeface.BOLD)
+        if (font == FontChoice.SERIF || font == FontChoice.SANS_SERIF) return chosen
+
+        val sample = buildString {
+            for (ch in text) {
+                if (!ch.isWhitespace()) append(ch)
+                if (length >= TYPEFACE_SAMPLE_CHARS) break
+            }
+        }
+        if (sample.isEmpty()) return chosen
+
+        val neutral = Typeface.create(FontChoice.SANS_SERIF.typefaceName, Typeface.BOLD)
+        val rendersDistinctly = abs(widthWith(chosen, sample) - widthWith(neutral, sample)) > 0.5f
+        if (rendersDistinctly) return chosen
+
+        val substitute = if (font == FontChoice.CURSIVE) FontChoice.SERIF else FontChoice.SANS_SERIF
+        return Typeface.create(substitute.typefaceName, Typeface.BOLD)
+    }
+
+    /** Total advance width of [sample] at a fixed size with [typeface], for coverage comparison. */
+    private fun widthWith(typeface: Typeface, sample: String): Float =
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.typeface = typeface
+            textSize = 64f
+        }.measureText(sample)
 }

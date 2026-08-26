@@ -5,7 +5,9 @@ import android.graphics.Typeface
 import android.text.TextPaint
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import fyi.appy.inksend.giladkutiel.data.model.FontChoice
 import fyi.appy.inksend.giladkutiel.data.model.StyleConfig
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -73,6 +75,33 @@ class ImageRendererTest {
         )
         val bitmap = ImageRenderer.renderBitmap(context, chinese, config)
         assertTrue("render still produces a 512x512 square", bitmap.width == 512 && bitmap.height == 512)
+    }
+
+    @Test
+    fun decorativeFontsFallBackToACoverageCompleteFamilyForNonLatinText() {
+        // "cursive" is a Latin-only display face: for Devanagari it silently falls back to
+        // plain Noto Sans, losing all of its character. resolveTypeface should notice that
+        // and substitute serif (which has a real Noto Serif Devanagari face) instead.
+        val hindi = "यह हिंदी में लिखा गया एक छोटा संदेश है"
+        assertEquals(
+            "cursive adds nothing for Devanagari; should resolve to serif",
+            Typeface.create("serif", Typeface.BOLD),
+            ImageRenderer.resolveTypeface(FontChoice.CURSIVE, hindi),
+        )
+        // monospace has no non-Latin monospaced face either; fall back to sans-serif.
+        assertEquals(
+            Typeface.create("sans-serif", Typeface.BOLD),
+            ImageRenderer.resolveTypeface(FontChoice.MONOSPACE, hindi),
+        )
+        // Latin text: cursive genuinely renders, so it must be left alone.
+        assertEquals(
+            "cursive renders Latin distinctly; should stay cursive",
+            Typeface.create("cursive", Typeface.BOLD),
+            ImageRenderer.resolveTypeface(FontChoice.CURSIVE, "A short English message"),
+        )
+        // And a full render of non-Latin text in a cursive style still succeeds.
+        val bitmap = ImageRenderer.renderBitmap(context, hindi, StyleConfig(font = FontChoice.CURSIVE))
+        assertTrue(bitmap.width == 512 && bitmap.height == 512)
     }
 
     @Test

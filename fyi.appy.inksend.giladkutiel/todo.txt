@@ -1,8 +1,8 @@
 TODO:
     Auto Style:
-        Make sure fonts for the other languages are supported and look good.
 DONE:
     Auto Style:
+        Make sure fonts for the other languages are supported and look good.
         Make sure languages that are not English also work
         Always use color gradient for the background.
         Horizontal center the emoji.
