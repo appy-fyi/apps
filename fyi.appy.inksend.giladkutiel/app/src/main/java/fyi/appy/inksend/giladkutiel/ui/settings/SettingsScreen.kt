@@ -39,7 +39,9 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import fyi.appy.inksend.giladkutiel.data.model.FontChoice
+import fyi.appy.inksend.giladkutiel.data.model.SecondaryStyleConfig
 import fyi.appy.inksend.giladkutiel.data.model.TextStyleConfig
+import fyi.appy.inksend.giladkutiel.data.model.toRenderConfig
 import fyi.appy.inksend.giladkutiel.engine.ImageRenderer
 import kotlinx.coroutines.Dispatchers
 
@@ -55,6 +57,7 @@ fun SettingsScreen(
     onRequestAccessibilityPermission: () -> Unit,
 ) {
     val config by viewModel.uiState.collectAsState()
+    val secondaryConfig by viewModel.secondaryUiState.collectAsState()
     val scrollState = rememberScrollState()
 
     Scaffold(
@@ -73,9 +76,6 @@ fun SettingsScreen(
                 onRequestOverlayPermission = onRequestOverlayPermission,
                 onRequestAccessibilityPermission = onRequestAccessibilityPermission,
             )
-
-            Text("Preview", style = MaterialTheme.typography.titleMedium)
-            LivePreview(config)
 
             Text("Text Length Triggers", style = MaterialTheme.typography.titleMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -99,13 +99,15 @@ fun SettingsScreen(
                 )
             }
 
-            Text("Font", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "Style 1 — first overlay button",
+                style = MaterialTheme.typography.titleMedium,
+            )
+            LivePreview(config)
             FontPicker(
                 selected = config.font,
                 onSelect = { viewModel.updateConfig(config.copy(font = it)) },
             )
-
-            Text("Styling & Colors", style = MaterialTheme.typography.titleMedium)
             HexColorField(
                 label = "Text Color (Hex)",
                 value = config.textColorHex,
@@ -116,7 +118,6 @@ fun SettingsScreen(
                 value = config.backgroundColorHex,
                 onValueChange = { viewModel.updateConfig(config.copy(backgroundColorHex = it)) },
             )
-
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Enable Gradient Background")
                 Box(modifier = Modifier.weight(1f))
@@ -130,6 +131,43 @@ fun SettingsScreen(
                     label = "Gradient End Color (Hex)",
                     value = config.gradientEndColorHex,
                     onValueChange = { viewModel.updateConfig(config.copy(gradientEndColorHex = it)) },
+                )
+            }
+
+            Text(
+                "Style 2 — second overlay button",
+                style = MaterialTheme.typography.titleMedium,
+            )
+            LivePreview(secondaryConfig.toRenderConfig(config))
+            FontPicker(
+                selected = secondaryConfig.font,
+                onSelect = { viewModel.updateSecondaryConfig(secondaryConfig.copy(font = it)) },
+            )
+            HexColorField(
+                label = "Text Color (Hex)",
+                value = secondaryConfig.textColorHex,
+                onValueChange = { viewModel.updateSecondaryConfig(secondaryConfig.copy(textColorHex = it)) },
+            )
+            HexColorField(
+                label = "Background Color (Hex)",
+                value = secondaryConfig.backgroundColorHex,
+                onValueChange = { viewModel.updateSecondaryConfig(secondaryConfig.copy(backgroundColorHex = it)) },
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Enable Gradient Background")
+                Box(modifier = Modifier.weight(1f))
+                Switch(
+                    checked = secondaryConfig.isGradientEnabled,
+                    onCheckedChange = { viewModel.updateSecondaryConfig(secondaryConfig.copy(isGradientEnabled = it)) },
+                )
+            }
+            if (secondaryConfig.isGradientEnabled) {
+                HexColorField(
+                    label = "Gradient End Color (Hex)",
+                    value = secondaryConfig.gradientEndColorHex,
+                    onValueChange = {
+                        viewModel.updateSecondaryConfig(secondaryConfig.copy(gradientEndColorHex = it))
+                    },
                 )
             }
         }

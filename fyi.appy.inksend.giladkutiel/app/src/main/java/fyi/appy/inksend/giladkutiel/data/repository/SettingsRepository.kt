@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import fyi.appy.inksend.giladkutiel.data.model.FontChoice
+import fyi.appy.inksend.giladkutiel.data.model.SecondaryStyleConfig
 import fyi.appy.inksend.giladkutiel.data.model.TextStyleConfig
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -31,6 +32,12 @@ class SettingsRepository @Inject constructor(
         val CORNER_RADIUS = floatPreferencesKey("corner_radius")
         val MIN_LENGTH = intPreferencesKey("min_length")
         val MAX_LENGTH = intPreferencesKey("max_length")
+
+        val STYLE2_FONT = stringPreferencesKey("style2_font")
+        val STYLE2_TEXT_COLOR = stringPreferencesKey("style2_text_color")
+        val STYLE2_BG_COLOR = stringPreferencesKey("style2_bg_color")
+        val STYLE2_GRADIENT_ENABLED = booleanPreferencesKey("style2_gradient_enabled")
+        val STYLE2_GRADIENT_END_COLOR = stringPreferencesKey("style2_gradient_end_color")
     }
 
     val styleConfigFlow: Flow<TextStyleConfig> = context.dataStore.data.map { prefs ->
@@ -60,6 +67,28 @@ class SettingsRepository @Inject constructor(
             prefs[Keys.CORNER_RADIUS] = config.cornerRadiusDp
             prefs[Keys.MIN_LENGTH] = config.minTextLength
             prefs[Keys.MAX_LENGTH] = config.maxTextLength
+        }
+    }
+
+    val secondaryStyleConfigFlow: Flow<SecondaryStyleConfig> = context.dataStore.data.map { prefs ->
+        val defaults = SecondaryStyleConfig()
+        SecondaryStyleConfig(
+            font = prefs[Keys.STYLE2_FONT]?.let { name -> FontChoice.entries.find { it.name == name } }
+                ?: defaults.font,
+            textColorHex = prefs[Keys.STYLE2_TEXT_COLOR] ?: defaults.textColorHex,
+            backgroundColorHex = prefs[Keys.STYLE2_BG_COLOR] ?: defaults.backgroundColorHex,
+            isGradientEnabled = prefs[Keys.STYLE2_GRADIENT_ENABLED] ?: defaults.isGradientEnabled,
+            gradientEndColorHex = prefs[Keys.STYLE2_GRADIENT_END_COLOR] ?: defaults.gradientEndColorHex,
+        )
+    }
+
+    suspend fun updateSecondaryConfig(config: SecondaryStyleConfig) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.STYLE2_FONT] = config.font.name
+            prefs[Keys.STYLE2_TEXT_COLOR] = config.textColorHex
+            prefs[Keys.STYLE2_BG_COLOR] = config.backgroundColorHex
+            prefs[Keys.STYLE2_GRADIENT_ENABLED] = config.isGradientEnabled
+            prefs[Keys.STYLE2_GRADIENT_END_COLOR] = config.gradientEndColorHex
         }
     }
 }

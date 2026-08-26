@@ -3,6 +3,7 @@ package fyi.appy.inksend.giladkutiel.ui.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import fyi.appy.inksend.giladkutiel.data.model.SecondaryStyleConfig
 import fyi.appy.inksend.giladkutiel.data.model.TextStyleConfig
 import fyi.appy.inksend.giladkutiel.data.repository.SettingsRepository
 import kotlinx.coroutines.flow.SharingStarted
@@ -19,9 +20,18 @@ class SettingsViewModel @Inject constructor(
     val uiState: StateFlow<TextStyleConfig> = repository.styleConfigFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TextStyleConfig())
 
+    val secondaryUiState: StateFlow<SecondaryStyleConfig> = repository.secondaryStyleConfigFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SecondaryStyleConfig())
+
     fun updateConfig(newConfig: TextStyleConfig) {
         viewModelScope.launch {
             repository.updateConfig(newConfig)
+        }
+    }
+
+    fun updateSecondaryConfig(newConfig: SecondaryStyleConfig) {
+        viewModelScope.launch {
+            repository.updateSecondaryConfig(newConfig)
         }
     }
 }

@@ -2,9 +2,6 @@ TODO:
     - Style:
         - Associate an emoji with each style, render the emoji in the image, if possible use vector font for the emoji so it is rendered correctly.
 
-    - Overflow Buttons:
-        - make two Overflow buttons with two different styles.
-
 DONE:
     Image:
         make it always 512x512, full square, no border radius, text align center both vertically and horizontally, adust font size to fill the square.
@@ -13,6 +10,8 @@ DONE:
 
     Overflow Buttons:
         If possible show the buttons only when the user entered text in the whatsapp input field.
+
+        make two Overflow buttons with two different styles.
 
     Rebuild InkSend:
         Ignore all files other than inksend.md, in particular ignore the com.takeofflabs.fontmaker-build-spec.json file and ignore all existing code.

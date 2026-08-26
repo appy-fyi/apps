@@ -10,20 +10,26 @@ import android.view.View
 import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.LinearLayout
 import fyi.appy.inksend.giladkutiel.R
 import kotlin.math.abs
 
 private const val TAG = "InkSendOverlay"
 private const val BUTTON_SIZE_DP = 56
+private const val BUTTON_SPACING_DP = 12
 private const val DEFAULT_MARGIN_END_PX = 48
 private const val DEFAULT_MARGIN_BOTTOM_PX = 220
 
-/** Inflates, positions, and tears down the floating overlay button via [WindowManager]. */
+/**
+ * Inflates, positions, and tears down the pair of floating overlay style buttons via
+ * [WindowManager]. Both buttons live inside one draggable container, stacked vertically,
+ * so a single drag moves the pair together while each button keeps its own tap target.
+ */
 class OverlayWindowManager(
     private val context: Context,
-    private val onOverlayClicked: () -> Unit,
+    private val onPrimaryClicked: () -> Unit,
+    private val onSecondaryClicked: () -> Unit,
 ) {
     private val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
@@ -40,10 +46,12 @@ class OverlayWindowManager(
 
         val density = context.resources.displayMetrics.density
         val buttonSizePx = (BUTTON_SIZE_DP * density).toInt()
+        val spacingPx = (BUTTON_SPACING_DP * density).toInt()
+        val containerHeightPx = buttonSizePx * 2 + spacingPx
 
         val params = WindowManager.LayoutParams(
             buttonSizePx,
-            buttonSizePx,
+            containerHeightPx,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
@@ -55,21 +63,32 @@ class OverlayWindowManager(
             y = marginBottomPx
         }
 
-        val button = ImageView(context).apply {
-            layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT,
-            )
-            setImageResource(R.drawable.ic_style_convert)
-            setBackgroundResource(R.drawable.bg_overlay_button)
-            val paddingPx = (12 * density).toInt()
-            setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
-            setOnClickListener { onOverlayClicked() }
-            setOnTouchListener(createDragListener(params))
+        val paddingPx = (12 * density).toInt()
+        val dragListener = createDragListener(params)
+        val primaryButton = createStyleButton(
+            buttonSizePx = buttonSizePx,
+            paddingPx = paddingPx,
+            backgroundRes = R.drawable.bg_overlay_button,
+            onClick = onPrimaryClicked,
+            touchListener = dragListener,
+        )
+        val secondaryButton = createStyleButton(
+            buttonSizePx = buttonSizePx,
+            paddingPx = paddingPx,
+            backgroundRes = R.drawable.bg_overlay_button_secondary,
+            onClick = onSecondaryClicked,
+            touchListener = dragListener,
+        )
+        val spacer = View(context).apply {
+            layoutParams = LinearLayout.LayoutParams(buttonSizePx, spacingPx)
         }
-        val container = FrameLayout(context).apply {
-            layoutParams = ViewGroup.LayoutParams(buttonSizePx, buttonSizePx)
-            addView(button)
+
+        val container = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = ViewGroup.LayoutParams(buttonSizePx, containerHeightPx)
+            addView(primaryButton)
+            addView(spacer)
+            addView(secondaryButton)
         }
 
         overlayView = container
@@ -80,6 +99,21 @@ class OverlayWindowManager(
             Log.e(TAG, "showOverlay: addView failed", e)
             overlayView = null
         }
+    }
+
+    private fun createStyleButton(
+        buttonSizePx: Int,
+        paddingPx: Int,
+        backgroundRes: Int,
+        onClick: () -> Unit,
+        touchListener: View.OnTouchListener,
+    ): ImageView = ImageView(context).apply {
+        layoutParams = LinearLayout.LayoutParams(buttonSizePx, buttonSizePx)
+        setImageResource(R.drawable.ic_style_convert)
+        setBackgroundResource(backgroundRes)
+        setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
+        setOnClickListener { onClick() }
+        setOnTouchListener(touchListener)
     }
 
     /**
