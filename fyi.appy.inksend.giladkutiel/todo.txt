@@ -1,11 +1,11 @@
 TODO:
-
+    Auto Style:
+        Remove the predefined styles and the options to add and remove styles.
+        Instead we generate a style based on the content of the text.
+        How it works:
+            - Generate a predefined set of 5 - 15 intents (e.g. "funny", "sad", "romantic", "angry", "informative", etc...) and store them in a static dictionary.
+            - For each intent generate 3 - 5 matching styles (font family, emoji, text color, background color)
+            - Create a static dictionary that maps keywords to intents (e.g. "funny" -> intent 1, "sad" -> intent 2, "romantic" -> intent 3, etc...)
+            - Given the user's text, translate it to English, then lookup the keywords in the dictionary and select the most relevant intent, then pick a random style.
+            - Create a default intent and styles for texts that don't match any intent.
 DONE:
-    Emojis:
-        Replace the "None" box with an empty white box with exactly the same size as the other emoji boxes.
-        The empty box is still not at the same size.
-    Styles:
-        Add the option to add additional styles and remove existing ones.
-    Buttons:
-        When updating the styles or adding/deleting styles reflect the changes in the buttons immediately.
-        Auto hide the buttons when not using WhatsApp, if not possible add a manual option to hide them.
