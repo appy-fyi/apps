@@ -1,475 +1,476 @@
 {
-  "ai": {
-    "needed": false
+ "ai": {
+  "needed": false
+ },
+ "legal": {
+  "data_collected": [],
+  "privacy_policy_url": "https://appy.fyi/app/fyi.appy.inksend.giladkutiel/privacy",
+  "regulated_category": "none",
+  "privacy_policy_accurate": false
+ },
+ "backend": "none",
+ "min_sdk": 26,
+ "pricing": {
+  "model": "free",
+  "billing_lib": "none"
+ },
+ "screens": [
+  {
+   "name": "Settings",
+   "route": "settings",
+   "states": [
+    "permissions_not_granted",
+    "permissions_partially_granted",
+    "permissions_fully_granted"
+   ],
+   "purpose": "The app's single screen: guides the user through granting the two required system permissions and lets them set the text-length bounds that gate the floating overlay button. Styling is fully automatic — there is no style list to manage; the screen shows a read-only gallery of the built-in mood looks.",
+   "entry_points": [
+    "app launch"
+   ],
+   "key_ui_elements": [
+    "Required System Permissions card with an Overlay row and an Accessibility Service row, each showing a granted/not-granted status icon and an 'Open' button that deep-links to the matching system Settings screen",
+    "App Language picker: a row of chips ('System Default' plus each supported language in its own native name) that overrides the app's UI language independent of the device's system language, applied immediately",
+    "Min/Max text length fields that gate when the floating overlay button appears",
+    "Automatic Styling card: a short explanation that the look is chosen from what the user types (mood, keywords, emoji), plus a horizontally-scrolling gallery of one live sample render per built-in mood (Funny, Sad, Romantic, Angry, Informative, Excited, Celebratory, Calm, Motivational, Grateful, Neutral). Nothing here is editable — there is no font, color, emoji, add, or remove control anymore."
+   ]
+  }
+ ],
+ "features": [
+  {
+   "name": "Floating Style Overlay Trigger",
+   "screens": [
+    "Settings"
+   ],
+   "est_hours": 34,
+   "description": "A background AccessibilityService watches WhatsApp's actively focused editable field and shows one small floating overlay button whenever the typed text's trimmed length falls within the user-configured min/max bounds; the button auto-hides the instant the user leaves WhatsApp.",
+   "acceptance_criteria": [
+    "Typing in a WhatsApp editable field shows a single overlay button once trimmed length is within [minTextLength, maxTextLength].",
+    "The overlay button never appears for an empty field, even if the user configures minTextLength down to 0.",
+    "The button is a perfect circle with a faint accent hairline border; while the user types it previews the auto-selected look, recolouring its fill and swapping its glyph to the detected mood's representative emoji, and falling back to a light near-white lavender fill with the ink-drop glyph (🫟) whenever the text matches no mood. Tapping it renders the current text with that automatically chosen style.",
+    "The overlay button hides immediately when length falls back out of bounds or focus moves to a non-editable view.",
+    "The overlay button hides immediately when the user leaves WhatsApp (home screen, another app, notification shade) and is not shown over any non-WhatsApp app; the soft keyboard opening over WhatsApp does not hide it, and returning to WhatsApp with the same field still focused restores it.",
+    "Dragging the button repositions it, and the position is remembered across hide/show cycles."
+   ],
+   "implementation_notes": "TextMonitorAccessibilityService (AccessibilityService, @AndroidEntryPoint) listens for TYPE_VIEW_TEXT_CHANGED/TYPE_VIEW_FOCUSED/TYPE_WINDOW_STATE_CHANGED, tracks the current AccessibilityNodeInfo + text, and delegates the length check to a pure TextLengthEvaluator.isWithinBounds() so the boundary logic is unit-testable outside the framework. accessibility_service_config.xml carries no android:packageNames filter (so the service can observe the foreground app changing); styling is kept WhatsApp-only in code by ignoring every TYPE_VIEW_* event whose packageName != \"com.whatsapp\". handleForegroundWindowChanged() reacts to TYPE_WINDOW_STATE_CHANGED: a non-WhatsApp, non-keyboard window (keyboard package resolved from Settings.Secure.DEFAULT_INPUT_METHOD, plus the app's own package) hides the overlay immediately, while a return to com.whatsapp calls activeNode.refresh() and re-shows the button only if that node is still an editable, focused field. isWithinBounds() requires trimmedLength > 0 in addition to the configured [minLength, maxLength] range (from the shared TriggerConfig), guaranteeing the overlay only shows once the user has actually entered text. OverlayWindowManager shows one FrameLayout button (a centered TextView glyph over a runtime GradientDrawable oval with a ~1dp accent-tinted hairline stroke; square view bounds + OVAL background keep it a perfect circle) via a single WindowManager TYPE_APPLICATION_OVERLAY addView/removeView, with one drag-listener that repositions it and remembers the margins across hide/show. OverlayWindowManager.setAppearance(hex, emoji) / resetAppearance() recolour the oval's fill (GradientDrawable.setColor) and swap the TextView glyph live; the fill/glyph are remembered across hide/show so a rebuilt button keeps the last preview, and the default is a light lavender #F4F1FE fill with the ink-drop glyph 🫟. It no longer takes a styles provider or exposes refreshOverlay(). On every in-bounds text change, TextMonitorAccessibilityService.applyButtonPreview(text) launches a debounced (PREVIEW_DEBOUNCE_MS = 350ms) coroutine on the service's Main scope that calls TextTranslator.toEnglish(text) (async, on-device) then AutoStyle.buttonHintFor(english) (non-random: detected intent's displayEmoji + its first look's backgroundColorHex, or null when no mood matches -> resetAppearance()); the result is discarded if the field's text changed while translating, and the previous debounced job is cancelled on each new keystroke and when the text leaves the length bounds. On tap, handleStyleButtonPressed() launches a coroutine that awaits TextTranslator.toEnglish(currentText) (usually a warm-cache hit from the preview), passes it to AutoStyle.styleFor() for the StyleConfig, and renders the ORIGINAL typed text with it — only the mood is derived from the translation, never the rendered content. TextTranslator is created in onServiceConnected (which also calls warmUp()) and closed in onDestroy."
   },
-  "legal": {
-    "data_collected": [],
-    "privacy_policy_url": "https://appy.fyi/app/fyi.appy.inksend.giladkutiel/privacy",
-    "regulated_category": "none",
-    "privacy_policy_accurate": false
+  {
+   "name": "Styled Image Rendering",
+   "screens": [
+    "Settings"
+   ],
+   "est_hours": 20,
+   "description": "Renders the captured text into a fixed 512x512 PNG square from a fully-resolved RenderPlan (bundled font asset, two gradient stops, an auto-contrast text colour, and up to three emojis). The background is always a 2-stop diagonal gradient. The text sits at the TOP, aligned to the start edge — left for LTR, right for RTL. Up to three emojis sit in a strip along the BOTTOM, centered horizontally. Font size is auto-computed to fill the space above the emoji strip, wrapping between words but never breaking one, clamped between a min and max guardian. Sharp corners.",
+   "acceptance_criteria": [
+    "The rendered bitmap is always exactly 512x512, regardless of text length.",
+    "Long strings wrap across multiple lines without overflowing the bitmap bounds; font size shrinks automatically to fit and is clamped to the 15px-300px guardians.",
+    "Line wrapping only breaks at whitespace between words, never mid-word, for any text whose individual words fit the padded content width.",
+    "Text in scripts written without spaces between words (Chinese, Japanese, Thai, Lao, Khmer) wraps across lines and auto-fits at a legible size.",
+    "The text block is anchored to the top padding and aligned to the start edge; a Hebrew (RTL) line hugs the right edge, an English line the left.",
+    "An invalid hex color string falls back to a default color instead of crashing.",
+    "The background is always a 2-stop diagonal gradient, never a flat fill.",
+    "When the plan carries 1-3 emojis they are drawn as a horizontally-centered strip along the bottom edge, shrunk to fit the width if needed; an empty emoji list draws no strip.",
+    "The emoji glyphs render as proper glyphs (color emoji on modern devices) rather than tofu, since the strip is drawn with Typeface.DEFAULT regardless of the plan's text font.",
+    "A missing or unreadable font asset path falls back to the system bold typeface instead of crashing."
+   ],
+   "implementation_notes": "ImageRenderer.renderBitmap(context, text, plan: RenderPlan). buildFittedLayout() binary-searches the largest text size (15px-300px guardians) whose StaticLayout both fits the available height (square minus padding minus the bottom emoji band when there is one) AND keeps its widest unbreakable unit within the content width — a height-only check would accept sizes that only 'fit' by letting Android's line breaker split an overlong word. widestUnbreakableWidth() measures the spans between consecutive android.icu.text.BreakIterator.getLineInstance(ULocale.ROOT) boundaries (trailing whitespace trimmed), so space-delimited scripts break on words and space-less scripts (CJK/Thai/Lao/Khmer) break on characters. The layout uses Layout.Alignment.ALIGN_NORMAL + TextDirectionHeuristics.FIRSTSTRONG_LTR, so it is start-aligned and RTL-aware for free, and is drawn translated to the top-left padding corner (top-anchored, not vertically centered). The background is an always-on 2-stop diagonal LinearGradient from plan.gradientStartHex to plan.gradientEndHex. When plan.emojis is non-empty, drawEmojiStrip() joins up to three of them, picks a size ~= 0.22*512*0.62, shrinks it until it fits the content width, and draws it horizontally centered with its baseline just above the bottom padding, using Typeface.DEFAULT so the system color-emoji font is reached regardless of the text font. Fonts are loaded with Typeface.createFromAsset(assets, plan.fontAssetPath) through a ConcurrentHashMap cache, falling back to Typeface.DEFAULT_BOLD on failure. generateStyledImageUri() writes the PNG to cacheDir/images and returns a FileProvider content URI. StyleConfig / FontChoice / resolveTypeface / shadeShift are gone."
   },
-  "backend": "none",
-  "min_sdk": 26,
-  "pricing": {
-    "model": "free",
-    "billing_lib": "none"
+  {
+   "name": "Clipboard Copy & Field Clear",
+   "screens": [
+    "Settings"
+   ],
+   "est_hours": 10,
+   "description": "Tapping the overlay button copies the rendered image to the system clipboard as an image/png ClipData and clears the original text field, so the user can immediately paste the styled image in place of what they typed.",
+   "acceptance_criteria": [
+    "After tapping the overlay button, the system clipboard holds a ClipData whose item URI resolves to image/png, rendered with the style auto-selected from the text.",
+    "The originating text field is cleared via ACTION_SET_TEXT immediately after the copy.",
+    "A short confirmation Toast appears telling the user to paste."
+   ],
+   "implementation_notes": "ClipboardManagerHelper.copyImageToClipboard() uses ClipData.newUri(contentResolver, label, uri) so the MIME type is resolved from FileProvider's own getType(). TextMonitorAccessibilityService.handleStyleButtonPressed() derives the StyleConfig via AutoStyle.styleFor(TextTranslator.toEnglish(currentText)) inside a coroutine, renders the original text with it, then calls AccessibilityNodeInfo.performAction(ACTION_SET_TEXT, empty string) on the tracked node."
   },
-  "screens": [
+  {
+   "name": "Guided Permission Setup",
+   "screens": [
+    "Settings"
+   ],
+   "est_hours": 8,
+   "description": "The Settings screen live-checks both required permissions (SYSTEM_ALERT_WINDOW via Settings.canDrawOverlays, the accessibility service via AccessibilityManager.getEnabledAccessibilityServiceList) on every onResume, and deep-links straight to the matching system Settings screen for whichever is missing.",
+   "acceptance_criteria": [
+    "Returning to the app after granting a permission in system Settings updates that row to 'Granted' without needing to relaunch the app.",
+    "Tapping 'Open' on the overlay row launches ACTION_MANAGE_OVERLAY_PERMISSION scoped to this app's package.",
+    "Tapping 'Open' on the accessibility row launches ACTION_ACCESSIBILITY_SETTINGS."
+   ],
+   "implementation_notes": "PermissionUtils centralizes both live checks. MainActivity re-checks both in a DefaultLifecycleObserver.onResume() and triggers Play's In-App Review flow (InAppReviewHelper) the first time both permissions transition from not-fully-granted to fully-granted — a genuine positive completion point."
+  },
+  {
+   "name": "Content-Based Automatic Styling",
+   "screens": [
+    "Settings"
+   ],
+   "est_hours": 18,
+   "description": "The look of the rendered image is derived from the typed text. The text is translated to English on-device (Google ML Kit), then tokenized and Porter-stemmed. A fixed set of exactly 10 intents (FUNNY, SAD, ROMANTIC, ANGRY, INFORMATIVE, EXCITED, CELEBRATORY, CALM, MOTIVATIONAL, GRATEFUL) is scored against the text's keyword stems, multi-word phrases, and emoji. When nothing matches, a VADER-style sentiment analyser classifies the text POSITIVE / NEGATIVE / NEUTRAL and that is mapped loosely onto a set of intents, one picked at random. Each intent carries >=2 English fonts, >=2 Hebrew fonts, and >=4 gradients; planFor() picks a random font (for the text's script) and a random gradient, derives a black-or-white text colour by gradient luminance, and selects up to 3 emojis: first from a ~400-keyword stem->emoji lexicon, then — when that finds nothing — from the resolved intent's own emoji set (so the ink-drop 🫟 never actually reaches the rendered image; a Hebrew concept-word map covers untranslated Hebrew). The same text is meant to produce a fresh image each tap. The only user-configurable setting is the min/max text-length trigger; the Settings screen shows a read-only gallery of one sample render per intent.",
+   "acceptance_criteria": [
+    "Text containing an intent's keyword stem, phrase, or emoji renders in one of that intent's looks.",
+    "Text matching no keyword falls back to a sentiment-mapped intent (POSITIVE -> {FUNNY, ROMANTIC, EXCITED, CELEBRATORY, MOTIVATIONAL, GRATEFUL}, NEGATIVE -> {SAD, ANGRY}, NEUTRAL -> {INFORMATIVE, CALM}), one chosen at random.",
+    "Phrases (e.g. 'thank you', 'you got this') outweigh a single competing keyword.",
+    "Keyword matching is stem-based and case-insensitive: 'misinformative' does not trigger the 'informative' keyword.",
+    "Inflected forms collapse onto one dictionary entry via the shared Porter stem ('celebrating' == 'celebrate').",
+    "Repeated taps on the same text can produce different fonts/gradients/emoji from the resolved intent.",
+    "Hebrew-script input is drawn in one of the intent's Hebrew fonts; other input in an English font.",
+    "The Settings screen has no font, color, emoji, gradient, add-style, or remove-style control; it shows a scrollable read-only gallery of one sample render per intent.",
+    "The min/max text-length bounds still persist to DataStore across app restarts.",
+    "Emoji coverage: essentially every message gets a fitting emoji — a keyword match when there is one, otherwise the resolved intent's emoji (untranslated Hebrew via a Hebrew concept-word->emoji map); the bare ink drop 🫟 is not rendered."
+   ],
+   "implementation_notes": "text/PorterStemmer.kt is the classic Porter 1980 algorithm, pure JVM; it keys every dictionary (each human keyword is stemmed at map-build time so queries match). text/TextTokens.kt lowercases + NFC-normalizes, splits on non-(letter|mark|number), drops <2-char tokens and a stop-word list, and Porter-stems the rest into an ordered de-duplicated list; Scripts.hasHebrew() probes the Hebrew blocks. text/SentimentAnalyzer.kt is a compact VADER-style analyser: a ~200-word valence lexicon plus negation (sign flip), degree words (scale), ALL-CAPS and '!' emphasis, squashed to a compound with VADER's +-0.05 cutoffs -> Sentiment.POSITIVE/NEGATIVE/NEUTRAL. data/model/EmojiLexicon.kt maps ~400 keywords (Porter-stemmed keys) to emojis — everyday logistics/time/acknowledgement/food/home/health/tech vocab, not just vivid nouns; select() takes emojis already typed first, then one per matching stem in first-seen order, max 3, DEFAULT '🫟' when empty. data/model/AutoStyle.kt: the Intent enum carries previewEmoji, englishFonts/hebrewFonts (BundledFont enum -> assets/fonts/*.ttf) and gradients (Gradient(startHex, endHex)). STEM_KEYWORDS / PHRASE_KEYWORDS / EMOJI_KEYWORDS -> Intent; detectIntent() scores stem hit=1, phrase=3, emoji=2 and returns the top scorer or null. resolveIntent() = detectIntent() ?: a random member of SENTIMENT_INTENTS[analyze(text)]. planFor(originalText, translatedText, random) -> RenderPlan: resolved intent, a random font from englishFonts/hebrewFonts by Scripts.hasHebrew(originalText), a random gradient, contrastColorFor(gradient) (#1E1E2E or #FFFFFF by luminance), and EmojiLexicon.select() — and when select() yields only DEFAULT, planFor swaps in HebrewFallback.emojis(originalText) for Hebrew script else the resolved intent's INTENT_EMOJIS list, so the ink drop is never rendered. buttonHintFor(translatedText) is non-random: detected intent, else the first intent for a non-neutral sentiment, else null (keeps the ink-drop button default). TextTranslator.warmUp() now predownloads the Hebrew model first, then the UI-chrome languages. SettingsScreen builds a fixed sample RenderPlan per intent (first font + first gradient) for the gallery. Covered by JVM tests PorterStemmerTest, SentimentAnalyzerTest, EmojiLexiconTest, AutoStyleTest. Hebrew safety net: TextTranslator.toEnglish caches only a successful translation (a failed one — model still downloading, offline — returns the raw text WITHOUT caching, so the next call retries) and maps ML Kit's legacy language codes (iw->he, in->id, ji->yi) before the TranslateLanguage lookup; warmUp() fetches the Hebrew model on any network while the UI-chrome languages stay Wi-Fi-only. data/model/HebrewFallback.kt (pure JVM) does substring keyword->Intent matching, a coarse positive/negative word count, and a ~180-entry Hebrew concept-word->emoji map (WORD_EMOJI, substring/clitic-tolerant, multi-word needles first) on raw Hebrew; AutoStyle.resolveIntent(originalText, translatedText, random), planFor and buttonHintFor call it only when the English pass found nothing AND Scripts.hasHebrew(originalText), so an untranslated Hebrew message styles by its real mood instead of collapsing to a neutral CALM/INFORMATIVE. 'good night'/'goodnight'/'sweet dreams'/'sleep well' were added to CALM's phrase list. AutoStyle.INTENT_EMOJIS holds a curated 3-emoji set per intent for the no-keyword fallback. Covered by HebrewFallbackTest and added AutoStyleTest cases (incl. a batch test that no realistic English/Hebrew message renders the ink drop)."
+  },
+  {
+   "name": "Multi-language UI Support",
+   "screens": [
+    "Settings"
+   ],
+   "est_hours": 10,
+   "description": "All UI chrome (permission copy, section titles, field labels, the Toast, font names) is externalized to string resources and translated into five languages beyond the English default (Spanish, French, German, Portuguese, Hindi). An App Language picker on the Settings screen lets the user override the app's display language independent of the device's system language; the default 'System Default' option automatically follows whichever of the device's configured languages the app has a translation for, falling back to English otherwise — so language detection is Android's own resource-qualifier resolution, not custom logic.",
+   "acceptance_criteria": [
+    "With no override selected, the app's UI language automatically matches the device's system language when a translation exists, and falls back to English otherwise, with no user action required.",
+    "Selecting a specific language in the App Language picker immediately re-renders the entire Settings screen in that language and persists the choice across app restarts, independent of the device's system language.",
+    "Selecting 'System Default' clears the override and reverts to automatic system-language matching.",
+    "All screen text — permission copy, section titles, field labels, button text, the copied-image confirmation Toast, and the four font names — is translated in every supported language; no hardcoded English string remains outside of the rendered sample preview text."
+   ],
+   "implementation_notes": "res/values/strings.xml holds the English defaults; res/values-{es,fr,de,pt,hi}/strings.xml hold full translations, selected automatically by Android's locale-qualified resource resolution. FontChoice's label field became a @StringRes labelRes so font names localize too. LanguagePicker (SettingsScreen.kt) offers 'System Default' plus each supported language in its own native name; on API 33+ it reads/writes the override via Context.getSystemService(LocaleManager::class.java).applicationLocales directly (the same mechanism the OS's own per-app language settings use), with androidx.appcompat's AppCompatDelegate.setApplicationLocales() as the pre-33 fallback — then calls Activity.recreate() itself since MainActivity is a plain ComponentActivity, not AppCompatActivity, so it doesn't get AppCompat's automatic recreation. AndroidManifest declares android:localeConfig=\"@xml/locales_config\" (listing en/es/fr/de/pt/hi) so Android 13+'s own system-level per-app language settings page also lists this app, and a manifest-declared androidx.appcompat.app.AppLocalesMetadataHolderService with autoStoreLocales=true meta-data is required for AppCompatDelegate's static API to have a valid Application context to act on — omitting it makes setApplicationLocales() a silent no-op."
+  }
+ ],
+ "non_goals": [
+  "No custom Input Method (IME) / system keyboard in this version — text is styled and cleared in place via AccessibilityService, not typed through a replacement keyboard.",
+  "No user-editable styles — no style list, no font/color/emoji/gradient pickers, no add/remove. The look is chosen automatically from the typed text; intents, fonts and gradients are fixed in code.",
+  "No cloud/network translation of the typed text — translation to English before keyword matching runs entirely on-device via ML Kit; the only network use is a one-time per-language model download, after which it works offline, and the typed text itself is never sent anywhere. A translation that fails (model still downloading / offline) returns the raw text and is not cached; raw Hebrew then falls back to a small on-device Hebrew keyword/sentiment table so it still styles by mood.",
+  "No in-app purchases, ads, or any billing integration — the app is entirely free with no monetization.",
+  "No handwriting font creation and no font picker — the render font is chosen automatically from the intent's per-language list (13 bundled OFL families total: 8 Latin, 5 Hebrew-capable).",
+  "No cloud backend, accounts, or sync — all settings live in local DataStore on the one device.",
+  "No app-specific one-tap share target (e.g. WhatsApp) — the styled image is placed on the system clipboard for the user to paste anywhere themselves.",
+  "No neural/ML models for styling — intent is dictionary + Porter-stem lookup with a rules-based VADER-style sentiment fallback; the only ML is ML Kit on-device translation of the input text."
+ ],
+ "test_plan": [
+  {
+   "kind": "unit",
+   "scenario": "Content-based intent detection and style selection",
+   "steps": [
+    "Call AutoStyle.detectIntent with text carrying a keyword stem, an inflected form of one, a phrase, an emoji, a competing keyword+phrase mix, mixed case, a substring-of-a-keyword string, and an unmatched string.",
+    "Call AutoStyle.resolveIntent on unmatched-but-clearly-positive and clearly-negative text.",
+    "Call AutoStyle.planFor with English and with Hebrew-script originals, and with text that matches no emoji keyword.",
+    "Call AutoStyle.buttonHintFor on a keyword match and on gibberish."
+   ],
+   "expected": "Keyword stems / phrases / emoji each select their intent; inflected forms hit the same entry; phrases outweigh a competing keyword; matching is stem-based and whole-token ('misinformative' does not fire 'informative'); unmatched/blank return null. resolveIntent falls back to a random member of the sentiment-mapped intent set. planFor returns a font from the intent's English or Hebrew list per the original script, a gradient from that intent, a #1E1E2E/#FFFFFF text colour, and <=3 emojis (['🫟'] when none); it is deterministic for a fixed Random seed. buttonHintFor mirrors the detected intent and is null only when there is nothing to go on. (JVM: PorterStemmerTest, SentimentAnalyzerTest, EmojiLexiconTest, AutoStyleTest.)"
+  },
+  {
+   "kind": "unit",
+   "scenario": "Text-length boundary evaluation",
+   "steps": [
+    "Call TextLengthEvaluator.isWithinBounds with lengths below, at, and above the configured min/max bounds.",
+    "Call it again with trimmedLength = 0 and minLength = 0."
+   ],
+   "expected": "Lengths strictly below minLength or strictly above maxLength return false; lengths equal to either bound or in between return true. A trimmedLength of 0 always returns false, even when minLength is 0."
+  },
+  {
+   "kind": "instrumented",
+   "scenario": "Rendered bitmap is always a fixed 512x512 square",
+   "steps": [
+    "Render a short string and a long multi-sentence string with the same StyleConfig via ImageRenderer.renderBitmap on a connected device.",
+    "Compare the resulting bitmap dimensions."
+   ],
+   "expected": "Both the short and long string bitmaps are exactly 512x512, regardless of text length."
+  },
+  {
+   "kind": "instrumented",
+   "scenario": "Line wrapping never breaks a word mid-way",
+   "steps": [
+    "Build the fitted StaticLayout (via ImageRenderer.buildFittedLayout) for a multi-word sentence long enough to wrap across several lines.",
+    "For each line break, check whether the character immediately before and after the break are both non-whitespace."
+   ],
+   "expected": "Every line break falls on whitespace between words; no line ends mid-word."
+  },
+  {
+   "kind": "instrumented",
+   "scenario": "Spaceless script auto-fits instead of being treated as one word",
+   "steps": [
+    "Build the fitted StaticLayout (via ImageRenderer.buildFittedLayout) for a long run of Han characters with no spaces.",
+    "Inspect the layout's line count, per-line widths, and chosen text size, then render the same text."
+   ],
+   "expected": "The text wraps across multiple lines, every line stays within the content width, the chosen font size is well above the 12px floor (not shrunk to fit the whole run on one line), and rendering still returns a 512x512 bitmap."
+  },
+  {
+   "kind": "instrumented",
+   "scenario": "A missing font asset falls back instead of crashing",
+   "steps": [
+    "Render text with a RenderPlan whose fontAssetPath does not exist in assets/fonts."
+   ],
+   "expected": "typefaceFor() returns Typeface.DEFAULT_BOLD and rendering still produces a 512x512 bitmap."
+  },
+  {
+   "kind": "instrumented",
+   "scenario": "Invalid hex colors fall back instead of crashing",
+   "steps": [
+    "Render text with a StyleConfig whose textColorHex and backgroundColorHex are not valid hex strings."
+   ],
+   "expected": "Rendering completes and returns a non-empty bitmap instead of throwing."
+  },
+  {
+   "kind": "instrumented",
+   "scenario": "Emoji strip renders without breaking the fixed square",
+   "steps": [
+    "Render with a RenderPlan carrying three emojis, and again with an empty emoji list."
+   ],
+   "expected": "Both produce a 512x512 bitmap; the three-emoji case draws a horizontally-centered bottom strip, the empty case draws none."
+  },
+  {
+   "kind": "instrumented",
+   "scenario": "Clipboard paste integrity",
+   "steps": [
+    "Launch MainActivity via ActivityScenario so the process holds window focus.",
+    "From inside the resumed Activity, render an image and call ClipboardManagerHelper.copyImageToClipboard.",
+    "Read back ClipboardManager.primaryClip from the same focused Activity."
+   ],
+   "expected": "The primary clip's item URI matches the copied URI and its MIME type is image/png."
+  },
+  {
+   "kind": "manual",
+   "scenario": "App Language override applies immediately and persists",
+   "steps": [
+    "Open Settings with the device's system language set to English and no override selected.",
+    "Tap a non-English language chip (e.g. Español) in the App Language picker.",
+    "Force-close and relaunch the app.",
+    "Tap 'System Default' to clear the override."
+   ],
+   "expected": "The whole Settings screen re-renders in the selected language immediately after tapping its chip; the override survives the relaunch; tapping 'System Default' reverts the UI to the device's system language (English)."
+  },
+  {
+   "kind": "manual",
+   "scenario": "Permission handling when revoked dynamically",
+   "steps": [
+    "Grant both the overlay and accessibility permissions, confirm the overlay button appears while typing.",
+    "Revoke one permission from system Settings, return to the app."
+   ],
+   "expected": "The revoked permission's row reverts to 'not granted' on the very next onResume, and the overlay button stops appearing until it's re-granted."
+  },
+  {
+   "kind": "manual",
+   "scenario": "Automatic style matches the message mood",
+   "steps": [
+    "In WhatsApp, type a clearly funny message (e.g. 'haha this is hilarious 😂'), tap the overlay button, and paste.",
+    "Repeat with a romantic message ('I love you so much ❤️'), an informative one ('FYI: meeting agenda for tomorrow'), and a gibberish string with no mood words.",
+    "Tap the button several times on the same funny message, pasting each result."
+   ],
+   "expected": "Each paste shows an image whose colors/emoji fit the message's mood — playful for the funny one, warm/pink for the romantic one, clean/neutral for the informative one, and a plain Neutral look for the gibberish. Repeated taps on the same message can produce different looks from that mood's set."
+  },
+  {
+   "kind": "manual",
+   "scenario": "Settings has no style editor",
+   "steps": [
+    "Open Settings and scroll through the whole screen."
+   ],
+   "expected": "There is a permissions card, an App Language picker, min/max length fields, and an 'Automatic Styling' card with a scrollable read-only gallery of one sample render per mood. There is no font/color/emoji/gradient picker and no Add Style / Remove Style button anywhere."
+  }
+ ],
+ "data_model": [
+  {
+   "entity": "RenderPlan",
+   "fields": [
     {
-      "name": "Settings",
-      "route": "settings",
-      "states": [
-        "permissions_not_granted",
-        "permissions_partially_granted",
-        "permissions_fully_granted"
-      ],
-      "purpose": "The app's single screen: guides the user through granting the two required system permissions and lets them set the text-length bounds that gate the floating overlay button. Styling is fully automatic — there is no style list to manage; the screen shows a read-only gallery of the built-in mood looks.",
-      "entry_points": [
-        "app launch"
-      ],
-      "key_ui_elements": [
-        "Required System Permissions card with an Overlay row and an Accessibility Service row, each showing a granted/not-granted status icon and an 'Open' button that deep-links to the matching system Settings screen",
-        "App Language picker: a row of chips ('System Default' plus each supported language in its own native name) that overrides the app's UI language independent of the device's system language, applied immediately",
-        "Min/Max text length fields that gate when the floating overlay button appears",
-        "Automatic Styling card: a short explanation that the look is chosen from what the user types (mood, keywords, emoji), plus a horizontally-scrolling gallery of one live sample render per built-in mood (Funny, Sad, Romantic, Angry, Informative, Excited, Celebratory, Calm, Motivational, Grateful, Neutral). Nothing here is editable — there is no font, color, emoji, add, or remove control anymore."
-      ]
+     "name": "fontAssetPath",
+     "type": "String",
+     "notes": "e.g. fonts/Pacifico.ttf — loaded via Typeface.createFromAsset with a cache; falls back to DEFAULT_BOLD"
+    },
+    {
+     "name": "fontName",
+     "type": "String",
+     "notes": "human display name of the bundled font, used only by the Settings gallery"
+    },
+    {
+     "name": "gradientStartHex",
+     "type": "String",
+     "notes": "gradient start stop, #RRGGBB"
+    },
+    {
+     "name": "gradientEndHex",
+     "type": "String",
+     "notes": "gradient end stop, #RRGGBB"
+    },
+    {
+     "name": "textColorHex",
+     "type": "String",
+     "notes": "#1E1E2E or #FFFFFF, chosen by AutoStyle for contrast against the gradient midpoint"
+    },
+    {
+     "name": "emojis",
+     "type": "List<String>",
+     "notes": "0-3 emojis for the bottom strip; [\"🫟\"] when the text matched no keyword"
     }
-  ],
-  "features": [
+   ],
+   "notes": "Not persisted. The fully-resolved draw instruction produced by AutoStyle.planFor(originalText, translatedText). Replaces the old StyleConfig/FontChoice; the renderer does no lookups of its own.",
+   "storage": "in_memory"
+  },
+  {
+   "entity": "Intent",
+   "fields": [
     {
-      "name": "Floating Style Overlay Trigger",
-      "screens": [
-        "Settings"
-      ],
-      "est_hours": 34,
-      "description": "A background AccessibilityService watches WhatsApp's actively focused editable field and shows one small floating overlay button whenever the typed text's trimmed length falls within the user-configured min/max bounds; the button auto-hides the instant the user leaves WhatsApp.",
-      "acceptance_criteria": [
-        "Typing in a WhatsApp editable field shows a single overlay button once trimmed length is within [minTextLength, maxTextLength].",
-        "The overlay button never appears for an empty field, even if the user configures minTextLength down to 0.",
-        "The button is a perfect circle with a faint accent hairline border; while the user types it previews the auto-selected look, recolouring its fill and swapping its glyph to the detected mood's representative emoji, and falling back to a light near-white lavender fill with the ink-drop glyph (🫟) whenever the text matches no mood. Tapping it renders the current text with that automatically chosen style.",
-        "The overlay button hides immediately when length falls back out of bounds or focus moves to a non-editable view.",
-        "The overlay button hides immediately when the user leaves WhatsApp (home screen, another app, notification shade) and is not shown over any non-WhatsApp app; the soft keyboard opening over WhatsApp does not hide it, and returning to WhatsApp with the same field still focused restores it.",
-        "Dragging the button repositions it, and the position is remembered across hide/show cycles."
-      ],
-      "implementation_notes": "TextMonitorAccessibilityService (AccessibilityService, @AndroidEntryPoint) listens for TYPE_VIEW_TEXT_CHANGED/TYPE_VIEW_FOCUSED/TYPE_WINDOW_STATE_CHANGED, tracks the current AccessibilityNodeInfo + text, and delegates the length check to a pure TextLengthEvaluator.isWithinBounds() so the boundary logic is unit-testable outside the framework. accessibility_service_config.xml carries no android:packageNames filter (so the service can observe the foreground app changing); styling is kept WhatsApp-only in code by ignoring every TYPE_VIEW_* event whose packageName != \"com.whatsapp\". handleForegroundWindowChanged() reacts to TYPE_WINDOW_STATE_CHANGED: a non-WhatsApp, non-keyboard window (keyboard package resolved from Settings.Secure.DEFAULT_INPUT_METHOD, plus the app's own package) hides the overlay immediately, while a return to com.whatsapp calls activeNode.refresh() and re-shows the button only if that node is still an editable, focused field. isWithinBounds() requires trimmedLength > 0 in addition to the configured [minLength, maxLength] range (from the shared TriggerConfig), guaranteeing the overlay only shows once the user has actually entered text. OverlayWindowManager shows one FrameLayout button (a centered TextView glyph over a runtime GradientDrawable oval with a ~1dp accent-tinted hairline stroke; square view bounds + OVAL background keep it a perfect circle) via a single WindowManager TYPE_APPLICATION_OVERLAY addView/removeView, with one drag-listener that repositions it and remembers the margins across hide/show. OverlayWindowManager.setAppearance(hex, emoji) / resetAppearance() recolour the oval's fill (GradientDrawable.setColor) and swap the TextView glyph live; the fill/glyph are remembered across hide/show so a rebuilt button keeps the last preview, and the default is a light lavender #F4F1FE fill with the ink-drop glyph 🫟. It no longer takes a styles provider or exposes refreshOverlay(). On every in-bounds text change, TextMonitorAccessibilityService.applyButtonPreview(text) launches a debounced (PREVIEW_DEBOUNCE_MS = 350ms) coroutine on the service's Main scope that calls TextTranslator.toEnglish(text) (async, on-device) then AutoStyle.buttonHintFor(english) (non-random: detected intent's displayEmoji + its first look's backgroundColorHex, or null when no mood matches -> resetAppearance()); the result is discarded if the field's text changed while translating, and the previous debounced job is cancelled on each new keystroke and when the text leaves the length bounds. On tap, handleStyleButtonPressed() launches a coroutine that awaits TextTranslator.toEnglish(currentText) (usually a warm-cache hit from the preview), passes it to AutoStyle.styleFor() for the StyleConfig, and renders the ORIGINAL typed text with it — only the mood is derived from the translation, never the rendered content. TextTranslator is created in onServiceConnected (which also calls warmUp()) and closed in onDestroy."
+     "name": "name",
+     "type": "enum constant",
+     "notes": "exactly one of FUNNY, SAD, ROMANTIC, ANGRY, INFORMATIVE, EXCITED, CELEBRATORY, CALM, MOTIVATIONAL, GRATEFUL — 10 total, no neutral entry"
     },
     {
-      "name": "Styled Image Rendering",
-      "screens": [
-        "Settings"
-      ],
-      "est_hours": 20,
-      "description": "Renders the captured text into a fixed 512x512 PNG square from a fully-resolved RenderPlan (bundled font asset, two gradient stops, an auto-contrast text colour, and up to three emojis). The background is always a 2-stop diagonal gradient. The text sits at the TOP, aligned to the start edge — left for LTR, right for RTL. Up to three emojis sit in a strip along the BOTTOM, centered horizontally. Font size is auto-computed to fill the space above the emoji strip, wrapping between words but never breaking one, clamped between a min and max guardian. Sharp corners.",
-      "acceptance_criteria": [
-        "The rendered bitmap is always exactly 512x512, regardless of text length.",
-        "Long strings wrap across multiple lines without overflowing the bitmap bounds; font size shrinks automatically to fit and is clamped to the 15px-300px guardians.",
-        "Line wrapping only breaks at whitespace between words, never mid-word, for any text whose individual words fit the padded content width.",
-        "Text in scripts written without spaces between words (Chinese, Japanese, Thai, Lao, Khmer) wraps across lines and auto-fits at a legible size.",
-        "The text block is anchored to the top padding and aligned to the start edge; a Hebrew (RTL) line hugs the right edge, an English line the left.",
-        "An invalid hex color string falls back to a default color instead of crashing.",
-        "The background is always a 2-stop diagonal gradient, never a flat fill.",
-        "When the plan carries 1-3 emojis they are drawn as a horizontally-centered strip along the bottom edge, shrunk to fit the width if needed; an empty emoji list draws no strip.",
-        "The emoji glyphs render as proper glyphs (color emoji on modern devices) rather than tofu, since the strip is drawn with Typeface.DEFAULT regardless of the plan's text font.",
-        "A missing or unreadable font asset path falls back to the system bold typeface instead of crashing."
-      ],
-      "implementation_notes": "ImageRenderer.renderBitmap(context, text, plan: RenderPlan). buildFittedLayout() binary-searches the largest text size (15px-300px guardians) whose StaticLayout both fits the available height (square minus padding minus the bottom emoji band when there is one) AND keeps its widest unbreakable unit within the content width — a height-only check would accept sizes that only 'fit' by letting Android's line breaker split an overlong word. widestUnbreakableWidth() measures the spans between consecutive android.icu.text.BreakIterator.getLineInstance(ULocale.ROOT) boundaries (trailing whitespace trimmed), so space-delimited scripts break on words and space-less scripts (CJK/Thai/Lao/Khmer) break on characters. The layout uses Layout.Alignment.ALIGN_NORMAL + TextDirectionHeuristics.FIRSTSTRONG_LTR, so it is start-aligned and RTL-aware for free, and is drawn translated to the top-left padding corner (top-anchored, not vertically centered). The background is an always-on 2-stop diagonal LinearGradient from plan.gradientStartHex to plan.gradientEndHex. When plan.emojis is non-empty, drawEmojiStrip() joins up to three of them, picks a size ~= 0.22*512*0.62, shrinks it until it fits the content width, and draws it horizontally centered with its baseline just above the bottom padding, using Typeface.DEFAULT so the system color-emoji font is reached regardless of the text font. Fonts are loaded with Typeface.createFromAsset(assets, plan.fontAssetPath) through a ConcurrentHashMap cache, falling back to Typeface.DEFAULT_BOLD on failure. generateStyledImageUri() writes the PNG to cacheDir/images and returns a FileProvider content URI. StyleConfig / FontChoice / resolveTypeface / shadeShift are gone."
+     "name": "previewEmoji",
+     "type": "String",
+     "notes": "representative emoji, shown on the overlay button preview and the Settings gallery"
     },
     {
-      "name": "Clipboard Copy & Field Clear",
-      "screens": [
-        "Settings"
-      ],
-      "est_hours": 10,
-      "description": "Tapping the overlay button copies the rendered image to the system clipboard as an image/png ClipData and clears the original text field, so the user can immediately paste the styled image in place of what they typed.",
-      "acceptance_criteria": [
-        "After tapping the overlay button, the system clipboard holds a ClipData whose item URI resolves to image/png, rendered with the style auto-selected from the text.",
-        "The originating text field is cleared via ACTION_SET_TEXT immediately after the copy.",
-        "A short confirmation Toast appears telling the user to paste."
-      ],
-      "implementation_notes": "ClipboardManagerHelper.copyImageToClipboard() uses ClipData.newUri(contentResolver, label, uri) so the MIME type is resolved from FileProvider's own getType(). TextMonitorAccessibilityService.handleStyleButtonPressed() derives the StyleConfig via AutoStyle.styleFor(TextTranslator.toEnglish(currentText)) inside a coroutine, renders the original text with it, then calls AccessibilityNodeInfo.performAction(ACTION_SET_TEXT, empty string) on the tracked node."
+     "name": "englishFonts",
+     "type": "List<BundledFont>",
+     "notes": ">=2 Latin display faces; planFor picks one at random for non-Hebrew text"
     },
     {
-      "name": "Guided Permission Setup",
-      "screens": [
-        "Settings"
-      ],
-      "est_hours": 8,
-      "description": "The Settings screen live-checks both required permissions (SYSTEM_ALERT_WINDOW via Settings.canDrawOverlays, the accessibility service via AccessibilityManager.getEnabledAccessibilityServiceList) on every onResume, and deep-links straight to the matching system Settings screen for whichever is missing.",
-      "acceptance_criteria": [
-        "Returning to the app after granting a permission in system Settings updates that row to 'Granted' without needing to relaunch the app.",
-        "Tapping 'Open' on the overlay row launches ACTION_MANAGE_OVERLAY_PERMISSION scoped to this app's package.",
-        "Tapping 'Open' on the accessibility row launches ACTION_ACCESSIBILITY_SETTINGS."
-      ],
-      "implementation_notes": "PermissionUtils centralizes both live checks. MainActivity re-checks both in a DefaultLifecycleObserver.onResume() and triggers Play's In-App Review flow (InAppReviewHelper) the first time both permissions transition from not-fully-granted to fully-granted — a genuine positive completion point."
+     "name": "hebrewFonts",
+     "type": "List<BundledFont>",
+     "notes": ">=2 Hebrew-capable faces (Heebo, Frank Ruhl Libre, Suez One, Secular One, Rubik); used when the original text is Hebrew script"
     },
     {
-      "name": "Content-Based Automatic Styling",
-      "screens": [
-        "Settings"
-      ],
-      "est_hours": 18,
-      "description": "The look of the rendered image is derived from the typed text. The text is translated to English on-device (Google ML Kit), then tokenized and Porter-stemmed. A fixed set of exactly 10 intents (FUNNY, SAD, ROMANTIC, ANGRY, INFORMATIVE, EXCITED, CELEBRATORY, CALM, MOTIVATIONAL, GRATEFUL) is scored against the text's keyword stems, multi-word phrases, and emoji. When nothing matches, a VADER-style sentiment analyser classifies the text POSITIVE / NEGATIVE / NEUTRAL and that is mapped loosely onto a set of intents, one picked at random. Each intent carries >=2 English fonts, >=2 Hebrew fonts, and >=4 gradients; planFor() picks a random font (for the text's script) and a random gradient, derives a black-or-white text colour by gradient luminance, and selects up to 3 emojis from a 100+ stem->emoji lexicon (ink-drop 🫟 when none match). The same text is meant to produce a fresh image each tap. The only user-configurable setting is the min/max text-length trigger; the Settings screen shows a read-only gallery of one sample render per intent.",
-      "acceptance_criteria": [
-        "Text containing an intent's keyword stem, phrase, or emoji renders in one of that intent's looks.",
-        "Text matching no keyword falls back to a sentiment-mapped intent (POSITIVE -> {FUNNY, ROMANTIC, EXCITED, CELEBRATORY, MOTIVATIONAL, GRATEFUL}, NEGATIVE -> {SAD, ANGRY}, NEUTRAL -> {INFORMATIVE, CALM}), one chosen at random.",
-        "Phrases (e.g. 'thank you', 'you got this') outweigh a single competing keyword.",
-        "Keyword matching is stem-based and case-insensitive: 'misinformative' does not trigger the 'informative' keyword.",
-        "Inflected forms collapse onto one dictionary entry via the shared Porter stem ('celebrating' == 'celebrate').",
-        "Repeated taps on the same text can produce different fonts/gradients/emoji from the resolved intent.",
-        "Hebrew-script input is drawn in one of the intent's Hebrew fonts; other input in an English font.",
-        "The Settings screen has no font, color, emoji, gradient, add-style, or remove-style control; it shows a scrollable read-only gallery of one sample render per intent.",
-        "The min/max text-length bounds still persist to DataStore across app restarts."
-      ],
-      "implementation_notes": "text/PorterStemmer.kt is the classic Porter 1980 algorithm, pure JVM; it keys every dictionary (each human keyword is stemmed at map-build time so queries match). text/TextTokens.kt lowercases + NFC-normalizes, splits on non-(letter|mark|number), drops <2-char tokens and a stop-word list, and Porter-stems the rest into an ordered de-duplicated list; Scripts.hasHebrew() probes the Hebrew blocks. text/SentimentAnalyzer.kt is a compact VADER-style analyser: a ~200-word valence lexicon plus negation (sign flip), degree words (scale), ALL-CAPS and '!' emphasis, squashed to a compound with VADER's +-0.05 cutoffs -> Sentiment.POSITIVE/NEGATIVE/NEUTRAL. data/model/EmojiLexicon.kt maps ~240 keywords (Porter-stemmed keys, 226 distinct emojis) to emojis; select() takes emojis already typed first, then one per matching stem in first-seen order, max 3, DEFAULT '🫟' when empty. data/model/AutoStyle.kt: the Intent enum carries previewEmoji, englishFonts/hebrewFonts (BundledFont enum -> assets/fonts/*.ttf) and gradients (Gradient(startHex, endHex)). STEM_KEYWORDS / PHRASE_KEYWORDS / EMOJI_KEYWORDS -> Intent; detectIntent() scores stem hit=1, phrase=3, emoji=2 and returns the top scorer or null. resolveIntent() = detectIntent() ?: a random member of SENTIMENT_INTENTS[analyze(text)]. planFor(originalText, translatedText, random) -> RenderPlan: resolved intent, a random font from englishFonts/hebrewFonts by Scripts.hasHebrew(originalText), a random gradient, contrastColorFor(gradient) (#1E1E2E or #FFFFFF by luminance), and EmojiLexicon.select(). buttonHintFor(translatedText) is non-random: detected intent, else the first intent for a non-neutral sentiment, else null (keeps the ink-drop button default). TextTranslator.warmUp() now predownloads the Hebrew model first, then the UI-chrome languages. SettingsScreen builds a fixed sample RenderPlan per intent (first font + first gradient) for the gallery. Covered by JVM tests PorterStemmerTest, SentimentAnalyzerTest, EmojiLexiconTest, AutoStyleTest."
-    },
-    {
-      "name": "Multi-language UI Support",
-      "screens": [
-        "Settings"
-      ],
-      "est_hours": 10,
-      "description": "All UI chrome (permission copy, section titles, field labels, the Toast, font names) is externalized to string resources and translated into five languages beyond the English default (Spanish, French, German, Portuguese, Hindi). An App Language picker on the Settings screen lets the user override the app's display language independent of the device's system language; the default 'System Default' option automatically follows whichever of the device's configured languages the app has a translation for, falling back to English otherwise — so language detection is Android's own resource-qualifier resolution, not custom logic.",
-      "acceptance_criteria": [
-        "With no override selected, the app's UI language automatically matches the device's system language when a translation exists, and falls back to English otherwise, with no user action required.",
-        "Selecting a specific language in the App Language picker immediately re-renders the entire Settings screen in that language and persists the choice across app restarts, independent of the device's system language.",
-        "Selecting 'System Default' clears the override and reverts to automatic system-language matching.",
-        "All screen text — permission copy, section titles, field labels, button text, the copied-image confirmation Toast, and the four font names — is translated in every supported language; no hardcoded English string remains outside of the rendered sample preview text."
-      ],
-      "implementation_notes": "res/values/strings.xml holds the English defaults; res/values-{es,fr,de,pt,hi}/strings.xml hold full translations, selected automatically by Android's locale-qualified resource resolution. FontChoice's label field became a @StringRes labelRes so font names localize too. LanguagePicker (SettingsScreen.kt) offers 'System Default' plus each supported language in its own native name; on API 33+ it reads/writes the override via Context.getSystemService(LocaleManager::class.java).applicationLocales directly (the same mechanism the OS's own per-app language settings use), with androidx.appcompat's AppCompatDelegate.setApplicationLocales() as the pre-33 fallback — then calls Activity.recreate() itself since MainActivity is a plain ComponentActivity, not AppCompatActivity, so it doesn't get AppCompat's automatic recreation. AndroidManifest declares android:localeConfig=\"@xml/locales_config\" (listing en/es/fr/de/pt/hi) so Android 13+'s own system-level per-app language settings page also lists this app, and a manifest-declared androidx.appcompat.app.AppLocalesMetadataHolderService with autoStoreLocales=true meta-data is required for AppCompatDelegate's static API to have a valid Application context to act on — omitting it makes setApplicationLocales() a silent no-op."
+     "name": "gradients",
+     "type": "List<Gradient>",
+     "notes": ">=4 two-stop gradients (startHex, endHex), shared across languages"
     }
-  ],
-  "non_goals": [
-    "No custom Input Method (IME) / system keyboard in this version — text is styled and cleared in place via AccessibilityService, not typed through a replacement keyboard.",
-    "No user-editable styles — no style list, no font/color/emoji/gradient pickers, no add/remove. The look is chosen automatically from the typed text; intents, fonts and gradients are fixed in code.",
-    "No cloud/network translation of the typed text — translation to English before keyword matching runs entirely on-device via ML Kit; the only network use is a one-time per-language model download, after which it works offline, and the typed text itself is never sent anywhere.",
-    "No in-app purchases, ads, or any billing integration — the app is entirely free with no monetization.",
-    "No handwriting font creation and no font picker — the render font is chosen automatically from the intent's per-language list (13 bundled OFL families total: 8 Latin, 5 Hebrew-capable).",
-    "No cloud backend, accounts, or sync — all settings live in local DataStore on the one device.",
-    "No app-specific one-tap share target (e.g. WhatsApp) — the styled image is placed on the system clipboard for the user to paste anywhere themselves.",
-    "No neural/ML models for styling — intent is dictionary + Porter-stem lookup with a rules-based VADER-style sentiment fallback; the only ML is ML Kit on-device translation of the input text."
-  ],
-  "test_plan": [
+   ],
+   "notes": "data.model/AutoStyle.kt, no Android imports (plain-JVM testable). BundledFont enum maps to the 13 OFL .ttf files in assets/fonts. Paired with STEM_KEYWORDS / PHRASE_KEYWORDS / EMOJI_KEYWORDS (trigger -> Intent, keyword side Porter-stemmed) SENTIMENT_INTENTS (Sentiment -> List<Intent> fallback), and INTENT_EMOJIS (Intent -> curated 3-emoji list, used by planFor when EmojiLexicon finds no keyword). data/model/HebrewFallback.kt provides a raw-Hebrew keyword->Intent + coarse-sentiment fallback plus a ~180-entry Hebrew concept-word->emoji map (WORD_EMOJI) for when on-device translation hasn't landed yet.",
+   "storage": "none"
+  },
+  {
+   "entity": "TriggerConfig",
+   "fields": [
     {
-      "kind": "unit",
-      "scenario": "Content-based intent detection and style selection",
-      "steps": [
-        "Call AutoStyle.detectIntent with text carrying a keyword stem, an inflected form of one, a phrase, an emoji, a competing keyword+phrase mix, mixed case, a substring-of-a-keyword string, and an unmatched string.",
-        "Call AutoStyle.resolveIntent on unmatched-but-clearly-positive and clearly-negative text.",
-        "Call AutoStyle.planFor with English and with Hebrew-script originals, and with text that matches no emoji keyword.",
-        "Call AutoStyle.buttonHintFor on a keyword match and on gibberish."
-      ],
-      "expected": "Keyword stems / phrases / emoji each select their intent; inflected forms hit the same entry; phrases outweigh a competing keyword; matching is stem-based and whole-token ('misinformative' does not fire 'informative'); unmatched/blank return null. resolveIntent falls back to a random member of the sentiment-mapped intent set. planFor returns a font from the intent's English or Hebrew list per the original script, a gradient from that intent, a #1E1E2E/#FFFFFF text colour, and <=3 emojis (['🫟'] when none); it is deterministic for a fixed Random seed. buttonHintFor mirrors the detected intent and is null only when there is nothing to go on. (JVM: PorterStemmerTest, SentimentAnalyzerTest, EmojiLexiconTest, AutoStyleTest.)"
+     "name": "minTextLength",
+     "type": "Int",
+     "notes": "default 3 — overlay-button trigger lower bound"
     },
     {
-      "kind": "unit",
-      "scenario": "Text-length boundary evaluation",
-      "steps": [
-        "Call TextLengthEvaluator.isWithinBounds with lengths below, at, and above the configured min/max bounds.",
-        "Call it again with trimmedLength = 0 and minLength = 0."
-      ],
-      "expected": "Lengths strictly below minLength or strictly above maxLength return false; lengths equal to either bound or in between return true. A trimmedLength of 0 always returns false, even when minLength is 0."
-    },
-    {
-      "kind": "instrumented",
-      "scenario": "Rendered bitmap is always a fixed 512x512 square",
-      "steps": [
-        "Render a short string and a long multi-sentence string with the same StyleConfig via ImageRenderer.renderBitmap on a connected device.",
-        "Compare the resulting bitmap dimensions."
-      ],
-      "expected": "Both the short and long string bitmaps are exactly 512x512, regardless of text length."
-    },
-    {
-      "kind": "instrumented",
-      "scenario": "Line wrapping never breaks a word mid-way",
-      "steps": [
-        "Build the fitted StaticLayout (via ImageRenderer.buildFittedLayout) for a multi-word sentence long enough to wrap across several lines.",
-        "For each line break, check whether the character immediately before and after the break are both non-whitespace."
-      ],
-      "expected": "Every line break falls on whitespace between words; no line ends mid-word."
-    },
-    {
-      "kind": "instrumented",
-      "scenario": "Spaceless script auto-fits instead of being treated as one word",
-      "steps": [
-        "Build the fitted StaticLayout (via ImageRenderer.buildFittedLayout) for a long run of Han characters with no spaces.",
-        "Inspect the layout's line count, per-line widths, and chosen text size, then render the same text."
-      ],
-      "expected": "The text wraps across multiple lines, every line stays within the content width, the chosen font size is well above the 12px floor (not shrunk to fit the whole run on one line), and rendering still returns a 512x512 bitmap."
-    },
-    {
-      "kind": "instrumented",
-      "scenario": "A missing font asset falls back instead of crashing",
-      "steps": [
-        "Render text with a RenderPlan whose fontAssetPath does not exist in assets/fonts."
-      ],
-      "expected": "typefaceFor() returns Typeface.DEFAULT_BOLD and rendering still produces a 512x512 bitmap."
-    },
-    {
-      "kind": "instrumented",
-      "scenario": "Invalid hex colors fall back instead of crashing",
-      "steps": [
-        "Render text with a StyleConfig whose textColorHex and backgroundColorHex are not valid hex strings."
-      ],
-      "expected": "Rendering completes and returns a non-empty bitmap instead of throwing."
-    },
-    {
-      "kind": "instrumented",
-      "scenario": "Emoji strip renders without breaking the fixed square",
-      "steps": [
-        "Render with a RenderPlan carrying three emojis, and again with an empty emoji list."
-      ],
-      "expected": "Both produce a 512x512 bitmap; the three-emoji case draws a horizontally-centered bottom strip, the empty case draws none."
-    },
-    {
-      "kind": "instrumented",
-      "scenario": "Clipboard paste integrity",
-      "steps": [
-        "Launch MainActivity via ActivityScenario so the process holds window focus.",
-        "From inside the resumed Activity, render an image and call ClipboardManagerHelper.copyImageToClipboard.",
-        "Read back ClipboardManager.primaryClip from the same focused Activity."
-      ],
-      "expected": "The primary clip's item URI matches the copied URI and its MIME type is image/png."
-    },
-    {
-      "kind": "manual",
-      "scenario": "App Language override applies immediately and persists",
-      "steps": [
-        "Open Settings with the device's system language set to English and no override selected.",
-        "Tap a non-English language chip (e.g. Español) in the App Language picker.",
-        "Force-close and relaunch the app.",
-        "Tap 'System Default' to clear the override."
-      ],
-      "expected": "The whole Settings screen re-renders in the selected language immediately after tapping its chip; the override survives the relaunch; tapping 'System Default' reverts the UI to the device's system language (English)."
-    },
-    {
-      "kind": "manual",
-      "scenario": "Permission handling when revoked dynamically",
-      "steps": [
-        "Grant both the overlay and accessibility permissions, confirm the overlay button appears while typing.",
-        "Revoke one permission from system Settings, return to the app."
-      ],
-      "expected": "The revoked permission's row reverts to 'not granted' on the very next onResume, and the overlay button stops appearing until it's re-granted."
-    },
-    {
-      "kind": "manual",
-      "scenario": "Automatic style matches the message mood",
-      "steps": [
-        "In WhatsApp, type a clearly funny message (e.g. 'haha this is hilarious 😂'), tap the overlay button, and paste.",
-        "Repeat with a romantic message ('I love you so much ❤️'), an informative one ('FYI: meeting agenda for tomorrow'), and a gibberish string with no mood words.",
-        "Tap the button several times on the same funny message, pasting each result."
-      ],
-      "expected": "Each paste shows an image whose colors/emoji fit the message's mood — playful for the funny one, warm/pink for the romantic one, clean/neutral for the informative one, and a plain Neutral look for the gibberish. Repeated taps on the same message can produce different looks from that mood's set."
-    },
-    {
-      "kind": "manual",
-      "scenario": "Settings has no style editor",
-      "steps": [
-        "Open Settings and scroll through the whole screen."
-      ],
-      "expected": "There is a permissions card, an App Language picker, min/max length fields, and an 'Automatic Styling' card with a scrollable read-only gallery of one sample render per mood. There is no font/color/emoji/gradient picker and no Add Style / Remove Style button anywhere."
+     "name": "maxTextLength",
+     "type": "Int",
+     "notes": "default 240 — overlay-button trigger upper bound; above it the button is hidden entirely"
     }
+   ],
+   "storage": "datastore_preferences",
+   "notes": "The only persisted user setting left (keys `min_length` / `max_length` under the `user_settings` Preferences DataStore)."
+  }
+ ],
+ "package_id": "fyi.appy.inksend.giladkutiel",
+ "target_sdk": 35,
+ "tech_stack": {
+  "language": "Kotlin",
+  "libraries": [
+   {
+    "purpose": "Android Kotlin extensions and compatibility helpers",
+    "gradle_coordinate": "androidx.core:core-ktx:1.13.1"
+   },
+   {
+    "purpose": "Per-app language override (AppCompatDelegate.setApplicationLocales) for the App Language picker",
+    "gradle_coordinate": "androidx.appcompat:appcompat:1.7.0"
+   },
+   {
+    "purpose": "Compose host Activity",
+    "gradle_coordinate": "androidx.activity:activity-compose:1.9.3"
+   },
+   {
+    "purpose": "Material 3 Compose components",
+    "gradle_coordinate": "androidx.compose.material3:material3:1.3.1"
+   },
+   {
+    "purpose": "ViewModel integration with Compose",
+    "gradle_coordinate": "androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6"
+   },
+   {
+    "purpose": "Lifecycle-aware coroutines (permission re-check on resume)",
+    "gradle_coordinate": "androidx.lifecycle:lifecycle-runtime-ktx:2.8.6"
+   },
+   {
+    "purpose": "Local key-value storage for the text-length TriggerConfig",
+    "gradle_coordinate": "androidx.datastore:datastore-preferences:1.1.1"
+   },
+   {
+    "purpose": "Coroutines for DataStore flows and the accessibility service's settings collector",
+    "gradle_coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0"
+   },
+   {
+    "purpose": "Dependency injection into the Application, Activity, and AccessibilityService",
+    "gradle_coordinate": "com.google.dagger:hilt-android:2.56.2"
+   },
+   {
+    "purpose": "Hilt annotation processing via KSP",
+    "gradle_coordinate": "com.google.dagger:hilt-android-compiler:2.56.2"
+   },
+   {
+    "purpose": "Play In-App Review prompt after first successful permission setup",
+    "gradle_coordinate": "com.google.android.play:review-ktx:2.0.2"
+   },
+   {
+    "purpose": "await() bridge from Google Play Services Tasks (ML Kit) to Kotlin coroutines",
+    "gradle_coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0"
+   },
+   {
+    "purpose": "On-device translation of the typed text to English before keyword matching (TextTranslator)",
+    "gradle_coordinate": "com.google.mlkit:translate:17.0.3"
+   },
+   {
+    "purpose": "On-device source-language detection feeding the translator",
+    "gradle_coordinate": "com.google.mlkit:language-id:17.0.6"
+   }
   ],
-  "data_model": [
-    {
-      "entity": "RenderPlan",
-      "fields": [
-        {
-          "name": "fontAssetPath",
-          "type": "String",
-          "notes": "e.g. fonts/Pacifico.ttf — loaded via Typeface.createFromAsset with a cache; falls back to DEFAULT_BOLD"
-        },
-        {
-          "name": "fontName",
-          "type": "String",
-          "notes": "human display name of the bundled font, used only by the Settings gallery"
-        },
-        {
-          "name": "gradientStartHex",
-          "type": "String",
-          "notes": "gradient start stop, #RRGGBB"
-        },
-        {
-          "name": "gradientEndHex",
-          "type": "String",
-          "notes": "gradient end stop, #RRGGBB"
-        },
-        {
-          "name": "textColorHex",
-          "type": "String",
-          "notes": "#1E1E2E or #FFFFFF, chosen by AutoStyle for contrast against the gradient midpoint"
-        },
-        {
-          "name": "emojis",
-          "type": "List<String>",
-          "notes": "0-3 emojis for the bottom strip; [\"🫟\"] when the text matched no keyword"
-        }
-      ],
-      "notes": "Not persisted. The fully-resolved draw instruction produced by AutoStyle.planFor(originalText, translatedText). Replaces the old StyleConfig/FontChoice; the renderer does no lookups of its own.",
-      "storage": "in_memory"
-    },
-    {
-      "entity": "Intent",
-      "fields": [
-        {
-          "name": "name",
-          "type": "enum constant",
-          "notes": "exactly one of FUNNY, SAD, ROMANTIC, ANGRY, INFORMATIVE, EXCITED, CELEBRATORY, CALM, MOTIVATIONAL, GRATEFUL — 10 total, no neutral entry"
-        },
-        {
-          "name": "previewEmoji",
-          "type": "String",
-          "notes": "representative emoji, shown on the overlay button preview and the Settings gallery"
-        },
-        {
-          "name": "englishFonts",
-          "type": "List<BundledFont>",
-          "notes": ">=2 Latin display faces; planFor picks one at random for non-Hebrew text"
-        },
-        {
-          "name": "hebrewFonts",
-          "type": "List<BundledFont>",
-          "notes": ">=2 Hebrew-capable faces (Heebo, Frank Ruhl Libre, Suez One, Secular One, Rubik); used when the original text is Hebrew script"
-        },
-        {
-          "name": "gradients",
-          "type": "List<Gradient>",
-          "notes": ">=4 two-stop gradients (startHex, endHex), shared across languages"
-        }
-      ],
-      "notes": "data.model/AutoStyle.kt, no Android imports (plain-JVM testable). BundledFont enum maps to the 13 OFL .ttf files in assets/fonts. Paired with STEM_KEYWORDS / PHRASE_KEYWORDS / EMOJI_KEYWORDS (trigger -> Intent, keyword side Porter-stemmed) and SENTIMENT_INTENTS (Sentiment -> List<Intent> fallback).",
-      "storage": "none"
-    },
-    {
-      "entity": "TriggerConfig",
-      "fields": [
-        {
-          "name": "minTextLength",
-          "type": "Int",
-          "notes": "default 3 — overlay-button trigger lower bound"
-        },
-        {
-          "name": "maxTextLength",
-          "type": "Int",
-          "notes": "default 240 — overlay-button trigger upper bound; above it the button is hidden entirely"
-        }
-      ],
-      "storage": "datastore_preferences",
-      "notes": "The only persisted user setting left (keys `min_length` / `max_length` under the `user_settings` Preferences DataStore)."
-    }
+  "ui_toolkit": "Jetpack Compose",
+  "gradle_version": "8.7.3",
+  "kotlin_version": "2.1.20",
+  "compose_bom_version": "2025.06.01"
+ },
+ "permissions": [
+  "SYSTEM_ALERT_WINDOW",
+  "FOREGROUND_SERVICE",
+  "FOREGROUND_SERVICE_SPECIAL_USE",
+  "INTERNET",
+  "ACCESS_NETWORK_STATE"
+ ],
+ "positioning": "Type anywhere — any app, any field — and turn what you typed into a beautifully styled image with one tap on a small floating button, ready to paste right back in.",
+ "original_app": {
+  "name": "Fontmaker - Font Keyboard App",
+  "play_id": "com.takeofflabs.fontmaker",
+  "category": "Productivity",
+  "report_url": "https://appy.fyi/report/com.takeofflabs.fontmaker",
+  "play_store_url": "https://play.google.com/store/apps/details?id=com.takeofflabs.fontmaker"
+ },
+ "working_name": "InkSend",
+ "design_system": {
+  "icon_name": "pen",
+  "typography": "Google Fonts 'Fraunces' (serif, expressive) for in-app headings/branding, Material 3 default type scale (Roboto Flex) for all other UI chrome and body text — never used for the rendered style output itself, which uses the font of the auto-selected mood style.",
+  "theme_notes": "Dark mode follows the system default: light theme uses background #F7F5FF / surface #FFFFFF / on-background #1C1B1F; dark theme uses background #16151F / surface #201F2C / on-background #E7E1FF.",
+  "color_error_hex": "#D64545",
+  "color_primary_hex": "#5B47E0",
+  "color_background_hex": "#F7F5FF"
+ },
+ "store_listing": {
+  "title": "InkSend: Style Any Text",
+  "category": "Productivity",
+  "keywords": [
+   "style text",
+   "text to image",
+   "stylish text",
+   "text styler",
+   "custom text color",
+   "text overlay",
+   "chat styler"
   ],
-  "package_id": "fyi.appy.inksend.giladkutiel",
-  "target_sdk": 35,
-  "tech_stack": {
-    "language": "Kotlin",
-    "libraries": [
-      {
-        "purpose": "Android Kotlin extensions and compatibility helpers",
-        "gradle_coordinate": "androidx.core:core-ktx:1.13.1"
-      },
-      {
-        "purpose": "Per-app language override (AppCompatDelegate.setApplicationLocales) for the App Language picker",
-        "gradle_coordinate": "androidx.appcompat:appcompat:1.7.0"
-      },
-      {
-        "purpose": "Compose host Activity",
-        "gradle_coordinate": "androidx.activity:activity-compose:1.9.3"
-      },
-      {
-        "purpose": "Material 3 Compose components",
-        "gradle_coordinate": "androidx.compose.material3:material3:1.3.1"
-      },
-      {
-        "purpose": "ViewModel integration with Compose",
-        "gradle_coordinate": "androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6"
-      },
-      {
-        "purpose": "Lifecycle-aware coroutines (permission re-check on resume)",
-        "gradle_coordinate": "androidx.lifecycle:lifecycle-runtime-ktx:2.8.6"
-      },
-      {
-        "purpose": "Local key-value storage for the text-length TriggerConfig",
-        "gradle_coordinate": "androidx.datastore:datastore-preferences:1.1.1"
-      },
-      {
-        "purpose": "Coroutines for DataStore flows and the accessibility service's settings collector",
-        "gradle_coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0"
-      },
-      {
-        "purpose": "Dependency injection into the Application, Activity, and AccessibilityService",
-        "gradle_coordinate": "com.google.dagger:hilt-android:2.56.2"
-      },
-      {
-        "purpose": "Hilt annotation processing via KSP",
-        "gradle_coordinate": "com.google.dagger:hilt-android-compiler:2.56.2"
-      },
-      {
-        "purpose": "Play In-App Review prompt after first successful permission setup",
-        "gradle_coordinate": "com.google.android.play:review-ktx:2.0.2"
-      },
-      {
-        "purpose": "await() bridge from Google Play Services Tasks (ML Kit) to Kotlin coroutines",
-        "gradle_coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0"
-      },
-      {
-        "purpose": "On-device translation of the typed text to English before keyword matching (TextTranslator)",
-        "gradle_coordinate": "com.google.mlkit:translate:17.0.3"
-      },
-      {
-        "purpose": "On-device source-language detection feeding the translator",
-        "gradle_coordinate": "com.google.mlkit:language-id:17.0.6"
-      }
-    ],
-    "ui_toolkit": "Jetpack Compose",
-    "gradle_version": "8.7.3",
-    "kotlin_version": "2.1.20",
-    "compose_bom_version": "2025.06.01"
-  },
-  "permissions": [
-    "SYSTEM_ALERT_WINDOW",
-    "FOREGROUND_SERVICE",
-    "FOREGROUND_SERVICE_SPECIAL_USE",
-    "INTERNET",
-    "ACCESS_NETWORK_STATE"
-  ],
-  "positioning": "Type anywhere — any app, any field — and turn what you typed into a beautifully styled image with one tap on a small floating button, ready to paste right back in.",
-  "original_app": {
-    "name": "Fontmaker - Font Keyboard App",
-    "play_id": "com.takeofflabs.fontmaker",
-    "category": "Productivity",
-    "report_url": "https://appy.fyi/report/com.takeofflabs.fontmaker",
-    "play_store_url": "https://play.google.com/store/apps/details?id=com.takeofflabs.fontmaker"
-  },
-  "working_name": "InkSend",
-  "design_system": {
-    "icon_name": "pen",
-    "typography": "Google Fonts 'Fraunces' (serif, expressive) for in-app headings/branding, Material 3 default type scale (Roboto Flex) for all other UI chrome and body text — never used for the rendered style output itself, which uses the font of the auto-selected mood style.",
-    "theme_notes": "Dark mode follows the system default: light theme uses background #F7F5FF / surface #FFFFFF / on-background #1C1B1F; dark theme uses background #16151F / surface #201F2C / on-background #E7E1FF.",
-    "color_error_hex": "#D64545",
-    "color_primary_hex": "#5B47E0",
-    "color_background_hex": "#F7F5FF"
-  },
-  "store_listing": {
-    "title": "InkSend: Style Any Text",
-    "category": "Productivity",
-    "keywords": [
-      "style text",
-      "text to image",
-      "stylish text",
-      "text styler",
-      "custom text color",
-      "text overlay",
-      "chat styler"
-    ],
-    "icon_prompt": "Create a 1024x1024 Android app icon for InkSend, a text-styling utility app. Rounded-square adaptive icon style, indigo background (#5B47E0), a simple white fountain-pen nib icon with a short flowing ink stroke. Flat vector design, high contrast, no text, no brand logos, no photorealistic elements.",
-    "long_description": "InkSend turns anything you type, in any app, into a beautifully styled image — font, colors, gradient, and an emoji badge chosen to match your message — ready to paste back in with one tap.\n\nJust start typing in a text field. Once your message is long enough, a small floating button appears. Tap it, and InkSend reads the mood of what you wrote — funny, sad, romantic, excited, grateful and more — picks a matching look, renders your exact words as a styled image, copies it to your clipboard, and clears the field. A long-press and Paste (or your keyboard's clipboard suggestion) drops the image right back in.\n\nThere's nothing to set up. No style list to build, no colors to pick — the styling is automatic, and font size always auto-fits your text. The one setting is which message lengths should trigger the button.\n\nEverything happens on your device. No account, no ads, no subscription — InkSend is completely free.",
-    "short_description": "Type a message and paste it back as an image styled to match its mood — free, no ads, no account."
-  },
-  "project_context": "This spec describes an independent, alternative Android app you are building from scratch to compete with an existing incumbent app on Google Play — not a modification, clone, or reskin of the incumbent's own code, assets, or branding. Use the incumbent only as a market reference (via the report data below), and design working_name/package_id/store_listing/design_system so the result is clearly its own product.",
-  "total_est_weeks": 2.0,
-  "trademark_cleared": false,
-  "build_instructions": "chmod +x ./gradlew\n./gradlew clean\n./gradlew testDebugUnitTest\n./gradlew connectedDebugAndroidTest\nkeytool -genkeypair -v -keystore inksend-upload.jks -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias upload -dname \"CN=InkSend Upload,O=AppyFYI,C=US\" -storepass changeit -keypass changeit\nRELEASE_STORE_FILE=\"$PWD/inksend-upload.jks\" RELEASE_STORE_PASSWORD=\"changeit\" RELEASE_KEY_ALIAS=\"upload\" RELEASE_KEY_PASSWORD=\"changeit\" ./gradlew bundleRelease",
-  "human_gates_required": [
-    "trademark_and_privacy_review",
-    "closed_testing_recruitment"
-  ]
+  "icon_prompt": "Create a 1024x1024 Android app icon for InkSend, a text-styling utility app. Rounded-square adaptive icon style, indigo background (#5B47E0), a simple white fountain-pen nib icon with a short flowing ink stroke. Flat vector design, high contrast, no text, no brand logos, no photorealistic elements.",
+  "long_description": "InkSend turns anything you type, in any app, into a beautifully styled image — font, colors, gradient, and an emoji badge chosen to match your message — ready to paste back in with one tap.\n\nJust start typing in a text field. Once your message is long enough, a small floating button appears. Tap it, and InkSend reads the mood of what you wrote — funny, sad, romantic, excited, grateful and more — picks a matching look, renders your exact words as a styled image, copies it to your clipboard, and clears the field. A long-press and Paste (or your keyboard's clipboard suggestion) drops the image right back in.\n\nThere's nothing to set up. No style list to build, no colors to pick — the styling is automatic, and font size always auto-fits your text. The one setting is which message lengths should trigger the button.\n\nEverything happens on your device. No account, no ads, no subscription — InkSend is completely free.",
+  "short_description": "Type a message and paste it back as an image styled to match its mood — free, no ads, no account."
+ },
+ "project_context": "This spec describes an independent, alternative Android app you are building from scratch to compete with an existing incumbent app on Google Play — not a modification, clone, or reskin of the incumbent's own code, assets, or branding. Use the incumbent only as a market reference (via the report data below), and design working_name/package_id/store_listing/design_system so the result is clearly its own product.",
+ "total_est_weeks": 2.0,
+ "trademark_cleared": false,
+ "build_instructions": "chmod +x ./gradlew\n./gradlew clean\n./gradlew testDebugUnitTest\n./gradlew connectedDebugAndroidTest\nkeytool -genkeypair -v -keystore inksend-upload.jks -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias upload -dname \"CN=InkSend Upload,O=AppyFYI,C=US\" -storepass changeit -keypass changeit\nRELEASE_STORE_FILE=\"$PWD/inksend-upload.jks\" RELEASE_STORE_PASSWORD=\"changeit\" RELEASE_KEY_ALIAS=\"upload\" RELEASE_KEY_PASSWORD=\"changeit\" ./gradlew bundleRelease",
+ "human_gates_required": [
+  "trademark_and_privacy_review",
+  "closed_testing_recruitment"
+ ]
 }

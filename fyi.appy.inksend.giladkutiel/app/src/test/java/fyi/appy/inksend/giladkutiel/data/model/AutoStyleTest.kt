@@ -32,7 +32,7 @@ class AutoStyleTest {
 
     @Test
     fun `emoji alone is enough`() {
-        assertEquals(Intent.ROMANTIC, AutoStyle.detectIntent("goodnight ❤️"))
+        assertEquals(Intent.ROMANTIC, AutoStyle.detectIntent("see you later ❤️"))
         assertEquals(Intent.CELEBRATORY, AutoStyle.detectIntent("we made it 🎉"))
     }
 
@@ -66,6 +66,47 @@ class AutoStyleTest {
         repeat(20) { seed ->
             assertTrue(AutoStyle.resolveIntent(negative, Random(seed)) in SENTIMENT_INTENTS.getValue(Sentiment.NEGATIVE))
         }
+    }
+
+    @Test
+    fun `good night resolves to CALM once translated`() {
+        assertEquals(Intent.CALM, AutoStyle.detectIntent("yaeli, good night"))
+        assertEquals(Intent.CALM, AutoStyle.detectIntent("sweet dreams"))
+    }
+
+    @Test
+    fun `untranslated Hebrew still styles by mood via the fallback`() {
+        // The exact messages from the bug report: translation never ran, so the raw Hebrew
+        // reaches resolveIntent as originalText == translatedText.
+        repeat(10) { seed ->
+            assertEquals(
+                Intent.ROMANTIC,
+                AutoStyle.resolveIntent("אבא אוהב אותך", "אבא אוהב אותך", Random(seed)),
+            )
+            assertEquals(
+                Intent.CALM,
+                AutoStyle.resolveIntent("יעלי לילה טוב", "יעלי לילה טוב", Random(seed)),
+            )
+        }
+        // A translation that DID land still wins over the Hebrew fallback.
+        assertEquals(
+            Intent.CELEBRATORY,
+            AutoStyle.resolveIntent("מזל טוב", "congrats on the new job", Random(0)),
+        )
+    }
+
+    @Test
+    fun `planFor for untranslated Hebrew uses Hebrew fonts, mood gradient and fitting emoji`() {
+        val plan = AutoStyle.planFor("אבא אוהב אותך", "אבא אוהב אותך", Random(2))
+        assertTrue(plan.fontAssetPath in Intent.ROMANTIC.hebrewFonts.map { it.assetPath })
+        assertTrue(Gradient(plan.gradientStartHex, plan.gradientEndHex) in Intent.ROMANTIC.gradients)
+        assertNotEquals(listOf(EmojiLexicon.DEFAULT), plan.emojis)
+    }
+
+    @Test
+    fun `buttonHintFor previews untranslated Hebrew instead of falling back to the ink drop`() {
+        assertEquals(Intent.ROMANTIC.previewEmoji, AutoStyle.buttonHintFor("אבא אוהב אותך")?.emoji)
+        assertEquals(Intent.CALM.previewEmoji, AutoStyle.buttonHintFor("יעלי לילה טוב")?.emoji)
     }
 
     @Test
@@ -116,14 +157,44 @@ class AutoStyleTest {
     }
 
     @Test
-    fun `planFor emojis come from the keywords, with the ink-drop fallback`() {
+    fun `planFor emojis come from the keywords when there is a match`() {
         val withEmoji = AutoStyle.planFor("happy birthday, lets party", "happy birthday, lets party", Random(0))
         assertTrue(withEmoji.emojis.isNotEmpty())
         assertTrue(withEmoji.emojis.size <= 3)
         assertNotEquals(listOf(EmojiLexicon.DEFAULT), withEmoji.emojis)
+    }
 
-        val noEmoji = AutoStyle.planFor("zxqw plok mnbv", "zxqw plok mnbv", Random(0))
-        assertEquals(listOf(EmojiLexicon.DEFAULT), noEmoji.emojis)
+    @Test
+    fun `planFor never renders the bare ink drop - it falls back to the resolved intent`() {
+        // No keyword, no emoji, gibberish: the lexicon yields only DEFAULT, so planFor must
+        // substitute the resolved intent's emoji set rather than ship the ink drop.
+        val plan = AutoStyle.planFor("zxqw plok mnbv", "zxqw plok mnbv", Random(0))
+        assertNotEquals(listOf(EmojiLexicon.DEFAULT), plan.emojis)
+        assertTrue(plan.emojis.isNotEmpty())
+        assertTrue(INTENT_EMOJIS.values.any { it == plan.emojis })
+    }
+
+    @Test
+    fun `planFor gives almost every real message a non-default emoji`() {
+        val messages = listOf(
+            // English — plenty of these name no lexicon concept
+            "on my way", "sounds good", "call me later", "where are you?", "running late",
+            "no worries", "see you tomorrow", "let me check and get back to you", "ok got it",
+            "that is hilarious", "i love you so much", "feeling really down today",
+            "congratulations on the new job", "please note the meeting moved", "cant wait for this",
+            "thank you so much", "you got this, keep pushing", "take it easy tonight",
+            "happy birthday!", "the dog needs a walk",
+            // Hebrew — untranslated (translation hasn't landed)
+            "אבא אוהב אותך", "יעלי לילה טוב", "אני בדרך", "נתראה מחר בעבודה", "תודה רבה על הכל",
+            "בא לי קפה", "מזל טוב על העבודה החדשה", "חחח זה ממש מצחיק", "אני ממש עצוב היום",
+            "כל הכבוד, תמשיך ככה", "פגישה נדחתה למחר", "יום הולדת שמח", "הכלב צריך לצאת",
+            "מתגעגע אליך", "הכל בסדר גמור",
+        )
+        val default = listOf(EmojiLexicon.DEFAULT)
+        val misses = messages.filter { msg ->
+            AutoStyle.planFor(msg, msg, Random(0)).emojis == default
+        }
+        assertTrue("ink-drop fallback still reached for: $misses", misses.isEmpty())
     }
 
     @Test

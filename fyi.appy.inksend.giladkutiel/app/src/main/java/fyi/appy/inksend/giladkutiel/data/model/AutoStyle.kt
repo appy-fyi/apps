@@ -188,7 +188,7 @@ val PHRASE_KEYWORDS: Map<String, Intent> = buildRawMap(
     Intent.INFORMATIVE to listOf("please note", "heads up", "for your information", "just so you know", "action items"),
     Intent.EXCITED to listOf("cant wait", "cannot wait", "so ready", "lets go", "here we go"),
     Intent.CELEBRATORY to listOf("happy birthday", "we did it", "way to go", "you nailed it", "job well done"),
-    Intent.CALM to listOf("take it easy", "no rush", "deep breath", "its okay", "all good"),
+    Intent.CALM to listOf("take it easy", "no rush", "deep breath", "its okay", "all good", "good night", "goodnight", "sweet dreams", "sleep well", "sleep tight", "sleep now"),
     Intent.MOTIVATIONAL to listOf("you got this", "keep going", "never give up", "push through", "dont quit", "one step at a time"),
     Intent.GRATEFUL to listOf("thank you", "means a lot", "means the world", "i appreciate"),
 )
@@ -219,6 +219,25 @@ val SENTIMENT_INTENTS: Map<Sentiment, List<Intent>> = mapOf(
     ),
     Sentiment.NEGATIVE to listOf(Intent.SAD, Intent.ANGRY),
     Sentiment.NEUTRAL to listOf(Intent.INFORMATIVE, Intent.CALM),
+)
+
+/**
+ * A small curated emoji set per [Intent], used as the last resort by [AutoStyle.planFor] when
+ * [EmojiLexicon] found no keyword match: since every message resolves to an intent, this makes
+ * the ink-drop [EmojiLexicon.DEFAULT] effectively unreachable in the rendered image — a plain
+ * "on my way" or an untranslated Hebrew line still gets a fitting mood emoji instead.
+ */
+val INTENT_EMOJIS: Map<Intent, List<String>> = mapOf(
+    Intent.FUNNY to listOf("😂", "🤣", "😄"),
+    Intent.SAD to listOf("😢", "🥺", "💙"),
+    Intent.ROMANTIC to listOf("❤️", "🥰", "😘"),
+    Intent.ANGRY to listOf("😤", "😠", "😑"),
+    Intent.INFORMATIVE to listOf("📌", "📝", "💬"),
+    Intent.EXCITED to listOf("🤩", "🎉", "✨"),
+    Intent.CELEBRATORY to listOf("🎉", "🥳", "🎊"),
+    Intent.CALM to listOf("🌿", "😌", "🍃"),
+    Intent.MOTIVATIONAL to listOf("💪", "🔥", "⭐"),
+    Intent.GRATEFUL to listOf("🙏", "💛", "🤗"),
 )
 
 /** A stable colour + glyph for the overlay button to preview the detected mood while typing. */
@@ -272,10 +291,23 @@ object AutoStyle {
      * The intent for [text]: [detectIntent], or — when that is null — a random one of the
      * intents [SentimentAnalyzer] maps the text's polarity to. Always returns an intent.
      */
-    fun resolveIntent(text: String, random: Random = Random.Default): Intent {
-        detectIntent(text)?.let { return it }
-        val sentiment = SentimentAnalyzer.analyze(text)
-        return SENTIMENT_INTENTS.getValue(sentiment).random(random)
+    fun resolveIntent(text: String, random: Random = Random.Default): Intent =
+        resolveIntent(originalText = text, translatedText = text, random = random)
+
+    /**
+     * Like [resolveIntent] but with the pre-translation [originalText] too: when the English
+     * [translatedText] matched nothing and the original is Hebrew, [HebrewFallback] gets a
+     * turn before the English sentiment analyser — so a message whose translation never ran
+     * (model still downloading, offline) still styles by its actual mood instead of always
+     * collapsing to a neutral look.
+     */
+    fun resolveIntent(originalText: String, translatedText: String, random: Random): Intent {
+        detectIntent(translatedText)?.let { return it }
+        if (Scripts.hasHebrew(originalText)) {
+            HebrewFallback.keywordIntent(originalText)?.let { return it }
+            HebrewFallback.sentiment(originalText)?.let { return SENTIMENT_INTENTS.getValue(it).random(random) }
+        }
+        return SENTIMENT_INTENTS.getValue(SentimentAnalyzer.analyze(translatedText)).random(random)
     }
 
     /**
@@ -289,11 +321,16 @@ object AutoStyle {
         translatedText: String,
         random: Random = Random.Default,
     ): RenderPlan {
-        val intent = resolveIntent(translatedText, random)
-        val fonts = if (Scripts.hasHebrew(originalText)) intent.hebrewFonts else intent.englishFonts
+        val isHebrew = Scripts.hasHebrew(originalText)
+        val intent = resolveIntent(originalText, translatedText, random)
+        val fonts = if (isHebrew) intent.hebrewFonts else intent.englishFonts
         val font = fonts.random(random)
         val gradient = intent.gradients.random(random)
-        val emojis = EmojiLexicon.select(TextTokens.stemList(translatedText), translatedText)
+        var emojis = EmojiLexicon.select(TextTokens.stemList(translatedText), translatedText)
+        if (emojis == listOf(EmojiLexicon.DEFAULT)) {
+            val hebrew = if (isHebrew) HebrewFallback.emojis(originalText) else emptyList()
+            emojis = hebrew.ifEmpty { INTENT_EMOJIS.getValue(intent) }
+        }
         return RenderPlan(
             fontAssetPath = font.assetPath,
             fontName = font.displayName,
@@ -311,12 +348,23 @@ object AutoStyle {
      * button's ink-drop default).
      */
     fun buttonHintFor(translatedText: String): ButtonHint? {
-        val intent = detectIntent(translatedText) ?: run {
-            val sentiment = SentimentAnalyzer.analyze(translatedText)
-            if (sentiment == Sentiment.NEUTRAL) return null
-            SENTIMENT_INTENTS.getValue(sentiment).first()
-        }
+        val intent = detectIntent(translatedText)
+            ?: hebrewButtonIntent(translatedText)
+            ?: run {
+                val sentiment = SentimentAnalyzer.analyze(translatedText)
+                if (sentiment == Sentiment.NEUTRAL) return null
+                SENTIMENT_INTENTS.getValue(sentiment).first()
+            }
         return ButtonHint(intent.previewEmoji, intent.gradients.first().startHex)
+    }
+
+    /** Non-random Hebrew hint used only while translation hasn't landed yet. */
+    private fun hebrewButtonIntent(text: String): Intent? {
+        if (!Scripts.hasHebrew(text)) return null
+        HebrewFallback.keywordIntent(text)?.let { return it }
+        return HebrewFallback.sentiment(text)
+            ?.takeIf { it != Sentiment.NEUTRAL }
+            ?.let { SENTIMENT_INTENTS.getValue(it).first() }
     }
 
     /**

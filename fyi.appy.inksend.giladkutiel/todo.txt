@@ -1,4 +1,6 @@
 TODO:
+    Emojis: 
+        - Spread the emojis around the borders (-90deg, 30deg, 150deg) instead of just at the bottom.
     Button:
         - Make a loading indicator for the button when busy (e.g. translating, downloading language model, etc...)
 DONE:
@@ -62,3 +64,32 @@ DONE:
             - TriggerConfig.maxTextLength  240 (button hidden above it)
             - Tests: PorterStemmerTest, SentimentAnalyzerTest, EmojiLexiconTest, AutoStyleTest
                      (JVM, 36 pass) + ImageRendererTest (device, RTL + emoji strip + fallbacks)
+
+        Fix (Hebrew came through as a "general" image):
+            Cause: on tap the raw Hebrew reached AutoStyle untranslated (model still
+            downloading / cellular / ML Kit reporting "iw"), and untranslated Hebrew has no
+            path to any intent -> always neutral -> random CALM/INFORMATIVE.
+            - TextTranslator: never cache a failed translation (was pinning the raw text
+              forever); map legacy language codes iw->he, in->id, ji->yi; warm up the Hebrew
+              model on ANY network (UI-chrome langs stay Wi-Fi-only).
+            - data/model/HebrewFallback.kt: substring Hebrew keyword->intent + coarse Hebrew
+              sentiment + keyword->emoji, used by resolveIntent/planFor/buttonHintFor only
+              when the English pass found nothing and the original is Hebrew script.
+            - AutoStyle: added "good night / goodnight / sweet dreams / sleep well" -> CALM.
+            - Tests: HebrewFallbackTest + AutoStyleTest cases for "אבא אוהב אותך" (ROMANTIC)
+              and "יעלי לילה טוב" (CALM). 45 JVM pass, 8 device pass.
+
+        Fix (emojis almost always fell back to the ink drop 🫟):
+            Cause: EmojiLexicon was a ~226-concept dictionary with no mood fallback, so any
+            message not naming one of those concepts got 🫟 even though planFor already had a
+            resolved Intent. Untranslated Hebrew was worse: PorterStemmer keeps only a-z, so
+            every Hebrew token stems to "" -> zero stems -> nothing to match.
+            - AutoStyle.INTENT_EMOJIS: curated 3-emoji set per intent; planFor now swaps it in
+              (or HebrewFallback.emojis for Hebrew script) whenever the lexicon yields only
+              DEFAULT -> the ink drop is no longer rendered for real messages.
+            - EmojiLexicon: expanded ~226 -> ~400 keywords (logistics, time, acknowledgement,
+              food, home, health, tech, weather).
+            - HebrewFallback.WORD_EMOJI: ~180 Hebrew concept-word->emoji entries, substring +
+              clitic-tolerant, multi-word needles first; used before the intent-keyword net.
+            - Tests: AutoStyleTest batch (no realistic EN/HE message renders 🫟) +
+              HebrewFallbackTest concept-word/clitic cases.
