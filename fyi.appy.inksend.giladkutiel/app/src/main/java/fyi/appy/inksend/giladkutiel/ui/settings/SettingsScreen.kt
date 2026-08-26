@@ -349,7 +349,7 @@ private fun FontPicker(selected: FontChoice, onSelect: (FontChoice) -> Unit) {
 /** A small, popular, and category-diverse set of emoji offered as badge choices. */
 private val EMOJI_BADGE_CHOICES = listOf(
     "✨", "🎉", "❤️", "🔥", "😂", "👍", "🙌", "🎨",
-    "🌈", "⭐", "💯", "🎵", "🍀", "🌸", "📌", "🚀",
+    "🌈", "⭐", "💯", "🎵", "🍀", "🌸", "📌", "🚀", "🏆",
 )
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -369,7 +369,7 @@ private fun EmojiPicker(selected: String, onSelect: (String) -> Unit) {
             modifier = Modifier.fillMaxWidth(),
         ) {
             EmojiChoiceChip(
-                content = { Text(stringResource(R.string.emoji_none_choice), style = MaterialTheme.typography.labelMedium) },
+                content = { Text(stringResource(R.string.emoji_none_choice), fontSize = 22.sp) },
                 isSelected = selected.isBlank(),
                 onClick = { onSelect("") },
             )
