@@ -8,6 +8,8 @@ import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Shader
 import android.graphics.Typeface
+import android.icu.text.BreakIterator
+import android.icu.util.ULocale
 import android.net.Uri
 import android.text.Layout
 import android.text.StaticLayout
@@ -114,9 +116,9 @@ object ImageRenderer {
 
     /**
      * Binary-searches the largest text size (in px) whose wrapped layout fits within
-     * [maxWidth]x[maxHeight] *and* whose widest single word still fits on one line — a plain
-     * height check alone would happily accept a size that only fits by breaking a word
-     * mid-way, since Android's line breaker splits a word that's wider than the line rather
+     * [maxWidth]x[maxHeight] *and* whose widest unbreakable unit still fits on one line — a
+     * plain height check alone would happily accept a size that only fits by breaking a unit
+     * mid-way, since Android's line breaker splits a run that's wider than the line rather
      * than overflow it.
      */
     private fun findFillingFontSizePx(text: String, textPaint: TextPaint, maxWidth: Int, maxHeight: Int): Float {
@@ -132,7 +134,7 @@ object ImageRenderer {
                 .setLineSpacing(0f, 1.2f)
                 .setIncludePad(true)
                 .build()
-            val fits = layout.height <= maxHeight && widestWordWidth(text, textPaint) <= maxWidth
+            val fits = layout.height <= maxHeight && widestUnbreakableWidth(text, textPaint) <= maxWidth
             if (fits) {
                 best = mid
                 low = mid
@@ -143,11 +145,29 @@ object ImageRenderer {
         return best
     }
 
-    /** Widest rendered width, at [textPaint]'s current size, among [text]'s whitespace-delimited words. */
-    private fun widestWordWidth(text: String, textPaint: TextPaint): Float =
-        text.split(Regex("\\s+"))
-            .filter { it.isNotEmpty() }
-            .maxOfOrNull { textPaint.measureText(it) } ?: 0f
+    /**
+     * Widest rendered width, at [textPaint]'s current size, of any single unit in [text] that
+     * Android's line breaker will never split across lines. The units are the spans between
+     * consecutive [BreakIterator.getLineInstance] boundaries — the same break opportunities
+     * [StaticLayout] uses internally. For space-delimited scripts (Latin, Cyrillic, Arabic,
+     * Hebrew, Devanagari, …) each span is a word; for scripts written without spaces between
+     * words (Chinese, Japanese, Thai, Lao, Khmer) the spans are single characters/clusters,
+     * so those inputs are no longer auto-fit as if the whole sentence were one long word.
+     * Trailing whitespace in a span is dropped — the line breaker hangs it past the edge.
+     */
+    private fun widestUnbreakableWidth(text: String, textPaint: TextPaint): Float {
+        val iterator = BreakIterator.getLineInstance(ULocale.ROOT).apply { setText(text) }
+        var widest = 0f
+        var start = iterator.first()
+        var end = iterator.next()
+        while (end != BreakIterator.DONE) {
+            val span = text.substring(start, end).trimEnd()
+            if (span.isNotEmpty()) widest = maxOf(widest, textPaint.measureText(span))
+            start = end
+            end = iterator.next()
+        }
+        return widest
+    }
 
     fun generateStyledImageUri(context: Context, text: String, config: StyleConfig): Uri {
         val bitmap = renderBitmap(context, text, config)

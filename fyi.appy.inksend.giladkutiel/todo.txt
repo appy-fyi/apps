@@ -1,9 +1,9 @@
 TODO:
     Auto Style:
-        Make sure languages that are not English also work
         Make sure fonts for the other languages are supported and look good.
 DONE:
     Auto Style:
+        Make sure languages that are not English also work
         Always use color gradient for the background.
         Horizontal center the emoji.
         Change the style of the button, use the ink emoji (🫟) as the default icon with light background, make sure the button is a perfect circle.
