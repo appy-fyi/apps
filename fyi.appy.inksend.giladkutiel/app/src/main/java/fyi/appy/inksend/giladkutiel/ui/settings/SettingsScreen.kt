@@ -45,12 +45,27 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.os.LocaleListCompat
 import fyi.appy.inksend.giladkutiel.R
+import fyi.appy.inksend.giladkutiel.data.model.AutoStyle
 import fyi.appy.inksend.giladkutiel.data.model.Intent
-import fyi.appy.inksend.giladkutiel.data.model.StyleConfig
+import fyi.appy.inksend.giladkutiel.data.model.RenderPlan
 import fyi.appy.inksend.giladkutiel.engine.ImageRenderer
 import kotlinx.coroutines.Dispatchers
 
 private const val PREVIEW_TEXT = "Styled Text Preview"
+
+/** A fixed, non-random sample plan for [intent] so the gallery render is stable across recompositions. */
+private fun samplePlanFor(intent: Intent): RenderPlan {
+    val font = intent.englishFonts.first()
+    val gradient = intent.gradients.first()
+    return RenderPlan(
+        fontAssetPath = font.assetPath,
+        fontName = font.displayName,
+        gradientStartHex = gradient.startHex,
+        gradientEndHex = gradient.endHex,
+        textColorHex = AutoStyle.contrastColorFor(gradient),
+        emojis = listOf(intent.previewEmoji),
+    )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -147,7 +162,7 @@ private fun IntentPreview(intent: Intent) {
         verticalArrangement = Arrangement.spacedBy(4.dp),
         modifier = Modifier.width(120.dp),
     ) {
-        StylePreviewImage(intent.styles.first(), Modifier.size(120.dp))
+        StylePreviewImage(samplePlanFor(intent), Modifier.size(120.dp))
         Text(
             intentLabel(intent),
             style = MaterialTheme.typography.labelSmall,
@@ -157,12 +172,12 @@ private fun IntentPreview(intent: Intent) {
 }
 
 @Composable
-private fun StylePreviewImage(config: StyleConfig, modifier: Modifier = Modifier) {
+private fun StylePreviewImage(plan: RenderPlan, modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val bitmapState = produceState<Bitmap?>(initialValue = null, config) {
+    val bitmapState = produceState<Bitmap?>(initialValue = null, plan) {
         value = try {
             kotlinx.coroutines.withContext(Dispatchers.Default) {
-                ImageRenderer.renderBitmap(context, PREVIEW_TEXT, config)
+                ImageRenderer.renderBitmap(context, PREVIEW_TEXT, plan)
             }
         } catch (_: Exception) {
             null
@@ -194,7 +209,6 @@ private fun intentLabel(intent: Intent): String = when (intent) {
     Intent.CALM -> stringResource(R.string.intent_calm)
     Intent.MOTIVATIONAL -> stringResource(R.string.intent_motivational)
     Intent.GRATEFUL -> stringResource(R.string.intent_grateful)
-    Intent.NEUTRAL -> stringResource(R.string.intent_neutral)
 }
 
 @Composable

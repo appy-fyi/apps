@@ -1,38 +1,64 @@
 TODO:
-    Languages: 
-        - UI interface is just English.
-        - Maintain a font list for 5 popular languages + Hebrew (see below)
-    Image Generation Pipeline:
-        For image generation we use sentiment analysis + keyword lookup
-        Sentiment analysis determines the colors and font family, while the keyword lookup determines the emojis.
-        Pipeline:
-            - Translate to English (if not already)
-            - Run sentiment analysis (Media Pipe on device) and output (positive, negative, neutral)
-            - For each sentiment predefined at least 3 font families for each language
-            - For each sentiment predefined at least 6 color gradients (common to all languages)
-            - Given a sentiment select a random gradient and a random font family (independently) for the language 
-            - tokenize the English sentence and use built in steamer to extract keywords
-            - pre define a dictionary of keywords to emojis, make sure we have at least 100 popular diverse emojis
-            - Generate the image:
-                - Text is on the top and naturally aligned to the start (left for LTR languages, right for RTL languages)
-                - emojis at the bottom centered horizontally, with a max of 3 emojis
-                - Font size should be set automatically to fill the space of the image, no word breaks, no text overflow, and no text cut off. 
     Button:
         - Make a loading indicator for the button when busy (e.g. translating, downloading language model, etc...)
 DONE:
-    Auto Style:
-        Do not keep a dictionary per language, always translate the text to English then use the English dictionary to select the style.
-        Make sure fonts for the other languages are supported and look good.
-        Make sure languages that are not English also work
-        Always use color gradient for the background.
-        Horizontal center the emoji.
-        Change the style of the button, use the ink emoji (🫟) as the default icon with light background, make sure the button is a perfect circle.
-        If possible update the color and emoji based on the typed text, if too much compute is required, then just use the default style.
-        Remove the predefined styles and the options to add and remove styles.
-        Instead we generate a style based on the content of the text.
-        How it works:
-            - Generate a predefined set of 5 - 15 intents (e.g. "funny", "sad", "romantic", "angry", "informative", etc...) and store them in a static dictionary.
-            - For each intent generate 3 - 5 matching styles (font family, emoji, text color, background color)
-            - Create a static dictionary that maps keywords to intents (e.g. "funny" -> intent 1, "sad" -> intent 2, "romantic" -> intent 3, etc...)
-            - Given the user's text, translate it to English, then lookup the keywords in the dictionary and select the most relevant intent, then pick a random style.
-            - Create a default intent and styles for texts that don't match any intent.
+    Languages:
+        - UI interface is just English.
+        - Maintain a font list for English + Hebrew
+          (13 bundled OFL fonts in app/src/main/assets/fonts: 8 Latin display faces +
+          5 Hebrew-capable faces; each Intent maps to >=2 English and >=2 Hebrew.)
+
+    Image Generation Pipeline:
+        We try to understand the intent of the text, possible intents (10 in total) are exactly:
+            FUNNY, SAD, ROMANTIC, ANGRY, INFORMATIVE, EXCITED, CELEBRATORY, CALM, MOTIVATIONAL, GRATEFUL
+
+        Each intent is mapped to a list of least 2 font families (2 for English, 2 for Hebrew)
+        Each intent is mapped to at least 4 color gradients (common to all languages).
+        In addition, we have a predefined list of at least 100 popular diverse emojis, and a dictionary that maps stems to emojis (e.g. "fun" -> 😂, "sad" -> 😢, "romanc" -> ❤️, etc...).
+        If we cannot detect the intent of the text we fall back to sentiment analysis (VADER rules).
+        Sentiment is mapped to (multiple) intents.
+        Emojis are always selected based on the keyword lookup, if no keywords are found we use a default emoji (🫟).
+
+        Pipeline:
+            - Detect language + Translate to English (if not already) tokenize and stem (Porter Stemmer).
+            - Identify intent based on stems (predefined dictionary of stems to intents).
+                - If no intent is found use sentiment analysis to map to an intent.
+            - The intent points to a list of fonts (the list of fonts) and to a list of color gradients (the list of gradients).
+            - select up to 3 emojis based on the stems.
+                - If no emojis are found use the default emoji (🫟).
+            - Generate the image (given the intent, and the list of emojis):
+                - Image is generated at 512x512 resolution.
+                - Select a random font family from the list of fonts
+                - Select a random color gradient from the list of gradients
+                - Text is on the top and naturally aligned to the start (left for LTR languages, right for RTL languages)
+                - emojis at the bottom centered horizontally, with a max of 3 emojis
+                - Font size should be set automatically to fill the space of the image, wrap words but do not break them.
+                    Use min and max font size guardians to avoid too small or too large fonts.
+                    Limit the max text length for image generation, if the text is too long hide the button entirely.
+        Notes:
+            - Predownload the Hebrew translator and fonts
+            - For other non-English languages, download the translator on demand (when the user first uses them).
+            - Different image for exact the same text (current status) is a desirable feature.
+            - Sentiment should be loose mapped to intents, e.g. "positive" sentiment can map to "FUNNY", "ROMANTIC", "EXCITED", "CELEBRATORY", "MOTIVATIONAL", "GRATEFUL" intents.
+            - Hidden button for long text is fine, users will understand and appreciate it.
+            - If the language is not English nor Hebrew just do your best for now.
+            - Ignore edge cases for now, e.g. no internet connection (if no internet connection user can't send messages anyway...).
+
+        Implementation:
+            - text/PorterStemmer.kt        classic Porter 1980, pure JVM, keys every dictionary
+            - text/TextTokens.kt           tokenize + stop-words + stem; Scripts.hasHebrew
+            - text/SentimentAnalyzer.kt    VADER-style lexicon + negation/booster/"!" -> POSITIVE/NEGATIVE/NEUTRAL
+            - data/model/EmojiLexicon.kt   226 distinct emojis, stem-keyed, default 🫟, "already typed" pass
+            - data/model/AutoStyle.kt      Intent(previewEmoji, englishFonts, hebrewFonts, gradients);
+                                           STEM_KEYWORDS/PHRASE/EMOJI scoring -> detectIntent;
+                                           SENTIMENT_INTENTS fallback; planFor() -> RenderPlan
+                                           (random font for the text's script + random gradient +
+                                           auto-contrast text colour + <=3 emojis)
+            - data/model/RenderPlan.kt     fully-resolved draw instructions
+            - engine/ImageRenderer.kt      512x512, top/start-aligned text (RTL via first-strong),
+                                           bottom-centred emoji strip, binary-search auto-fit
+                                           (wrap not break) clamped 15-300px, asset typeface cache
+            - service/TextTranslator.kt    Hebrew model added to warm-up predownload
+            - TriggerConfig.maxTextLength  240 (button hidden above it)
+            - Tests: PorterStemmerTest, SentimentAnalyzerTest, EmojiLexiconTest, AutoStyleTest
+                     (JVM, 36 pass) + ImageRendererTest (device, RTL + emoji strip + fallbacks)

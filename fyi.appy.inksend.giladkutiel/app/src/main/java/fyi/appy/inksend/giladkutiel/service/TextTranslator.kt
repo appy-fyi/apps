@@ -84,7 +84,10 @@ class TextTranslator {
     private companion object {
         const val UNDETERMINED = "und"
         const val CACHE_SIZE = 32
+        // Hebrew first: it is the one non-English language the app maintains fonts for, so its
+        // model is predownloaded (todo.txt). The rest are the UI-chrome languages, best effort.
         val WARM_UP_LANGUAGES = listOf(
+            TranslateLanguage.HEBREW,
             TranslateLanguage.SPANISH,
             TranslateLanguage.FRENCH,
             TranslateLanguage.GERMAN,

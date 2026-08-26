@@ -4,7 +4,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import fyi.appy.inksend.giladkutiel.data.model.StyleConfig
+import fyi.appy.inksend.giladkutiel.data.model.RenderPlan
 import fyi.appy.inksend.giladkutiel.ui.MainActivity
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -23,7 +23,15 @@ class ClipboardManagerHelperTest {
     fun copyingAnImageUriPutsAnImagePngClipOnTheSystemClipboard() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
-                val uri = ImageRenderer.generateStyledImageUri(activity, "Paste me", StyleConfig())
+                val plan = RenderPlan(
+                    fontAssetPath = "fonts/Comfortaa.ttf",
+                    fontName = "sample",
+                    gradientStartHex = "#1E1E2E",
+                    gradientEndHex = "#89B4FA",
+                    textColorHex = "#FFFFFF",
+                    emojis = listOf("✨"),
+                )
+                val uri = ImageRenderer.generateStyledImageUri(activity, "Paste me", plan)
 
                 ClipboardManagerHelper.copyImageToClipboard(activity, uri)
 

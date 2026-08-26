@@ -1,164 +1,200 @@
 package fyi.appy.inksend.giladkutiel.data.model
 
-import java.text.Normalizer
+import fyi.appy.inksend.giladkutiel.text.PorterStemmer
+import fyi.appy.inksend.giladkutiel.text.Scripts
+import fyi.appy.inksend.giladkutiel.text.Sentiment
+import fyi.appy.inksend.giladkutiel.text.SentimentAnalyzer
+import fyi.appy.inksend.giladkutiel.text.TextTokens
+import fyi.appy.inksend.giladkutiel.text.nfc
 import kotlin.random.Random
 
-/** Unicode NFC so a keyword and the typed text compare equal regardless of how each was composed. */
-private fun String.nfc(): String = Normalizer.normalize(this, Normalizer.Form.NFC)
+/**
+ * A bundled OFL font shipped in `assets/fonts/`. Each carries a display name (for the
+ * Settings gallery) and its asset path (for `Typeface.createFromAsset`). Latin faces cover
+ * English; the four Hebrew-capable faces (Heebo, Frank Ruhl Libre, Suez One, Secular One,
+ * Rubik) additionally have full Hebrew coverage.
+ */
+enum class BundledFont(val displayName: String, val assetPath: String) {
+    PACIFICO("Pacifico", "fonts/Pacifico.ttf"),
+    ANTON("Anton", "fonts/Anton.ttf"),
+    PLAYFAIR("Playfair Display", "fonts/PlayfairDisplay.ttf"),
+    CAVEAT("Caveat", "fonts/Caveat.ttf"),
+    SPACE_MONO("Space Mono", "fonts/SpaceMono.ttf"),
+    COMFORTAA("Comfortaa", "fonts/Comfortaa.ttf"),
+    LOBSTER("Lobster", "fonts/Lobster.ttf"),
+    BEBAS_NEUE("Bebas Neue", "fonts/BebasNeue.ttf"),
+    HEEBO("Heebo", "fonts/Heebo.ttf"),
+    FRANK_RUHL("Frank Ruhl Libre", "fonts/FrankRuhlLibre.ttf"),
+    SUEZ_ONE("Suez One", "fonts/SuezOne.ttf"),
+    SECULAR_ONE("Secular One", "fonts/SecularOne.ttf"),
+    RUBIK("Rubik", "fonts/Rubik.ttf"),
+}
+
+/** A two-stop background gradient, both stops as `#RRGGBB`. */
+data class Gradient(val startHex: String, val endHex: String)
 
 /**
- * Content-driven styling: instead of the user maintaining a list of styles, the look of the
- * rendered image is chosen automatically from what was typed.
+ * Content-driven styling. The look of the rendered image is derived from what was typed:
  *
- * How it works:
- *  1. [Intent] is a fixed set of moods, each carrying 3–5 hand-tuned [StyleConfig] looks.
- *  2. [WORD_KEYWORDS] / [PHRASE_KEYWORDS] / [EMOJI_KEYWORDS] map trigger tokens to an intent.
- *  3. [detectIntent] scores every intent against the text's words, phrases, and emoji and
- *     returns the highest-scoring one, or [Intent.NEUTRAL] when nothing matches.
- *  4. [styleFor] resolves the intent and then picks one of its looks at random, so repeated
- *     taps on the same text still produce some visual variety.
+ *  1. The text is translated to English on-device, then tokenized + Porter-stemmed
+ *     ([TextTokens]) so a single English dictionary covers every language.
+ *  2. [detectIntent] scores the ten [Intent]s against the text's keyword **stems**, its
+ *     multi-word phrases, and any emoji, and returns the best — or null when nothing hits.
+ *  3. On a null, [resolveIntent] falls back to [SentimentAnalyzer]: POSITIVE / NEGATIVE /
+ *     NEUTRAL is mapped **loosely** to a set of intents ([SENTIMENT_INTENTS]) and one is
+ *     picked at random.
+ *  4. [planFor] turns the intent into a [RenderPlan]: a random font from the intent's list
+ *     for the text's language (Hebrew vs. English), a random gradient, an auto-contrasting
+ *     text colour, and up to three emojis from [EmojiLexicon]. The random picks are
+ *     deliberate — the same text is meant to produce a fresh image each tap.
  *
- * Note on languages: the keyword tables here are **English only**. Non-English text is
- * translated to English on-device (Google ML Kit) by
- * [fyi.appy.inksend.giladkutiel.service.TextTranslator] before it reaches [detectIntent], so
- * one dictionary covers every language instead of one table per language. This class stays
- * pure and free of Android/ML Kit dependencies so it remains plain-JVM unit-testable; the
- * caller owns the (async) translation step. Emoji are language-independent and are matched in
- * the raw text, so they still work even when translation is unavailable (model not yet
- * downloaded, device offline) — in which case the untranslated text is matched as-is and
- * falls back to [Intent.NEUTRAL] when no English keyword or emoji hits.
+ * This class has no Android dependencies so it stays plain-JVM unit-testable; the caller owns
+ * the async translation step.
  */
-enum class Intent(val displayEmoji: String, val styles: List<StyleConfig>) {
+enum class Intent(
+    val previewEmoji: String,
+    val englishFonts: List<BundledFont>,
+    val hebrewFonts: List<BundledFont>,
+    val gradients: List<Gradient>,
+) {
     FUNNY(
         "😂",
+        listOf(BundledFont.PACIFICO, BundledFont.COMFORTAA, BundledFont.CAVEAT),
+        listOf(BundledFont.SECULAR_ONE, BundledFont.RUBIK),
         listOf(
-            StyleConfig(font = FontChoice.CURSIVE, textColorHex = "#1E1E2E", backgroundColorHex = "#F2C94C", isGradientEnabled = true, gradientEndColorHex = "#F7B267", emoji = "😂"),
-            StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#FFFFFF", backgroundColorHex = "#E85D9E", isGradientEnabled = true, gradientEndColorHex = "#F7B267", emoji = "🤣"),
-            StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#1E1E2E", backgroundColorHex = "#F7B267", isGradientEnabled = true, gradientEndColorHex = "#F2C94C", emoji = "😜"),
+            Gradient("#F2C94C", "#F7B267"), Gradient("#E85D9E", "#F7B267"),
+            Gradient("#F7B267", "#F2C94C"), Gradient("#FFD166", "#EF476F"),
+            Gradient("#06D6A0", "#F2C94C"),
         ),
     ),
     SAD(
         "😢",
+        listOf(BundledFont.PLAYFAIR, BundledFont.CAVEAT),
+        listOf(BundledFont.FRANK_RUHL, BundledFont.HEEBO),
         listOf(
-            StyleConfig(font = FontChoice.SERIF, textColorHex = "#C9B8FF", backgroundColorHex = "#1B2A4A", isGradientEnabled = true, gradientEndColorHex = "#1E1E2E", emoji = "😢"),
-            StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#FFFFFF", backgroundColorHex = "#9AA0A6", isGradientEnabled = true, gradientEndColorHex = "#1B2A4A", emoji = "💧"),
-            StyleConfig(font = FontChoice.SERIF, textColorHex = "#89B4FA", backgroundColorHex = "#1E1E2E", isGradientEnabled = true, gradientEndColorHex = "#1B2A4A", emoji = "🥀"),
+            Gradient("#1B2A4A", "#1E1E2E"), Gradient("#9AA0A6", "#1B2A4A"),
+            Gradient("#1E1E2E", "#1B2A4A"), Gradient("#2C3E50", "#4CA1AF"),
+            Gradient("#3A6073", "#16222A"),
         ),
     ),
     ROMANTIC(
         "❤️",
+        listOf(BundledFont.PACIFICO, BundledFont.PLAYFAIR, BundledFont.CAVEAT),
+        listOf(BundledFont.FRANK_RUHL, BundledFont.HEEBO),
         listOf(
-            StyleConfig(font = FontChoice.CURSIVE, textColorHex = "#FFFFFF", backgroundColorHex = "#E85D9E", isGradientEnabled = true, gradientEndColorHex = "#9B59D0", emoji = "❤️"),
-            StyleConfig(font = FontChoice.SERIF, textColorHex = "#D64545", backgroundColorHex = "#F5E9DA", isGradientEnabled = true, gradientEndColorHex = "#EAD3C0", emoji = "🌹"),
-            StyleConfig(font = FontChoice.CURSIVE, textColorHex = "#1E1E2E", backgroundColorHex = "#C9B8FF", isGradientEnabled = true, gradientEndColorHex = "#E85D9E", emoji = "💕"),
+            Gradient("#E85D9E", "#9B59D0"), Gradient("#F5E9DA", "#EAD3C0"),
+            Gradient("#C9B8FF", "#E85D9E"), Gradient("#FF6A88", "#FF99AC"),
+            Gradient("#B24592", "#F15F79"),
         ),
     ),
     ANGRY(
         "😠",
+        listOf(BundledFont.ANTON, BundledFont.BEBAS_NEUE, BundledFont.SPACE_MONO),
+        listOf(BundledFont.SUEZ_ONE, BundledFont.RUBIK),
         listOf(
-            StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#FFFFFF", backgroundColorHex = "#D64545", isGradientEnabled = true, gradientEndColorHex = "#1E1E2E", emoji = "😤"),
-            StyleConfig(font = FontChoice.MONOSPACE, textColorHex = "#D64545", backgroundColorHex = "#000000", isGradientEnabled = true, gradientEndColorHex = "#2A0D0D", emoji = "🔥"),
-            StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#F2C94C", backgroundColorHex = "#1B2A4A", isGradientEnabled = true, gradientEndColorHex = "#D64545", emoji = "⚡"),
+            Gradient("#D64545", "#1E1E2E"), Gradient("#000000", "#2A0D0D"),
+            Gradient("#1B2A4A", "#D64545"), Gradient("#8E0E00", "#1F1C18"),
+            Gradient("#CB2D3E", "#EF473A"),
         ),
     ),
     INFORMATIVE(
         "📌",
+        listOf(BundledFont.SPACE_MONO, BundledFont.BEBAS_NEUE, BundledFont.PLAYFAIR),
+        listOf(BundledFont.HEEBO, BundledFont.FRANK_RUHL),
         listOf(
-            StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#1E1E2E", backgroundColorHex = "#FFFFFF", isGradientEnabled = true, gradientEndColorHex = "#E6ECF3", emoji = "📌"),
-            StyleConfig(font = FontChoice.SERIF, textColorHex = "#1B2A4A", backgroundColorHex = "#F5E9DA", isGradientEnabled = true, gradientEndColorHex = "#E6EAF0", emoji = "ℹ️"),
-            StyleConfig(font = FontChoice.MONOSPACE, textColorHex = "#FFFFFF", backgroundColorHex = "#1B2A4A", isGradientEnabled = true, gradientEndColorHex = "#89B4FA", emoji = "📊"),
+            Gradient("#5B6B8C", "#2E3A4E"), Gradient("#3B4A63", "#1B2A4A"),
+            Gradient("#1B2A4A", "#89B4FA"), Gradient("#42556E", "#5C7A99"),
+            Gradient("#4B5D73", "#8296AE"),
         ),
     ),
     EXCITED(
         "🤩",
+        listOf(BundledFont.PACIFICO, BundledFont.LOBSTER, BundledFont.COMFORTAA),
+        listOf(BundledFont.SECULAR_ONE, BundledFont.SUEZ_ONE),
         listOf(
-            StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#FFFFFF", backgroundColorHex = "#5B47E0", isGradientEnabled = true, gradientEndColorHex = "#C9B8FF", emoji = "🤩"),
-            StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#1E1E2E", backgroundColorHex = "#F2C94C", isGradientEnabled = true, gradientEndColorHex = "#E85D9E", emoji = "🚀"),
-            StyleConfig(font = FontChoice.CURSIVE, textColorHex = "#FFFFFF", backgroundColorHex = "#E85D9E", isGradientEnabled = true, gradientEndColorHex = "#5B47E0", emoji = "✨"),
+            Gradient("#5B47E0", "#C9B8FF"), Gradient("#F2C94C", "#E85D9E"),
+            Gradient("#E85D9E", "#5B47E0"), Gradient("#FC466B", "#3F5EFB"),
+            Gradient("#F09819", "#EDDE5D"),
         ),
     ),
     CELEBRATORY(
         "🎉",
+        listOf(BundledFont.LOBSTER, BundledFont.PACIFICO, BundledFont.COMFORTAA),
+        listOf(BundledFont.SECULAR_ONE, BundledFont.SUEZ_ONE),
         listOf(
-            StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#1E1E2E", backgroundColorHex = "#F2C94C", isGradientEnabled = true, gradientEndColorHex = "#F7B267", emoji = "🎉"),
-            StyleConfig(font = FontChoice.CURSIVE, textColorHex = "#FFFFFF", backgroundColorHex = "#9B59D0", isGradientEnabled = true, gradientEndColorHex = "#89B4FA", emoji = "🥳"),
-            StyleConfig(font = FontChoice.SERIF, textColorHex = "#5B47E0", backgroundColorHex = "#F5E9DA", isGradientEnabled = true, gradientEndColorHex = "#E7DAF5", emoji = "🎊"),
+            Gradient("#F2C94C", "#F7B267"), Gradient("#9B59D0", "#89B4FA"),
+            Gradient("#F857A6", "#FF5858"), Gradient("#FFAFBD", "#FFC3A0"),
+            Gradient("#C6426E", "#642B73"),
         ),
     ),
     CALM(
         "🌿",
+        listOf(BundledFont.COMFORTAA, BundledFont.PLAYFAIR, BundledFont.CAVEAT),
+        listOf(BundledFont.HEEBO, BundledFont.FRANK_RUHL),
         listOf(
-            StyleConfig(font = FontChoice.SERIF, textColorHex = "#FFFFFF", backgroundColorHex = "#2DB6A3", isGradientEnabled = true, gradientEndColorHex = "#4CAF7D", emoji = "🌿"),
-            StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#1E1E2E", backgroundColorHex = "#C9B8FF", isGradientEnabled = true, gradientEndColorHex = "#A9E0D5", emoji = "🧘"),
-            StyleConfig(font = FontChoice.SERIF, textColorHex = "#1B2A4A", backgroundColorHex = "#89B4FA", isGradientEnabled = true, gradientEndColorHex = "#F5E9DA", emoji = "☁️"),
+            Gradient("#2DB6A3", "#4CAF7D"), Gradient("#5EAFA0", "#A9E0D5"),
+            Gradient("#5E8BB0", "#B9D7EA"), Gradient("#89F7FE", "#66A6FF"),
+            Gradient("#3E7C78", "#7AB8A0"),
         ),
     ),
     MOTIVATIONAL(
         "💪",
+        listOf(BundledFont.ANTON, BundledFont.BEBAS_NEUE, BundledFont.COMFORTAA),
+        listOf(BundledFont.SUEZ_ONE, BundledFont.RUBIK),
         listOf(
-            StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#FFFFFF", backgroundColorHex = "#5B47E0", isGradientEnabled = true, gradientEndColorHex = "#1E1E2E", emoji = "💪"),
-            StyleConfig(font = FontChoice.MONOSPACE, textColorHex = "#F2C94C", backgroundColorHex = "#000000", isGradientEnabled = true, gradientEndColorHex = "#1E1E2E", emoji = "🏆"),
-            StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#1E1E2E", backgroundColorHex = "#F7B267", isGradientEnabled = true, gradientEndColorHex = "#F2C94C", emoji = "🔥"),
+            Gradient("#5B47E0", "#1E1E2E"), Gradient("#0F2027", "#2C5364"),
+            Gradient("#F7B267", "#EF476F"), Gradient("#C33764", "#1D2671"),
+            Gradient("#1F1C2C", "#928DAB"),
         ),
     ),
     GRATEFUL(
         "🙏",
+        listOf(BundledFont.CAVEAT, BundledFont.PLAYFAIR, BundledFont.COMFORTAA),
+        listOf(BundledFont.FRANK_RUHL, BundledFont.RUBIK),
         listOf(
-            StyleConfig(font = FontChoice.SERIF, textColorHex = "#1E1E2E", backgroundColorHex = "#F5E9DA", isGradientEnabled = true, gradientEndColorHex = "#F7B267", emoji = "🙏"),
-            StyleConfig(font = FontChoice.CURSIVE, textColorHex = "#1B2A4A", backgroundColorHex = "#F2C94C", isGradientEnabled = true, gradientEndColorHex = "#F7B267", emoji = "💛"),
-            StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#FFFFFF", backgroundColorHex = "#F7B267", isGradientEnabled = true, gradientEndColorHex = "#E85D9E", emoji = "🌻"),
+            Gradient("#F5E9DA", "#F7B267"), Gradient("#F2C94C", "#F7B267"),
+            Gradient("#F7B267", "#E85D9E"), Gradient("#FFE0B2", "#FFB74D"),
+            Gradient("#E6A57E", "#D98E73"),
         ),
     ),
+    ;
 
-    /** Fallback look for text that matches no intent — the app's original neutral defaults. */
-    NEUTRAL(
-        "✨",
-        listOf(
-            StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#FFFFFF", backgroundColorHex = "#1E1E2E", isGradientEnabled = true, gradientEndColorHex = "#89B4FA", emoji = "✨"),
-            StyleConfig(font = FontChoice.SERIF, textColorHex = "#1E1E2E", backgroundColorHex = "#F5E9DA", isGradientEnabled = true, gradientEndColorHex = "#E9DECB", emoji = "🎨"),
-            StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#FFFFFF", backgroundColorHex = "#5B47E0", isGradientEnabled = true, gradientEndColorHex = "#C9B8FF", emoji = "⭐"),
-        ),
-    ),
+    companion object {
+        /** The ten intents, exactly (todo.txt) — there is no neutral entry. */
+        val ALL: List<Intent> = entries
+    }
 }
 
-/**
- * Single-word triggers, keyed by the lowercased word. A word is matched only when it appears
- * as a whole token in the text, so "informative" here never fires on "misinformative".
- * English only. Non-English text is translated to English before it reaches [detectIntent]
- * (see the class KDoc).
- */
-val WORD_KEYWORDS: Map<String, Intent> = buildKeywordMap(
-    Intent.FUNNY to listOf("funny", "lol", "lmao", "lmfao", "rofl", "haha", "hahaha", "hehe", "joke", "joking", "hilarious", "comedy", "laugh", "laughing", "laughed", "meme", "silly", "ridiculous", "lolz", "giggle"),
-    Intent.SAD to listOf("sad", "sadness", "unhappy", "cry", "crying", "cried", "tears", "heartbroken", "depressed", "depressing", "miserable", "lonely", "grief", "grieving", "sorrow", "hurts", "hurting", "devastated", "gutted"),
-    Intent.ROMANTIC to listOf("love", "loved", "loving", "romantic", "romance", "darling", "sweetheart", "babe", "honey", "kiss", "kisses", "crush", "adore", "adorable", "forever", "valentine", "cutie", "beloved"),
-    Intent.ANGRY to listOf("angry", "mad", "furious", "hate", "rage", "raging", "pissed", "annoyed", "annoying", "unacceptable", "outrageous", "livid", "irritated", "ugh", "fuming"),
-    Intent.INFORMATIVE to listOf("fyi", "note", "notice", "update", "reminder", "info", "information", "details", "schedule", "meeting", "agenda", "report", "summary", "deadline", "instructions", "recap", "memo", "briefing", "announcement"),
-    Intent.EXCITED to listOf("excited", "exciting", "omg", "yay", "yayy", "thrilled", "pumped", "stoked", "hyped", "hype", "woah", "whoa", "eek", "wow"),
-    Intent.CELEBRATORY to listOf("congrats", "congratulations", "anniversary", "celebrate", "celebration", "celebrating", "cheers", "woohoo", "woo", "party", "hooray", "hurrah"),
-    Intent.CALM to listOf("calm", "relax", "relaxing", "relaxed", "peace", "peaceful", "breathe", "chill", "chilling", "serene", "serenity", "quiet", "meditate", "meditation", "unwind", "mindful"),
-    Intent.MOTIVATIONAL to listOf("believe", "hustle", "grind", "focus", "focused", "discipline", "stronger", "motivation", "motivated", "motivate", "goals", "persevere", "unstoppable", "determined", "perseverance"),
+/** Single-token triggers, keyed by [PorterStemmer] output (the same stems queries produce). */
+val STEM_KEYWORDS: Map<String, Intent> = buildKeywordMap(
+    Intent.FUNNY to listOf("funny", "lol", "lmao", "rofl", "haha", "hehe", "joke", "joking", "hilarious", "comedy", "laugh", "laughing", "meme", "silly", "ridiculous", "giggle", "prank", "goofy"),
+    Intent.SAD to listOf("sad", "sadness", "unhappy", "cry", "crying", "cried", "tears", "heartbroken", "depressed", "miserable", "lonely", "grief", "grieving", "sorrow", "hurts", "hurting", "devastated", "gutted", "down"),
+    Intent.ROMANTIC to listOf("love", "loved", "loving", "romantic", "romance", "darling", "sweetheart", "babe", "honey", "kiss", "kisses", "crush", "adore", "adorable", "valentine", "cutie", "beloved", "smitten"),
+    Intent.ANGRY to listOf("angry", "mad", "furious", "hate", "rage", "raging", "pissed", "annoyed", "annoying", "unacceptable", "outrageous", "livid", "irritated", "fuming", "disgusted"),
+    Intent.INFORMATIVE to listOf("fyi", "note", "notice", "update", "reminder", "info", "information", "details", "schedule", "meeting", "agenda", "report", "summary", "deadline", "instructions", "recap", "memo", "briefing", "announcement", "heads"),
+    Intent.EXCITED to listOf("excited", "exciting", "omg", "yay", "thrilled", "pumped", "stoked", "hyped", "hype", "woah", "whoa", "wow", "eek"),
+    Intent.CELEBRATORY to listOf("congrats", "congratulations", "anniversary", "celebrate", "celebration", "celebrating", "cheers", "woohoo", "party", "hooray", "hurrah", "milestone"),
+    Intent.CALM to listOf("calm", "relax", "relaxing", "relaxed", "peace", "peaceful", "breathe", "chill", "chilling", "serene", "serenity", "quiet", "meditate", "meditation", "unwind", "mindful", "gentle"),
+    Intent.MOTIVATIONAL to listOf("believe", "hustle", "grind", "focus", "focused", "discipline", "stronger", "motivation", "motivated", "motivate", "persevere", "unstoppable", "determined", "perseverance", "conquer"),
     Intent.GRATEFUL to listOf("thanks", "thankful", "grateful", "gratitude", "appreciate", "appreciated", "blessed", "thx"),
 )
 
-/**
- * Multi-word triggers, matched as a lowercased substring of the whole text. Phrases score
- * higher than single words since they carry more signal. English only, as above.
- */
-val PHRASE_KEYWORDS: Map<String, Intent> = buildKeywordMap(
-    Intent.FUNNY to listOf("so funny", "made me laugh", "can't stop laughing", "cracking up"),
+/** Multi-word triggers, matched as a lowercased substring of the whole text (higher weight). */
+val PHRASE_KEYWORDS: Map<String, Intent> = buildRawMap(
+    Intent.FUNNY to listOf("so funny", "made me laugh", "cant stop laughing", "cracking up"),
     Intent.SAD to listOf("i miss you", "miss you", "feeling down", "broke my heart", "so sad"),
     Intent.ROMANTIC to listOf("i love you", "love you", "my heart", "my love", "be mine"),
     Intent.ANGRY to listOf("fed up", "had enough", "so mad", "this is unacceptable", "sick of"),
     Intent.INFORMATIVE to listOf("please note", "heads up", "for your information", "just so you know", "action items"),
-    Intent.EXCITED to listOf("can't wait", "cannot wait", "so ready", "let's go", "lets go", "here we go"),
+    Intent.EXCITED to listOf("cant wait", "cannot wait", "so ready", "lets go", "here we go"),
     Intent.CELEBRATORY to listOf("happy birthday", "we did it", "way to go", "you nailed it", "job well done"),
-    Intent.CALM to listOf("take it easy", "no rush", "deep breath", "it's okay", "all good"),
-    Intent.MOTIVATIONAL to listOf("you got this", "keep going", "never give up", "push through", "don't quit", "dont quit", "one step at a time"),
-    Intent.GRATEFUL to listOf("thank you", "thank you so much", "means a lot", "means the world", "i appreciate"),
+    Intent.CALM to listOf("take it easy", "no rush", "deep breath", "its okay", "all good"),
+    Intent.MOTIVATIONAL to listOf("you got this", "keep going", "never give up", "push through", "dont quit", "one step at a time"),
+    Intent.GRATEFUL to listOf("thank you", "means a lot", "means the world", "i appreciate"),
 )
 
 /** Emoji triggers, matched as a substring so multi-codepoint sequences (❤️, ☁️) still hit. */
-val EMOJI_KEYWORDS: Map<String, Intent> = buildKeywordMap(
+val EMOJI_KEYWORDS: Map<String, Intent> = buildRawMap(
     Intent.FUNNY to listOf("😂", "🤣", "😹", "😆", "😅", "🙃"),
     Intent.SAD to listOf("😢", "😭", "😥", "😔", "💔", "🥺", "😞", "🥀"),
     Intent.ROMANTIC to listOf("❤️", "🥰", "😍", "💕", "💖", "💗", "😘", "🌹"),
@@ -172,13 +208,32 @@ val EMOJI_KEYWORDS: Map<String, Intent> = buildKeywordMap(
 )
 
 /**
- * A stable colour + glyph for the floating overlay button to show while the user types, so
- * the button previews the look a tap will produce. Carries hex straight from the chosen
- * [StyleConfig]; the caller parses it.
+ * Loose sentiment → intent mapping used only when no keyword matched (todo.txt: "'positive'
+ * sentiment can map to FUNNY, ROMANTIC, EXCITED, CELEBRATORY, MOTIVATIONAL, GRATEFUL"). One
+ * of the listed intents is then picked at random.
  */
+val SENTIMENT_INTENTS: Map<Sentiment, List<Intent>> = mapOf(
+    Sentiment.POSITIVE to listOf(
+        Intent.FUNNY, Intent.ROMANTIC, Intent.EXCITED,
+        Intent.CELEBRATORY, Intent.MOTIVATIONAL, Intent.GRATEFUL,
+    ),
+    Sentiment.NEGATIVE to listOf(Intent.SAD, Intent.ANGRY),
+    Sentiment.NEUTRAL to listOf(Intent.INFORMATIVE, Intent.CALM),
+)
+
+/** A stable colour + glyph for the overlay button to preview the detected mood while typing. */
 data class ButtonHint(val emoji: String, val backgroundColorHex: String)
 
 private fun buildKeywordMap(vararg entries: Pair<Intent, List<String>>): Map<String, Intent> {
+    val stemmer = PorterStemmer()
+    val map = LinkedHashMap<String, Intent>()
+    for ((intent, keywords) in entries) {
+        for (keyword in keywords) map.putIfAbsent(stemmer.stem(keyword), intent)
+    }
+    return map
+}
+
+private fun buildRawMap(vararg entries: Pair<Intent, List<String>>): Map<String, Intent> {
     val map = LinkedHashMap<String, Intent>()
     for ((intent, keywords) in entries) {
         for (keyword in keywords) map.putIfAbsent(keyword.lowercase().nfc(), intent)
@@ -189,57 +244,96 @@ private fun buildKeywordMap(vararg entries: Pair<Intent, List<String>>): Map<Str
 object AutoStyle {
 
     private const val PHRASE_WEIGHT = 3
-    private const val WORD_WEIGHT = 1
+    private const val STEM_WEIGHT = 1
     private const val EMOJI_WEIGHT = 2
 
-    // Includes \p{M} (combining marks) so Indic tokens like "मज़ेदार" — whose nukta and vowel
-    // signs are marks, not letters — are not split apart mid-word.
-    private val TOKEN_SPLIT = Regex("[^\\p{L}\\p{M}\\p{N}]+")
-
     /**
-     * Scores every non-[Intent.NEUTRAL] intent against [text] and returns the strongest match,
-     * or [Intent.NEUTRAL] when nothing scores. Ties break toward the earlier [Intent] entry,
-     * so the result is stable for a given input.
+     * Scores every [Intent] against [text] (already English) and returns the strongest, or
+     * null when nothing scores. Ties break toward the earlier enum entry, so the result is
+     * stable for a given input.
      */
-    fun detectIntent(text: String): Intent {
-        if (text.isBlank()) return Intent.NEUTRAL
+    fun detectIntent(text: String): Intent? {
+        if (text.isBlank()) return null
         val lower = text.lowercase().nfc()
-        val tokens = lower.split(TOKEN_SPLIT).filterTo(HashSet()) { it.isNotEmpty() }
+        val stems = TextTokens.stemSet(lower)
 
         val scores = HashMap<Intent, Int>()
         fun add(intent: Intent, weight: Int) { scores[intent] = (scores[intent] ?: 0) + weight }
 
-        for ((phrase, intent) in PHRASE_KEYWORDS) {
-            if (lower.contains(phrase)) add(intent, PHRASE_WEIGHT)
-        }
-        for (token in tokens) {
-            WORD_KEYWORDS[token]?.let { add(it, WORD_WEIGHT) }
-        }
-        for ((emoji, intent) in EMOJI_KEYWORDS) {
-            if (text.contains(emoji)) add(intent, EMOJI_WEIGHT)
-        }
+        for ((phrase, intent) in PHRASE_KEYWORDS) if (lower.contains(phrase)) add(intent, PHRASE_WEIGHT)
+        for (stem in stems) STEM_KEYWORDS[stem]?.let { add(it, STEM_WEIGHT) }
+        for ((emoji, intent) in EMOJI_KEYWORDS) if (text.contains(emoji)) add(intent, EMOJI_WEIGHT)
 
-        val best = Intent.entries
-            .filter { it != Intent.NEUTRAL }
-            .maxByOrNull { scores[it] ?: 0 }
-        return if (best != null && (scores[best] ?: 0) > 0) best else Intent.NEUTRAL
+        val best = Intent.ALL.maxByOrNull { scores[it] ?: 0 }
+        return if (best != null && (scores[best] ?: 0) > 0) best else null
     }
 
-    /** Detects the intent for [text] and returns one of its looks, chosen with [random]. */
-    fun styleFor(text: String, random: Random = Random.Default): StyleConfig =
-        detectIntent(text).styles.random(random)
+    /**
+     * The intent for [text]: [detectIntent], or — when that is null — a random one of the
+     * intents [SentimentAnalyzer] maps the text's polarity to. Always returns an intent.
+     */
+    fun resolveIntent(text: String, random: Random = Random.Default): Intent {
+        detectIntent(text)?.let { return it }
+        val sentiment = SentimentAnalyzer.analyze(text)
+        return SENTIMENT_INTENTS.getValue(sentiment).random(random)
+    }
 
     /**
-     * A non-random appearance for the overlay button to preview [text]'s detected mood as
-     * the user types. Unlike [styleFor] it never picks at random — it pairs the intent's
-     * representative emoji with its first (canonical) look's background colour — so the
-     * button stays put between keystrokes for the same text. [detectIntent] is only
-     * dictionary lookups over the typed string, cheap enough to run on every text change.
-     * Returns null when nothing matches, so the caller keeps the button's neutral default.
+     * The full [RenderPlan] for a message. [originalText] is the text as typed — its script
+     * decides whether Hebrew or English fonts are used and it is what actually gets drawn;
+     * [translatedText] is the English rendition that drives mood + emoji detection (pass the
+     * same string for already-English input). Every pick is random, by design.
      */
-    fun buttonHintFor(text: String): ButtonHint? {
-        val intent = detectIntent(text)
-        if (intent == Intent.NEUTRAL) return null
-        return ButtonHint(intent.displayEmoji, intent.styles.first().backgroundColorHex)
+    fun planFor(
+        originalText: String,
+        translatedText: String,
+        random: Random = Random.Default,
+    ): RenderPlan {
+        val intent = resolveIntent(translatedText, random)
+        val fonts = if (Scripts.hasHebrew(originalText)) intent.hebrewFonts else intent.englishFonts
+        val font = fonts.random(random)
+        val gradient = intent.gradients.random(random)
+        val emojis = EmojiLexicon.select(TextTokens.stemList(translatedText), translatedText)
+        return RenderPlan(
+            fontAssetPath = font.assetPath,
+            fontName = font.displayName,
+            gradientStartHex = gradient.startHex,
+            gradientEndHex = gradient.endHex,
+            textColorHex = contrastColorFor(gradient),
+            emojis = emojis,
+        )
+    }
+
+    /**
+     * A non-random [ButtonHint] previewing [translatedText]'s mood as the user types: the
+     * detected intent, or — when none matched — the first intent for the text's sentiment
+     * (unless that is NEUTRAL with nothing else to go on, in which case null keeps the
+     * button's ink-drop default).
+     */
+    fun buttonHintFor(translatedText: String): ButtonHint? {
+        val intent = detectIntent(translatedText) ?: run {
+            val sentiment = SentimentAnalyzer.analyze(translatedText)
+            if (sentiment == Sentiment.NEUTRAL) return null
+            SENTIMENT_INTENTS.getValue(sentiment).first()
+        }
+        return ButtonHint(intent.previewEmoji, intent.gradients.first().startHex)
+    }
+
+    /**
+     * Black (#1E1E2E) or white text, whichever contrasts better with the midpoint of
+     * [gradient]. Pure hex maths so it stays JVM-testable — no android.graphics.
+     */
+    internal fun contrastColorFor(gradient: Gradient): String {
+        val l = (relativeLuminance(gradient.startHex) + relativeLuminance(gradient.endHex)) / 2.0
+        return if (l > 0.5) "#1E1E2E" else "#FFFFFF"
+    }
+
+    private fun relativeLuminance(hex: String): Double {
+        val v = hex.removePrefix("#")
+        if (v.length < 6) return 0.5
+        val r = v.substring(0, 2).toInt(16)
+        val g = v.substring(2, 4).toInt(16)
+        val b = v.substring(4, 6).toInt(16)
+        return (0.299 * r + 0.587 * g + 0.114 * b) / 255.0
     }
 }

@@ -178,9 +178,10 @@ class TextMonitorAccessibilityService : AccessibilityService() {
         if (text.isBlank()) return
 
         serviceScope.launch {
-            val style = AutoStyle.styleFor(translator.toEnglish(text))
+            val english = translator.toEnglish(text)
+            val plan = AutoStyle.planFor(originalText = text, translatedText = english)
             val imageUri = ImageRenderer.generateStyledImageUri(
-                this@TextMonitorAccessibilityService, text, style,
+                this@TextMonitorAccessibilityService, text, plan,
             )
             ClipboardManagerHelper.copyImageToClipboard(
                 this@TextMonitorAccessibilityService, imageUri,

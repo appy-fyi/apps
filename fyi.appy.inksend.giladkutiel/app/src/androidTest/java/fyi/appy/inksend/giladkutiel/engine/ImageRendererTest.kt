@@ -1,13 +1,10 @@
 package fyi.appy.inksend.giladkutiel.engine
 
 import android.graphics.Paint
-import android.graphics.Typeface
 import android.text.TextPaint
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import fyi.appy.inksend.giladkutiel.data.model.FontChoice
-import fyi.appy.inksend.giladkutiel.data.model.StyleConfig
-import org.junit.Assert.assertEquals
+import fyi.appy.inksend.giladkutiel.data.model.RenderPlan
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -17,106 +14,57 @@ class ImageRendererTest {
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
 
+    private fun plan(
+        font: String = "fonts/Comfortaa.ttf",
+        start: String = "#5B47E0",
+        end: String = "#C9B8FF",
+        textColor: String = "#FFFFFF",
+        emojis: List<String> = listOf("✨"),
+    ) = RenderPlan(font, "sample", start, end, textColor, emojis)
+
     @Test
     fun bitmapIsAlwaysAFixed512SquareRegardlessOfTextLength() {
-        val config = StyleConfig()
-        val shortBitmap = ImageRenderer.renderBitmap(context, "Hi", config)
-        val longText = "This is a much longer message that should wrap across several lines " +
-            "of styled text without overflowing the rendered bitmap boundaries."
-        val longBitmap = ImageRenderer.renderBitmap(context, longText, config)
-
-        assertTrue("short bitmap should be a 512x512 square", shortBitmap.width == 512 && shortBitmap.height == 512)
-        assertTrue("long bitmap should be a 512x512 square", longBitmap.width == 512 && longBitmap.height == 512)
+        val short = ImageRenderer.renderBitmap(context, "Hi", plan())
+        val long = ImageRenderer.renderBitmap(
+            context,
+            "This is a much longer message that should wrap across several lines of styled " +
+                "text without overflowing the rendered bitmap boundaries.",
+            plan(),
+        )
+        assertTrue(short.width == 512 && short.height == 512)
+        assertTrue(long.width == 512 && long.height == 512)
     }
 
     @Test
     fun invalidHexColorsFallBackInsteadOfCrashing() {
-        val config = StyleConfig(textColorHex = "not-a-color", backgroundColorHex = "also-bad")
-        val bitmap = ImageRenderer.renderBitmap(context, "Fallback check", config)
-
-        assertTrue(bitmap.width > 0 && bitmap.height > 0)
+        val bitmap = ImageRenderer.renderBitmap(
+            context, "Fallback check", plan(start = "not-a-color", end = "also-bad", textColor = "nope"),
+        )
+        assertTrue(bitmap.width == 512 && bitmap.height == 512)
     }
 
     @Test
-    fun rendersSuccessfullyWithAndWithoutAnEmojiBadge() {
-        val withEmoji = ImageRenderer.renderBitmap(context, "Hello", StyleConfig(emoji = "✨"))
-        val withoutEmoji = ImageRenderer.renderBitmap(context, "Hello", StyleConfig(emoji = ""))
-
+    fun rendersWithAndWithoutAnEmojiStrip() {
+        val withEmoji = ImageRenderer.renderBitmap(context, "Hello", plan(emojis = listOf("😂", "🎉", "❤️")))
+        val withoutEmoji = ImageRenderer.renderBitmap(context, "Hello", plan(emojis = emptyList()))
         assertTrue(withEmoji.width == 512 && withEmoji.height == 512)
         assertTrue(withoutEmoji.width == 512 && withoutEmoji.height == 512)
     }
 
     @Test
-    fun spacelessScriptAutoFitsInsteadOfTreatingTheWholeSentenceAsOneWord() {
-        // A long run of Han characters with no spaces. The old whitespace-split fit check
-        // treated the entire run as a single unbreakable "word" and shrank the font until
-        // that whole run fit on one line — bottoming out near the 12px floor. The
-        // BreakIterator-based check knows each character is a valid break opportunity, so
-        // the text should now wrap across lines at a legible size.
-        val config = StyleConfig()
-        val chinese = "这是一段没有任何空格的中文文字用来测试自动缩放是否会把整段句子当作一个无法换行的单词来处理"
-        val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-            typeface = Typeface.create(config.font.typefaceName, Typeface.BOLD)
-        }
-        val density = context.resources.displayMetrics.density
-        val paddingPx = (config.paddingDp * density).toInt().coerceIn(0, 512 / 4)
-        val maxContentSize = (512 - paddingPx * 2).coerceAtLeast(1)
-
-        val layout = ImageRenderer.buildFittedLayout(chinese, textPaint, maxContentSize)
-
-        assertTrue("spaceless text should wrap across multiple lines", layout.lineCount > 1)
-        assertTrue(
-            "every rendered line should stay within the content width",
-            (0 until layout.lineCount).all { layout.getLineWidth(it) <= maxContentSize + 1f },
-        )
-        assertTrue(
-            "font should not be shrunk near the minimum (was ${layout.paint.textSize}px)",
-            layout.paint.textSize > 18f,
-        )
-        val bitmap = ImageRenderer.renderBitmap(context, chinese, config)
-        assertTrue("render still produces a 512x512 square", bitmap.width == 512 && bitmap.height == 512)
-    }
-
-    @Test
-    fun decorativeFontsFallBackToACoverageCompleteFamilyForNonLatinText() {
-        // "cursive" is a Latin-only display face: for Devanagari it silently falls back to
-        // plain Noto Sans, losing all of its character. resolveTypeface should notice that
-        // and substitute serif (which has a real Noto Serif Devanagari face) instead.
-        val hindi = "यह हिंदी में लिखा गया एक छोटा संदेश है"
-        assertEquals(
-            "cursive adds nothing for Devanagari; should resolve to serif",
-            Typeface.create("serif", Typeface.BOLD),
-            ImageRenderer.resolveTypeface(FontChoice.CURSIVE, hindi),
-        )
-        // monospace has no non-Latin monospaced face either; fall back to sans-serif.
-        assertEquals(
-            Typeface.create("sans-serif", Typeface.BOLD),
-            ImageRenderer.resolveTypeface(FontChoice.MONOSPACE, hindi),
-        )
-        // Latin text: cursive genuinely renders, so it must be left alone.
-        assertEquals(
-            "cursive renders Latin distinctly; should stay cursive",
-            Typeface.create("cursive", Typeface.BOLD),
-            ImageRenderer.resolveTypeface(FontChoice.CURSIVE, "A short English message"),
-        )
-        // And a full render of non-Latin text in a cursive style still succeeds.
-        val bitmap = ImageRenderer.renderBitmap(context, hindi, StyleConfig(font = FontChoice.CURSIVE))
+    fun missingFontAssetFallsBackInsteadOfCrashing() {
+        val bitmap = ImageRenderer.renderBitmap(context, "No such font", plan(font = "fonts/DoesNotExist.ttf"))
         assertTrue(bitmap.width == 512 && bitmap.height == 512)
     }
 
     @Test
     fun longTextWrapsOnlyAtSpacesNotMidWord() {
-        val config = StyleConfig()
         val text = "The quick brown fox jumps over the lazy dog while wandering through " +
             "a sunlit meadow full of wildflowers and tall grass."
         val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-            typeface = Typeface.create(config.font.typefaceName, Typeface.BOLD)
+            typeface = ImageRenderer.typefaceFor(context, "fonts/Comfortaa.ttf")
         }
-        val density = context.resources.displayMetrics.density
-        val paddingPx = (config.paddingDp * density).toInt().coerceIn(0, 512 / 4)
-        val maxContentSize = (512 - paddingPx * 2).coerceAtLeast(1)
-
-        val layout = ImageRenderer.buildFittedLayout(text, textPaint, maxContentSize)
+        val layout = ImageRenderer.buildFittedLayout(text, textPaint, 424, 300)
 
         for (lineIndex in 0 until layout.lineCount) {
             val lineEnd = layout.getLineEnd(lineIndex)
@@ -125,5 +73,37 @@ class ImageRendererTest {
                 assertTrue("line $lineIndex broke in the middle of a word", !brokeMidWord)
             }
         }
+    }
+
+    @Test
+    fun spacelessScriptAutoFitsInsteadOfTreatingTheWholeSentenceAsOneWord() {
+        val chinese = "这是一段没有任何空格的中文文字用来测试自动缩放是否会把整段句子当作一个无法换行的单词来处理"
+        val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            typeface = ImageRenderer.typefaceFor(context, "fonts/Comfortaa.ttf")
+        }
+        val layout = ImageRenderer.buildFittedLayout(chinese, textPaint, 424, 424)
+
+        assertTrue("spaceless text should wrap across multiple lines", layout.lineCount > 1)
+        assertTrue(
+            "every rendered line should stay within the content width",
+            (0 until layout.lineCount).all { layout.getLineWidth(it) <= 424 + 1f },
+        )
+        assertTrue("font should not be shrunk near the minimum", layout.paint.textSize > 18f)
+    }
+
+    @Test
+    fun rtlTextIsAlignedToTheStartEdgeOnTheRight() {
+        // A Hebrew line: with ALIGN_NORMAL + the first-strong heuristic its lines should hug
+        // the right edge (line right ~ content width), not the left.
+        val hebrew = "שלום לכולם זהו טקסט לבדיקה"
+        val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            typeface = ImageRenderer.typefaceFor(context, "fonts/Heebo.ttf")
+        }
+        val layout = ImageRenderer.buildFittedLayout(hebrew, textPaint, 424, 300)
+        val firstLineRight = layout.getLineRight(0)
+        assertTrue(
+            "RTL first line should reach the right edge (was $firstLineRight of 424)",
+            firstLineRight >= 424 - 2f,
+        )
     }
 }
