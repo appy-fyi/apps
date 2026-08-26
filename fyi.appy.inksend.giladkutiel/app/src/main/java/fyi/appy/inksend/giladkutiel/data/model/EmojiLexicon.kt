@@ -55,7 +55,7 @@ object EmojiLexicon {
         "sun" to "☀️", "moon" to "🌙", "cloud" to "☁️", "rain" to "🌧️", "snow" to "❄️",
         "storm" to "⛈️", "rainbow" to "🌈", "flower" to "🌸", "rose" to "🌹", "tree" to "🌳",
         "leaf" to "🍃", "plant" to "🌱", "cactus" to "🌵", "mountain" to "⛰️", "ocean" to "🌊",
-        "wave" to "🌊", "earth" to "🌍", "lightning" to "⚡", "wind" to "🌬️", "sunrise" to "🌅",
+        "wave" to "🌊", "earth" to "🌍", "lightning" to "⚡", "wind" to "🌬️", "sunrise" to "🌞",
         "night" to "🌙", "sprout" to "🌿",
         // animals
         "dog" to "🐶", "cat" to "🐱", "bird" to "🐦", "fish" to "🐟", "lion" to "🦁",
@@ -71,7 +71,7 @@ object EmojiLexicon {
         "car" to "🚗", "plane" to "✈️", "rocket" to "🚀", "train" to "🚆", "ship" to "🚢",
         "boat" to "⛵", "bike" to "🚴", "home" to "🏠", "house" to "🏠", "building" to "🏢",
         "school" to "🏫", "hospital" to "🏥", "church" to "⛪", "beach" to "🏖️", "tent" to "⛺",
-        "map" to "🗺️", "flag" to "🚩", "world" to "🌐", "road" to "🛣️", "bridge" to "🌉",
+        "map" to "🗺️", "flag" to "🚩", "world" to "🌐", "road" to "🛣️",
         // objects, media & work
         "music" to "🎵", "song" to "🎶", "guitar" to "🎸", "piano" to "🎹", "drum" to "🥁",
         "mic" to "🎤", "sing" to "🎤", "paint" to "🎨", "art" to "🎨", "camera" to "📷",
@@ -94,9 +94,9 @@ object EmojiLexicon {
         "done" to "✔️", "start" to "▶️", "stop" to "⏹️", "finish" to "🏁", "wow" to "😮",
         "yikes" to "😬", "phew" to "😅", "hooray" to "🎉", "congrats2" to "🎊",
         // time & logistics
-        "late" to "⏰", "early" to "🌅", "wait" to "⏳", "soon" to "⏳", "hurry" to "🏃",
-        "today" to "📅", "tomorrow" to "📆", "yesterday" to "🗓️", "morning" to "🌅",
-        "evening" to "🌆", "tonight" to "🌙", "weekend" to "🎉", "minute" to "⏱️",
+        "late" to "⏰", "early" to "🐦", "wait" to "⏳", "soon" to "⏳", "hurry" to "🏃",
+        "today" to "📅", "tomorrow" to "📆", "yesterday" to "🗓️", "morning" to "🌞",
+        "evening" to "🌙", "tonight" to "🌙", "weekend" to "🎉", "minute" to "⏱️",
         "hour" to "⏰", "week" to "📅", "month" to "🗓️", "year" to "📆", "holiday" to "🎉",
         "vacation" to "🏝️", "trip" to "🧳", "drive" to "🚗", "arrive" to "📍", "leave" to "👋",
         "route" to "🗺️", "traffic" to "🚦", "airport" to "🛫", "station" to "🚉",
@@ -137,15 +137,15 @@ object EmojiLexicon {
         // weather & nature (more)
         "warm" to "🌤️", "humid" to "💦", "fog" to "🌫️", "thunder" to "⛈️", "ice" to "🧊",
         "heat" to "🥵", "breeze" to "🍃", "garden" to "🪴", "grass" to "🌱", "forest" to "🌲",
-        "river" to "🏞️", "lake" to "🏞️", "sky" to "🌤️", "hill" to "⛰️", "desert" to "🏜️",
-        "island" to "🏝️", "park" to "🏞️", "hike" to "🥾", "climb" to "🧗", "sunset" to "🌇",
+        "river" to "🌊", "lake" to "🌊", "sky" to "🌤️", "hill" to "⛰️", "desert" to "🌵",
+        "island" to "🏝️", "park" to "🌳", "hike" to "🥾", "climb" to "🧗", "sunset" to "🌙",
         "meadow" to "🌾", "field" to "🌾", "volcano" to "🌋", "cave" to "🕳️",
         // activities & misc
         "travel" to "🧳", "jog" to "🏃", "nap" to "😴", "draw" to "✏️", "play" to "🎮",
         "lose" to "😞", "practice" to "🎯", "win2" to "🏆", "team" to "🧑‍🤝‍🧑", "match" to "🏟️",
         "race" to "🏁", "chess" to "♟️", "cards" to "🃏", "gardening" to "🪴", "fishing" to "🎣",
         "camping" to "⛺", "picnic" to "🧺", "concert" to "🎫", "ticket" to "🎫",
-        "festival2" to "🎪", "parade" to "🎏", "fireworks" to "🎆",
+        "festival2" to "🎪", "parade" to "🎏", "fireworks" to "🧨",
         // tech (more)
         "wifi" to "📶", "app" to "📱", "website" to "🌐", "download" to "⬇️", "upload" to "⬆️",
         "charger" to "🔌", "screen" to "🖥️", "keyboard" to "⌨️", "password" to "🔒",
@@ -157,7 +157,7 @@ object EmojiLexicon {
         "top" to "🔝", "first" to "🥇", "third" to "🥉", "huge" to "🐘", "tiny" to "🐜",
         // many-to-many: extra emojis for vivid stems (the primary — the row above — stays
         // first in the bucket; these are the alternates a random pick can land on).
-        "night" to "😴", "night" to "🛌", "night" to "🌌",
+        "night" to "😴", "night" to "🛌", "night" to "💤",
         "moon" to "🌕", "moon" to "🌑",
         "sun" to "🌞", "sun" to "🔆",
         "love" to "❤️", "love" to "🥰",
@@ -168,7 +168,7 @@ object EmojiLexicon {
         "laugh" to "🤣", "laugh" to "😹",
         "funny" to "😂", "funny" to "😆",
         "angry" to "😡", "angry" to "😤",
-        "fire" to "🥵", "fire" to "🎆",
+        "fire" to "🥵", "fire" to "🧨",
         "star" to "🌟", "star" to "✨",
         "heart" to "💖", "heart" to "💗",
         "party" to "🎉", "party" to "🎊",
@@ -193,7 +193,7 @@ object EmojiLexicon {
         "phone" to "☎️", "phone" to "📲",
         "home" to "🏡", "home" to "🛋️",
         "car" to "🚙", "car" to "🏎️",
-        "rocket" to "🛸", "rocket" to "🌠",
+        "rocket" to "🛸", "rocket" to "⭐",
         "coffee" to "🫖", "coffee" to "🧋",
     )
 
