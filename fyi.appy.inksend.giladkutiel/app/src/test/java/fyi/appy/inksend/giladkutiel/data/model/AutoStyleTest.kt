@@ -41,6 +41,22 @@ class AutoStyleTest {
     }
 
     @Test
+    fun `non-English keywords are detected`() {
+        assertEquals(Intent.ROMANTIC, AutoStyle.detectIntent("te quiero mucho"))          // es
+        assertEquals(Intent.SAD, AutoStyle.detectIntent("je suis très triste ce soir"))  // fr
+        assertEquals(Intent.GRATEFUL, AutoStyle.detectIntent("vielen dank für alles"))   // de
+        assertEquals(Intent.CELEBRATORY, AutoStyle.detectIntent("parabéns pelo novo emprego")) // pt
+        assertEquals(Intent.FUNNY, AutoStyle.detectIntent("यह बहुत मज़ेदार है"))          // hi
+        assertEquals(Intent.MOTIVATIONAL, AutoStyle.detectIntent("तुम कर सकते हो, हार मत मानो")) // hi phrase
+    }
+
+    @Test
+    fun `accent-folded spelling still matches`() {
+        assertEquals(Intent.FUNNY, AutoStyle.detectIntent("c'est vraiment drole"))
+        assertEquals(Intent.CELEBRATORY, AutoStyle.detectIntent("feliz cumpleanos"))
+    }
+
+    @Test
     fun `no match falls back to neutral`() {
         assertEquals(Intent.NEUTRAL, AutoStyle.detectIntent("asdfjkl qwerty zxcvbnm"))
         assertEquals(Intent.NEUTRAL, AutoStyle.detectIntent(""))
