@@ -17,21 +17,23 @@
     <string name="min_length_label">न्यूनतम लंबाई</string>
     <string name="max_length_label">अधिकतम लंबाई</string>
 
-    <string name="style_section_title_format">स्टाइल %1$d</string>
-    <string name="add_style_button">स्टाइल जोड़ें</string>
-    <string name="remove_style_button">स्टाइल हटाएं</string>
-
     <string name="preview_unavailable">पूर्वावलोकन उपलब्ध नहीं</string>
     <string name="preview_content_description">स्टाइल पूर्वावलोकन</string>
 
-    <string name="emoji_badge_label">इमोजी बैज (वैकल्पिक)</string>
-    <string name="emoji_badge_description">छवि के ऊपरी-बाएं कोने में दिखाया जाता है। बैज न दिखाने के लिए कोई नहीं चुनें।</string>
+    <string name="auto_style_title">स्वचालित स्टाइलिंग</string>
+    <string name="auto_style_description">लुक आपके टेक्स्ट — उसके भाव, कीवर्ड और इमोजी — से चुना जाता है। हर भाव की एक झलक:</string>
 
-    <string name="gradient_toggle_label">ग्रेडिएंट बैकग्राउंड सक्षम करें</string>
-    <string name="text_color_label">टेक्स्ट रंग</string>
-    <string name="background_color_label">पृष्ठभूमि रंग</string>
-    <string name="gradient_end_color_label">ग्रेडिएंट अंतिम रंग</string>
-    <string name="color_swatch_selected_description">चयनित</string>
+    <string name="intent_funny">मज़ेदार</string>
+    <string name="intent_sad">उदास</string>
+    <string name="intent_romantic">रोमांटिक</string>
+    <string name="intent_angry">गुस्सा</string>
+    <string name="intent_informative">सूचनात्मक</string>
+    <string name="intent_excited">उत्साहित</string>
+    <string name="intent_celebratory">उत्सवपूर्ण</string>
+    <string name="intent_calm">शांत</string>
+    <string name="intent_motivational">प्रेरक</string>
+    <string name="intent_grateful">आभारी</string>
+    <string name="intent_neutral">तटस्थ</string>
 
     <string name="app_language_title">ऐप की भाषा</string>
     <string name="language_system_default">सिस्टम डिफ़ॉल्ट</string>

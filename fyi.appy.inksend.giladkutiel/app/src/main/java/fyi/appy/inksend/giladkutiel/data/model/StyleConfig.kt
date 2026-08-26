@@ -30,30 +30,8 @@ data class StyleConfig(
     val emoji: String = "✨",
 )
 
-/** Text-length bounds shared by every style, since one overlay set triggers for a given typed text. */
+/** Text-length bounds that gate when the floating overlay button appears for typed text. */
 data class TriggerConfig(
     val minTextLength: Int = 3,
     val maxTextLength: Int = 280,
-)
-
-/** Seeded the first time the app runs, and whenever the user removes every style back down to zero. */
-val DEFAULT_STYLES = listOf(
-    StyleConfig(
-        id = "default-1",
-        font = FontChoice.SANS_SERIF,
-        textColorHex = "#FFFFFF",
-        backgroundColorHex = "#1E1E2E",
-        isGradientEnabled = true,
-        gradientEndColorHex = "#89B4FA",
-        emoji = "✨",
-    ),
-    StyleConfig(
-        id = "default-2",
-        font = FontChoice.SERIF,
-        textColorHex = "#1E1E2E",
-        backgroundColorHex = "#F5E9DA",
-        isGradientEnabled = false,
-        gradientEndColorHex = "#F7B267",
-        emoji = "🎨",
-    ),
 )

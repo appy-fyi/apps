@@ -17,21 +17,23 @@
     <string name="min_length_label">Longueur min.</string>
     <string name="max_length_label">Longueur max.</string>
 
-    <string name="style_section_title_format">Style %1$d</string>
-    <string name="add_style_button">Ajouter un style</string>
-    <string name="remove_style_button">Supprimer le style</string>
-
     <string name="preview_unavailable">Aperçu indisponible</string>
     <string name="preview_content_description">Aperçu du style</string>
 
-    <string name="emoji_badge_label">Badge emoji (facultatif)</string>
-    <string name="emoji_badge_description">Dessiné dans le coin supérieur gauche de l\'image. Choisissez Aucun pour ne pas afficher de badge.</string>
+    <string name="auto_style_title">Style automatique</string>
+    <string name="auto_style_description">L\'apparence est choisie pour vous à partir de ce que vous tapez : ton, mots-clés et emojis. Voici un aperçu de chaque ambiance :</string>
 
-    <string name="gradient_toggle_label">Activer le fond dégradé</string>
-    <string name="text_color_label">Couleur du texte</string>
-    <string name="background_color_label">Couleur de fond</string>
-    <string name="gradient_end_color_label">Couleur finale du dégradé</string>
-    <string name="color_swatch_selected_description">Sélectionné</string>
+    <string name="intent_funny">Drôle</string>
+    <string name="intent_sad">Triste</string>
+    <string name="intent_romantic">Romantique</string>
+    <string name="intent_angry">En colère</string>
+    <string name="intent_informative">Informatif</string>
+    <string name="intent_excited">Enthousiaste</string>
+    <string name="intent_celebratory">Festif</string>
+    <string name="intent_calm">Calme</string>
+    <string name="intent_motivational">Motivant</string>
+    <string name="intent_grateful">Reconnaissant</string>
+    <string name="intent_neutral">Neutre</string>
 
     <string name="app_language_title">Langue de l\'application</string>
     <string name="language_system_default">Langue du système</string>

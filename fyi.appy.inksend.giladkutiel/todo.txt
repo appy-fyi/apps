@@ -1,4 +1,6 @@
 TODO:
+
+DONE:
     Auto Style:
         Remove the predefined styles and the options to add and remove styles.
         Instead we generate a style based on the content of the text.
@@ -8,4 +10,3 @@ TODO:
             - Create a static dictionary that maps keywords to intents (e.g. "funny" -> intent 1, "sad" -> intent 2, "romantic" -> intent 3, etc...)
             - Given the user's text, translate it to English, then lookup the keywords in the dictionary and select the most relevant intent, then pick a random style.
             - Create a default intent and styles for texts that don't match any intent.
-DONE:

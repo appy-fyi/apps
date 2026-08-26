@@ -17,21 +17,23 @@
     <string name="min_length_label">Min Length</string>
     <string name="max_length_label">Max Length</string>
 
-    <string name="style_section_title_format">Style %1$d</string>
-    <string name="add_style_button">Add Style</string>
-    <string name="remove_style_button">Remove Style</string>
-
     <string name="preview_unavailable">Preview unavailable</string>
     <string name="preview_content_description">Style preview</string>
 
-    <string name="emoji_badge_label">Emoji Badge (optional)</string>
-    <string name="emoji_badge_description">Drawn in the top-left corner of the image. Choose None for no badge.</string>
+    <string name="auto_style_title">Automatic Styling</string>
+    <string name="auto_style_description">The look is chosen for you from what you type — its mood, keywords, and emoji. Here\'s a taste of each mood:</string>
 
-    <string name="gradient_toggle_label">Enable Gradient Background</string>
-    <string name="text_color_label">Text Color</string>
-    <string name="background_color_label">Background Color</string>
-    <string name="gradient_end_color_label">Gradient End Color</string>
-    <string name="color_swatch_selected_description">Selected</string>
+    <string name="intent_funny">Funny</string>
+    <string name="intent_sad">Sad</string>
+    <string name="intent_romantic">Romantic</string>
+    <string name="intent_angry">Angry</string>
+    <string name="intent_informative">Informative</string>
+    <string name="intent_excited">Excited</string>
+    <string name="intent_celebratory">Celebratory</string>
+    <string name="intent_calm">Calm</string>
+    <string name="intent_motivational">Motivational</string>
+    <string name="intent_grateful">Grateful</string>
+    <string name="intent_neutral">Neutral</string>
 
     <string name="app_language_title">App Language</string>
     <string name="language_system_default">System Default</string>

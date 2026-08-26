@@ -2,7 +2,6 @@ package fyi.appy.inksend.giladkutiel.service
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.drawable.GradientDrawable
 import android.util.Log
@@ -13,36 +12,27 @@ import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.FrameLayout
-import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
-import fyi.appy.inksend.giladkutiel.R
-import fyi.appy.inksend.giladkutiel.data.model.StyleConfig
 import kotlin.math.abs
 
 private const val TAG = "InkSendOverlay"
 private const val BUTTON_SIZE_DP = 56
-private const val BUTTON_SPACING_DP = 12
 private const val DEFAULT_MARGIN_END_PX = 48
 private const val DEFAULT_MARGIN_BOTTOM_PX = 220
 private const val EMOJI_TEXT_SIZE_SP = 26f
-private const val FALLBACK_BUTTON_COLOR = 0xFF5B47E0.toInt()
+private const val BUTTON_COLOR = 0xFF5B47E0.toInt()
+private const val BUTTON_EMOJI = "✨"
 
 /**
- * Inflates, positions, and tears down one floating overlay button per saved style via
- * [WindowManager]. All buttons live inside one draggable container, stacked vertically,
- * so a single drag moves the whole set together while each button keeps its own tap target.
- * Each button's icon is that style's configured emoji badge (falling back to a generic
- * icon when the style's badge is set to "None"); its background circle is tinted with that
- * style's own background color so buttons stay visually distinct at any list length. Styles
- * are read fresh from [stylesProvider] at [showOverlay] time so the buttons always reflect
- * the latest saved list; [refreshOverlay] rebuilds an already-visible overlay in place so
- * style edits made mid-display show up immediately too.
+ * Inflates, positions, and tears down the single floating overlay button via [WindowManager].
+ * There is now exactly one button: tapping it renders the typed text with a style chosen
+ * automatically from the text's content (see
+ * [fyi.appy.inksend.giladkutiel.data.model.AutoStyle]), so the overlay no longer needs to
+ * reflect any user-configured style list.
  */
 class OverlayWindowManager(
     private val context: Context,
-    private val stylesProvider: () -> List<StyleConfig>,
-    private val onStyleClicked: (StyleConfig) -> Unit,
+    private val onButtonClicked: () -> Unit,
 ) {
     private val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
@@ -56,17 +46,13 @@ class OverlayWindowManager(
     @SuppressLint("InflateParams", "ClickableViewAccessibility")
     fun showOverlay() {
         if (isShowing) return
-        val styles = stylesProvider()
-        if (styles.isEmpty()) return
 
         val density = context.resources.displayMetrics.density
         val buttonSizePx = (BUTTON_SIZE_DP * density).toInt()
-        val spacingPx = (BUTTON_SPACING_DP * density).toInt()
-        val containerHeightPx = buttonSizePx * styles.size + spacingPx * (styles.size - 1)
 
         val params = WindowManager.LayoutParams(
             buttonSizePx,
-            containerHeightPx,
+            buttonSizePx,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
@@ -79,32 +65,9 @@ class OverlayWindowManager(
         }
 
         val paddingPx = (12 * density).toInt()
-        val dragListener = createDragListener(params)
-        val container = LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-            layoutParams = ViewGroup.LayoutParams(buttonSizePx, containerHeightPx)
-        }
-        styles.forEachIndexed { index, style ->
-            container.addView(
-                createStyleButton(
-                    buttonSizePx = buttonSizePx,
-                    paddingPx = paddingPx,
-                    backgroundColor = colorForStyle(style),
-                    emoji = style.emoji,
-                    onClick = { onStyleClicked(style) },
-                    touchListener = dragListener,
-                ),
-            )
-            if (index != styles.lastIndex) {
-                container.addView(
-                    View(context).apply {
-                        layoutParams = LinearLayout.LayoutParams(buttonSizePx, spacingPx)
-                    },
-                )
-            }
-        }
+        val button = createButton(buttonSizePx, paddingPx, createDragListener(params))
 
-        overlayView = container
+        overlayView = button
         try {
             windowManager.addView(overlayView, params)
             isShowing = true
@@ -114,55 +77,30 @@ class OverlayWindowManager(
         }
     }
 
-    private fun colorForStyle(style: StyleConfig): Int =
-        try {
-            Color.parseColor(style.backgroundColorHex)
-        } catch (_: IllegalArgumentException) {
-            FALLBACK_BUTTON_COLOR
-        }
-
-    /**
-     * A button's icon is its style's emoji when set, otherwise the generic fallback icon —
-     * both layered in the same [buttonSizePx] square and centered identically so swapping
-     * between them (as the user edits their badge choice) never shifts the tap target.
-     */
-    private fun createStyleButton(
+    private fun createButton(
         buttonSizePx: Int,
         paddingPx: Int,
-        backgroundColor: Int,
-        emoji: String,
-        onClick: () -> Unit,
         touchListener: View.OnTouchListener,
     ): FrameLayout {
-        val fallbackIcon = ImageView(context).apply {
-            layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT,
-            )
-            setImageResource(R.drawable.ic_style_convert)
-            visibility = if (emoji.isBlank()) View.VISIBLE else View.GONE
-        }
         val emojiLabel = TextView(context).apply {
             layoutParams = FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT,
             )
-            text = emoji
+            text = BUTTON_EMOJI
             textSize = EMOJI_TEXT_SIZE_SP
             gravity = Gravity.CENTER
-            visibility = if (emoji.isBlank()) View.GONE else View.VISIBLE
         }
         val buttonBackground = GradientDrawable().apply {
             shape = GradientDrawable.OVAL
-            setColor(backgroundColor)
+            setColor(BUTTON_COLOR)
         }
         return FrameLayout(context).apply {
-            layoutParams = LinearLayout.LayoutParams(buttonSizePx, buttonSizePx)
+            layoutParams = ViewGroup.LayoutParams(buttonSizePx, buttonSizePx)
             background = buttonBackground
             setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
-            addView(fallbackIcon)
             addView(emojiLabel)
-            setOnClickListener { onClick() }
+            setOnClickListener { onButtonClicked() }
             setOnTouchListener(touchListener)
         }
     }
@@ -224,18 +162,6 @@ class OverlayWindowManager(
                 else -> false
             }
         }
-    }
-
-    /**
-     * Rebuilds the button set in place from the latest [stylesProvider] list — used when
-     * styles are added, removed, or edited while the overlay is already visible, so changes
-     * in Settings show up immediately instead of only on the next show/hide cycle. A no-op
-     * when the overlay isn't currently showing.
-     */
-    fun refreshOverlay() {
-        if (!isShowing) return
-        hideOverlay()
-        showOverlay()
     }
 
     fun hideOverlay() {

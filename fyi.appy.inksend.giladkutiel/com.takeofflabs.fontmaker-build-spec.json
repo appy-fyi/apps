@@ -21,40 +21,37 @@
         "permissions_partially_granted",
         "permissions_fully_granted"
       ],
-      "purpose": "The app's single screen: guides the user through granting the two required system permissions, lets them customize an arbitrary-length list of overlay button styles (font, colors, gradient) plus the shared text-length bounds, and shows a live preview of each style.",
+      "purpose": "The app's single screen: guides the user through granting the two required system permissions and lets them set the text-length bounds that gate the floating overlay button. Styling is fully automatic — there is no style list to manage; the screen shows a read-only gallery of the built-in mood looks.",
       "entry_points": ["app launch"],
       "key_ui_elements": [
         "Required System Permissions card with an Overlay row and an Accessibility Service row, each showing a granted/not-granted status icon and an 'Open' button that deep-links to the matching system Settings screen",
         "App Language picker: a row of chips ('System Default' plus each supported language in its own native name) that overrides the app's UI language independent of the device's system language, applied immediately",
-        "Min/Max text length fields that gate when the floating overlay buttons appear (shared by every style)",
-        "One numbered Style N section per saved style (starts at two, seeded on first launch): live preview, font picker (Sans Serif / Serif / Monospace / Cursive), an emoji badge picker (optional, tap-to-select from a small predefined palette plus a None option, rendered in the image's top-left corner), text/background color pickers (tap-to-select swatches from a small predefined palette, selected swatch shown with a checkmark), gradient toggle and gradient end-color picker, and its own 'Remove Style' button (hidden once only one style remains, so the overlay always keeps at least one button) — font size is not user-configurable; it is auto-computed from text length",
-        "'Add Style' button below the style list that appends a new style (Sans Serif look, editable immediately) and its own overlay button"
+        "Min/Max text length fields that gate when the floating overlay button appears",
+        "Automatic Styling card: a short explanation that the look is chosen from what the user types (mood, keywords, emoji), plus a horizontally-scrolling gallery of one live sample render per built-in mood (Funny, Sad, Romantic, Angry, Informative, Excited, Celebratory, Calm, Motivational, Grateful, Neutral). Nothing here is editable — there is no font, color, emoji, add, or remove control anymore."
       ]
     }
   ],
   "features": [
     {
-      "name": "Floating Style Overlay Triggers",
+      "name": "Floating Style Overlay Trigger",
       "screens": ["Settings"],
       "est_hours": 34,
-      "description": "A background AccessibilityService watches WhatsApp's actively focused editable field and shows one small floating overlay button per saved style whenever the typed text's trimmed length falls within the user-configured min/max bounds; the buttons auto-hide the instant the user leaves WhatsApp.",
+      "description": "A background AccessibilityService watches WhatsApp's actively focused editable field and shows one small floating overlay button whenever the typed text's trimmed length falls within the user-configured min/max bounds; the button auto-hides the instant the user leaves WhatsApp.",
       "acceptance_criteria": [
-        "Typing in any editable field in any app shows one overlay button per saved style once trimmed length is within [minTextLength, maxTextLength].",
-        "The overlay buttons never appear for an empty field, even if the user configures minTextLength down to 0.",
-        "Each button's circular background is tinted with its own style's background color so buttons stay visually distinct at any list length, and each is independently tappable, triggering its own style's render.",
-        "Overlay buttons hide immediately when length falls back out of bounds or focus moves to a non-editable view.",
-        "Overlay buttons hide immediately when the user leaves WhatsApp (home screen, another app, notification shade) and are not shown over any non-WhatsApp app; the soft keyboard opening over WhatsApp does not hide them, and returning to WhatsApp with the same field still focused restores them.",
-        "Dragging any button moves the whole set together as a single draggable stack, and the position reacts live to settings changes without restarting the app.",
-        "Adding, removing, or editing a style in Settings while the overlay is already visible rebuilds the button set immediately, without needing focus to leave and re-enter the field.",
-        "The overlay always shows at least one button — the Settings screen never lets the last remaining style be removed."
+        "Typing in a WhatsApp editable field shows a single overlay button once trimmed length is within [minTextLength, maxTextLength].",
+        "The overlay button never appears for an empty field, even if the user configures minTextLength down to 0.",
+        "The button has a fixed indigo circular background and a sparkle glyph; tapping it renders the current text with a style chosen automatically from the text's content.",
+        "The overlay button hides immediately when length falls back out of bounds or focus moves to a non-editable view.",
+        "The overlay button hides immediately when the user leaves WhatsApp (home screen, another app, notification shade) and is not shown over any non-WhatsApp app; the soft keyboard opening over WhatsApp does not hide it, and returning to WhatsApp with the same field still focused restores it.",
+        "Dragging the button repositions it, and the position is remembered across hide/show cycles."
       ],
-      "implementation_notes": "TextMonitorAccessibilityService (AccessibilityService, @AndroidEntryPoint) listens for TYPE_VIEW_TEXT_CHANGED/TYPE_VIEW_FOCUSED/TYPE_WINDOW_STATE_CHANGED, tracks the current AccessibilityNodeInfo + text, and delegates the length check to a pure TextLengthEvaluator.isWithinBounds() so the boundary logic is unit-testable outside the framework. accessibility_service_config.xml carries no android:packageNames filter (so the service can observe the foreground app changing); styling is kept WhatsApp-only in code by ignoring every TYPE_VIEW_* event whose packageName != \"com.whatsapp\". handleForegroundWindowChanged() reacts to TYPE_WINDOW_STATE_CHANGED: a non-WhatsApp, non-keyboard window (keyboard package resolved from Settings.Secure.DEFAULT_INPUT_METHOD, plus the app's own package) hides the overlay immediately, while a return to com.whatsapp calls activeNode.refresh() and re-shows the buttons only if that node is still an editable, focused field. isWithinBounds() requires trimmedLength > 0 in addition to the configured [minLength, maxLength] range (from the shared TriggerConfig), guaranteeing the overlay only shows once the user has actually entered text. OverlayWindowManager stacks one FrameLayout button per entry in the current List<StyleConfig> (read fresh from stylesProvider() at showOverlay() time) inside one vertical LinearLayout container shown via a single WindowManager TYPE_APPLICATION_OVERLAY addView/removeView; each button's circular background is a GradientDrawable built at runtime and tinted with Color.parseColor(style.backgroundColorHex) (falling back to a fixed indigo on a bad hex string) rather than a static drawable resource, so the button set scales to any number of styles; each button's icon is that style's own emoji, centered via a TextView layered over a generic ic_style_convert ImageView fallback shown only when the style's badge is blank, so the icon occupies identical bounds regardless of which is visible; each button gets its own onClick callback (onStyleClicked(style)) but shares one drag-listener instance so the whole stack moves together. Every style renders directly from its own StyleConfig — no separate merge step is needed since paddingDp/cornerRadiusDp now live on StyleConfig itself. OverlayWindowManager.refreshOverlay() rebuilds the button set in place (hide then show, reusing the remembered drag position) and is a no-op when the overlay isn't currently visible; TextMonitorAccessibilityService calls it from its stylesFlow collector on every emission, so a style add/edit/remove made in Settings while the overlay is already on screen shows up immediately instead of waiting for the next hide/show cycle."
+      "implementation_notes": "TextMonitorAccessibilityService (AccessibilityService, @AndroidEntryPoint) listens for TYPE_VIEW_TEXT_CHANGED/TYPE_VIEW_FOCUSED/TYPE_WINDOW_STATE_CHANGED, tracks the current AccessibilityNodeInfo + text, and delegates the length check to a pure TextLengthEvaluator.isWithinBounds() so the boundary logic is unit-testable outside the framework. accessibility_service_config.xml carries no android:packageNames filter (so the service can observe the foreground app changing); styling is kept WhatsApp-only in code by ignoring every TYPE_VIEW_* event whose packageName != \"com.whatsapp\". handleForegroundWindowChanged() reacts to TYPE_WINDOW_STATE_CHANGED: a non-WhatsApp, non-keyboard window (keyboard package resolved from Settings.Secure.DEFAULT_INPUT_METHOD, plus the app's own package) hides the overlay immediately, while a return to com.whatsapp calls activeNode.refresh() and re-shows the button only if that node is still an editable, focused field. isWithinBounds() requires trimmedLength > 0 in addition to the configured [minLength, maxLength] range (from the shared TriggerConfig), guaranteeing the overlay only shows once the user has actually entered text. OverlayWindowManager shows one FrameLayout button (a centered TextView sparkle over a runtime GradientDrawable oval tinted a fixed indigo) via a single WindowManager TYPE_APPLICATION_OVERLAY addView/removeView, with one drag-listener that repositions it and remembers the margins across hide/show. It no longer takes a styles provider or exposes refreshOverlay() — there is nothing style-related to react to. On tap, TextMonitorAccessibilityService.handleStyleButtonPressed() calls AutoStyle.styleFor(currentText) to derive the StyleConfig for the render."
     },
     {
       "name": "Styled Image Rendering",
       "screens": ["Settings"],
       "est_hours": 20,
-      "description": "Renders the captured text into a fixed 512x512 PNG square using the tapped button's StyleConfig — font, text color, solid or 2-stop gradient background, padding, and an optional emoji badge — with the font size auto-computed to fill the square and the text centered both horizontally and vertically. The square always has sharp corners (no border radius).",
+      "description": "Renders the captured text into a fixed 512x512 PNG square using the auto-selected StyleConfig — font, text color, solid or 2-stop gradient background, padding, and an emoji badge — with the font size auto-computed to fill the square and the text centered both horizontally and vertically. The square always has sharp corners (no border radius).",
       "acceptance_criteria": [
         "The rendered bitmap is always exactly 512x512, regardless of text length.",
         "Long strings wrap across multiple lines without overflowing the bitmap bounds, and font size shrinks automatically to fit.",
@@ -70,13 +67,13 @@
       "name": "Clipboard Copy & Field Clear",
       "screens": ["Settings"],
       "est_hours": 10,
-      "description": "Tapping any overlay button copies that button's rendered image to the system clipboard as an image/png ClipData and clears the original text field, so the user can immediately paste the styled image in place of what they typed.",
+      "description": "Tapping the overlay button copies the rendered image to the system clipboard as an image/png ClipData and clears the original text field, so the user can immediately paste the styled image in place of what they typed.",
       "acceptance_criteria": [
-        "After tapping any overlay button, the system clipboard holds a ClipData whose item URI resolves to image/png, rendered with the tapped button's own style.",
+        "After tapping the overlay button, the system clipboard holds a ClipData whose item URI resolves to image/png, rendered with the style auto-selected from the text.",
         "The originating text field is cleared via ACTION_SET_TEXT immediately after the copy.",
         "A short confirmation Toast appears telling the user to paste."
       ],
-      "implementation_notes": "ClipboardManagerHelper.copyImageToClipboard() uses ClipData.newUri(contentResolver, label, uri) so the MIME type is resolved from FileProvider's own getType(). TextMonitorAccessibilityService.handleStyleButtonPressed(style: StyleConfig) is shared by every button's click callback — each closure passes its own StyleConfig from the current styles list — then calls AccessibilityNodeInfo.performAction(ACTION_SET_TEXT, empty string) on the tracked node."
+      "implementation_notes": "ClipboardManagerHelper.copyImageToClipboard() uses ClipData.newUri(contentResolver, label, uri) so the MIME type is resolved from FileProvider's own getType(). TextMonitorAccessibilityService.handleStyleButtonPressed() derives the StyleConfig via AutoStyle.styleFor(currentText), renders it, then calls AccessibilityNodeInfo.performAction(ACTION_SET_TEXT, empty string) on the tracked node."
     },
     {
       "name": "Guided Permission Setup",
@@ -91,18 +88,19 @@
       "implementation_notes": "PermissionUtils centralizes both live checks. MainActivity re-checks both in a DefaultLifecycleObserver.onResume() and triggers Play's In-App Review flow (InAppReviewHelper) the first time both permissions transition from not-fully-granted to fully-granted — a genuine positive completion point."
     },
     {
-      "name": "Live Style Preview & Customization",
+      "name": "Content-Based Automatic Styling",
       "screens": ["Settings"],
       "est_hours": 18,
-      "description": "The user manages an arbitrary-length list of styles: every style control (font, emoji badge, text/background/gradient color, gradient toggle) plus the shared min/max length bounds persists to DataStore and immediately re-renders that style's live preview bitmap of sample text so the user sees the effect of a change before it's ever used on real typed text. An 'Add Style' button appends a new style (and a matching overlay button); each style section carries its own 'Remove Style' button, hidden once only one style remains so the user can never delete the last one.",
+      "description": "The look of the rendered image is derived from the typed text instead of being user-configured. A fixed set of 11 moods (Intent enum: Funny, Sad, Romantic, Angry, Informative, Excited, Celebratory, Calm, Motivational, Grateful, and a Neutral fallback), each carrying 3–5 hand-tuned StyleConfig looks, is matched against the text's whole-word keywords, multi-word phrases, and emoji; the highest-scoring mood wins (Neutral when nothing matches) and one of its looks is picked at random per tap. The only user-configurable setting left is the min/max text-length trigger. The Settings screen shows a read-only gallery of one sample render per mood.",
       "acceptance_criteria": [
-        "Changing any control in a Style N section updates that style's own live preview image within one recomposition, without a manual 'apply' step.",
-        "Tapping 'Add Style' appends a new Style N section (seeded with the Sans Serif defaults) to the list and persists it immediately; the new overlay button appears the next time the overlay is shown.",
-        "Tapping a style's 'Remove Style' button deletes only that style and persists the remaining list immediately; the 'Remove Style' button is hidden while exactly one style remains, so the list can never be emptied from the UI.",
-        "The full style list persists across app restarts, in the same order the user left it.",
-        "Text, background, and gradient end colors are each chosen by tapping a swatch from a small predefined palette, so every persisted color value is always a valid hex string — there is no free-text color entry or invalid-color state to show."
+        "Text containing a mood's keyword, phrase, or emoji renders in one of that mood's looks; text matching nothing renders in a Neutral look.",
+        "Phrases (e.g. 'thank you', 'you got this') outweigh a single competing keyword.",
+        "Keyword matching is whole-token and case-insensitive: 'misinformative' does not trigger the 'informative' keyword.",
+        "Repeated taps on the same text can produce different looks from the matched mood's set.",
+        "The Settings screen has no font, color, emoji, gradient, add-style, or remove-style control; it shows a scrollable read-only gallery of one sample render per mood.",
+        "The min/max text-length bounds still persist to DataStore across app restarts."
       ],
-      "implementation_notes": "SettingsRepository wraps a single Preferences DataStore (`user_settings`) exposing stylesFlow: Flow<List<StyleConfig>> (styles serialized as a JSON array string under the `styles_json` key via org.json, decoded back with per-field fallbacks so a malformed or missing entry never crashes the flow) and a separate triggerConfigFlow: Flow<TriggerConfig> for the shared min/max bounds. Falling back to DEFAULT_STYLES (two fixed-id entries reproducing the original Style 1 / Style 2 look) covers both first launch and an explicitly emptied list. SettingsViewModel exposes stylesState/triggerState as StateFlows via stateIn(WhileSubscribed(5000)) and offers updateStyle(updated) (replaces by id), addStyle() (appends StyleConfig() with a fresh random id), removeStyle(id) (no-ops if it would empty the list), and updateTriggerConfig(). SettingsScreen renders styles.forEachIndexed { index, style -> StyleSection(...) } inside a Card per style, each wired to viewModel.updateStyle/removeStyle, followed by an 'Add Style' button; StyleSection's LivePreview composable calls ImageRenderer.renderBitmap() on Dispatchers.Default inside produceState(config) and renders the result via Image(bitmap.asImageBitmap()). The emoji field is a tap-to-select EmojiPicker (a FlowRow of EmojiChoiceChip boxes) over a fixed EMOJI_BADGE_CHOICES palette of 17 popular, category-diverse emoji plus a blank white chip (an empty box sized identically to the emoji choices) that sets emoji to blank — not a free-text field — so the persisted emoji string is always either blank or one of the palette entries. Text/background/gradient-end colors are each a tap-to-select ColorPicker (a FlowRow of circular ColorSwatch boxes, selected swatch marked with a checkmark whose black/white tint is chosen by isLightColor() luminance) over a fixed COLOR_PALETTE of 16 hex colors — not a free-text hex field — so the persisted color hex is always one of the palette entries."
+      "implementation_notes": "AutoStyle.kt (data.model) holds it all with no Android dependencies so it is plain-JVM unit-testable: the Intent enum carries each mood's List<StyleConfig>; WORD_KEYWORDS / PHRASE_KEYWORDS / EMOJI_KEYWORDS map triggers to intents (English plus the most common triggers in the app's six supported languages, since emoji are language-independent and doing on-device translation would need an ML Kit model download — a poor fit for an otherwise offline no-network app). AutoStyle.detectIntent(text) lowercases the text, tokenizes on non-alphanumeric runs into a set, scores every non-Neutral intent (phrase substring hit = 3, word-token hit = 1, emoji substring hit = 2), and returns the top scorer or Intent.NEUTRAL when all zero; ties break toward the earlier enum entry for stability. AutoStyle.styleFor(text, random = Random.Default) resolves the intent and returns intent.styles.random(random). SettingsRepository now persists only triggerConfigFlow: Flow<TriggerConfig> under the `user_settings` DataStore (`min_length` / `max_length` keys); the `styles_json` key, stylesFlow, encode/decodeStyles, and DEFAULT_STYLES are gone. SettingsViewModel exposes only triggerState + updateTriggerConfig(). SettingsScreen's AutoStyleSection renders an explanatory Card plus a horizontally-scrolling Row of IntentPreview composables (one per Intent.entries), each calling ImageRenderer.renderBitmap() on Dispatchers.Default inside produceState. Covered by AutoStyleTest (10 JVM unit tests)."
     },
     {
       "name": "Multi-language UI Support",
@@ -120,7 +118,8 @@
   ],
   "non_goals": [
     "No custom Input Method (IME) / system keyboard in this version — text is styled and cleared in place via AccessibilityService, not typed through a replacement keyboard.",
-    "No drag-to-reorder of the style list, and no per-style padding/corner-radius controls in the UI (both fields still exist on StyleConfig for the renderer but are fixed at their defaults) — the list only supports appending a style and removing one (down to a minimum of one).",
+    "No user-editable styles — no style list, no font/color/emoji/gradient pickers, no add/remove. The look is chosen automatically from the typed text; the built-in mood looks are fixed in code. paddingDp/cornerRadiusDp still exist on StyleConfig for the renderer but are fixed at their defaults.",
+    "No on-device translation of the typed text before keyword matching — the keyword tables carry the common triggers in the six supported languages directly, and emoji (language-independent) do most of the work.",
     "No in-app purchases, ads, or any billing integration — the app is entirely free with no monetization.",
     "No handwriting font creation — only the four bundled system type families (Sans Serif, Serif, Monospace, Cursive) are offered.",
     "No cloud backend, accounts, or sync — all settings live in local DataStore on the one device.",
@@ -128,6 +127,15 @@
     "No AI-assisted anything in v1."
   ],
   "test_plan": [
+    {
+      "kind": "unit",
+      "scenario": "Content-based intent detection and style selection",
+      "steps": [
+        "Call AutoStyle.detectIntent with text carrying a mood keyword, a mood phrase, a mood emoji, a competing keyword+phrase mix, mixed case, an unmatched string, and a substring-of-a-keyword string.",
+        "Call AutoStyle.styleFor with a seeded Random for a matched text, repeatedly."
+      ],
+      "expected": "Keyword/phrase/emoji each select their intent; phrases outweigh a competing single keyword; matching is case-insensitive and whole-token ('misinformative' stays Neutral); unmatched and blank text return Intent.NEUTRAL. styleFor always returns a StyleConfig from the detected intent's own list and is deterministic for a fixed seed. (AutoStyleTest, 10 cases.)"
+    },
     {
       "kind": "unit",
       "scenario": "Text-length boundary evaluation",
@@ -196,59 +204,65 @@
       "kind": "manual",
       "scenario": "Permission handling when revoked dynamically",
       "steps": [
-        "Grant both the overlay and accessibility permissions, confirm both overlay buttons appear while typing.",
+        "Grant both the overlay and accessibility permissions, confirm the overlay button appears while typing.",
         "Revoke one permission from system Settings, return to the app."
       ],
-      "expected": "The revoked permission's row reverts to 'not granted' on the very next onResume, and the overlay buttons stop appearing until it's re-granted."
+      "expected": "The revoked permission's row reverts to 'not granted' on the very next onResume, and the overlay button stops appearing until it's re-granted."
     },
     {
       "kind": "manual",
-      "scenario": "Multiple overlay buttons with independent styles",
+      "scenario": "Automatic style matches the message mood",
       "steps": [
-        "Set clearly different fonts/colors for Style 1 and Style 2 in Settings.",
-        "Type qualifying text in a monitored field and observe both floating buttons.",
-        "Drag one of the buttons and confirm both move together as a pair.",
-        "Tap the Style 1 button, paste, then repeat typing and tap the Style 2 button, paste."
+        "In WhatsApp, type a clearly funny message (e.g. 'haha this is hilarious 😂'), tap the overlay button, and paste.",
+        "Repeat with a romantic message ('I love you so much ❤️'), an informative one ('FYI: meeting agenda for tomorrow'), and a gibberish string with no mood words.",
+        "Tap the button several times on the same funny message, pasting each result."
       ],
-      "expected": "Both buttons appear together and stay paired while dragging; pasting after the Style 1 tap shows an image in Style 1's look, and pasting after the Style 2 tap shows an image in Style 2's distinct look."
+      "expected": "Each paste shows an image whose colors/emoji fit the message's mood — playful for the funny one, warm/pink for the romantic one, clean/neutral for the informative one, and a plain Neutral look for the gibberish. Repeated taps on the same message can produce different looks from that mood's set."
     },
     {
       "kind": "manual",
-      "scenario": "Adding and removing styles",
+      "scenario": "Settings has no style editor",
       "steps": [
-        "In Settings, tap 'Add Style' twice to grow the list to four styles, giving each a distinct font/color/emoji.",
-        "Type qualifying text in a monitored field and confirm four overlay buttons appear, stacked together.",
-        "Back in Settings, remove styles one at a time down to a single remaining style.",
-        "Type qualifying text again."
+        "Open Settings and scroll through the whole screen."
       ],
-      "expected": "After adding, four independently-tappable overlay buttons appear, each rendering its own style when tapped. The 'Remove Style' button disappears from the last remaining style's section, and once down to one style, only a single overlay button appears when typing."
+      "expected": "There is a permissions card, an App Language picker, min/max length fields, and an 'Automatic Styling' card with a scrollable read-only gallery of one sample render per mood. There is no font/color/emoji/gradient picker and no Add Style / Remove Style button anywhere."
     }
   ],
   "data_model": [
     {
       "entity": "StyleConfig",
       "fields": [
-        { "name": "id", "type": "String", "notes": "stable UUID (or a fixed id for the two seeded defaults); identifies the style across list edits independent of position" },
+        { "name": "id", "type": "String", "notes": "random UUID default; no longer meaningful (styles are not a persisted, id-addressed list anymore) but kept so the data class and the renderer/tests are untouched" },
         { "name": "font", "type": "FontChoice enum (SANS_SERIF/SERIF/MONOSPACE/CURSIVE)", "notes": "maps to an Android generic Typeface family name" },
         { "name": "textColorHex", "type": "String", "notes": "e.g. #FFFFFF" },
-        { "name": "backgroundColorHex", "type": "String", "notes": "solid color, or gradient start color; also tints this style's overlay button background" },
+        { "name": "backgroundColorHex", "type": "String", "notes": "solid color, or gradient start color" },
         { "name": "isGradientEnabled", "type": "Boolean", "notes": "" },
         { "name": "gradientEndColorHex", "type": "String", "notes": "used only when isGradientEnabled" },
-        { "name": "paddingDp", "type": "Int", "notes": "default 32 — not currently exposed in the Settings UI" },
-        { "name": "cornerRadiusDp", "type": "Float", "notes": "default 24 — unused by the renderer (square always has sharp corners); not exposed in the Settings UI" },
-        { "name": "emoji", "type": "String", "notes": "default \"✨\" — optional badge drawn in the image's top-left corner; blank means no badge" }
+        { "name": "paddingDp", "type": "Int", "notes": "default 32 — not exposed in the UI" },
+        { "name": "cornerRadiusDp", "type": "Float", "notes": "default 24 — unused by the renderer (square always has sharp corners); not exposed in the UI" },
+        { "name": "emoji", "type": "String", "notes": "badge drawn in the image's top-left corner; blank means no badge" }
       ],
-      "storage": "datastore_preferences",
-      "notes": "One StyleConfig backs one overlay button. The full ordered list is persisted as a single JSON array string (key `styles_json`) under the `user_settings` Preferences DataStore, decoded via SettingsRepository.decodeStyles(); falls back to two fixed-id defaults (matching the original Style 1 / Style 2 look) on first launch, malformed JSON, or an explicitly emptied list. The Settings UI can append entries (Add Style) and remove any but the last remaining one (Remove Style)."
+      "storage": "in_memory",
+      "notes": "No longer persisted. StyleConfig is now purely the render input produced by AutoStyle.styleFor(text): each Intent hard-codes 3–5 StyleConfig looks in code. DEFAULT_STYLES, the `styles_json` DataStore key, and SettingsRepository.encode/decodeStyles are removed."
+    },
+    {
+      "entity": "Intent",
+      "fields": [
+        { "name": "name", "type": "enum constant", "notes": "one of FUNNY, SAD, ROMANTIC, ANGRY, INFORMATIVE, EXCITED, CELEBRATORY, CALM, MOTIVATIONAL, GRATEFUL, NEUTRAL (NEUTRAL = fallback for unmatched text)" },
+        { "name": "displayEmoji", "type": "String", "notes": "representative emoji for the mood, shown as the gallery label context" },
+        { "name": "styles", "type": "List<StyleConfig>", "notes": "3–5 hand-tuned looks; AutoStyle.styleFor picks one at random per tap" }
+      ],
+      "storage": "none",
+      "notes": "Defined in data.model/AutoStyle.kt with no Android imports so it is plain-JVM unit-testable. Paired with static WORD_KEYWORDS / PHRASE_KEYWORDS / EMOJI_KEYWORDS maps (trigger -> Intent) used by AutoStyle.detectIntent() to score the typed text."
     },
     {
       "entity": "TriggerConfig",
       "fields": [
-        { "name": "minTextLength", "type": "Int", "notes": "default 3 — overlay trigger lower bound, shared by every style button" },
-        { "name": "maxTextLength", "type": "Int", "notes": "default 280 — overlay trigger upper bound, shared by every style button" }
+        { "name": "minTextLength", "type": "Int", "notes": "default 3 — overlay-button trigger lower bound" },
+        { "name": "maxTextLength", "type": "Int", "notes": "default 280 — overlay-button trigger upper bound" }
       ],
       "storage": "datastore_preferences",
-      "notes": "One shared instance, independent of the style list, since only one overlay set triggers for a given typed text regardless of how many styles are configured."
+      "notes": "The only persisted user setting left (keys `min_length` / `max_length` under the `user_settings` Preferences DataStore)."
     }
   ],
   "package_id": "fyi.appy.inksend.giladkutiel",
@@ -262,7 +276,7 @@
       { "purpose": "Material 3 Compose components", "gradle_coordinate": "androidx.compose.material3:material3:1.3.1" },
       { "purpose": "ViewModel integration with Compose", "gradle_coordinate": "androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6" },
       { "purpose": "Lifecycle-aware coroutines (permission re-check on resume)", "gradle_coordinate": "androidx.lifecycle:lifecycle-runtime-ktx:2.8.6" },
-      { "purpose": "Local key-value storage for the one active TextStyleConfig", "gradle_coordinate": "androidx.datastore:datastore-preferences:1.1.1" },
+      { "purpose": "Local key-value storage for the text-length TriggerConfig", "gradle_coordinate": "androidx.datastore:datastore-preferences:1.1.1" },
       { "purpose": "Coroutines for DataStore flows and the accessibility service's settings collector", "gradle_coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0" },
       { "purpose": "Dependency injection into the Application, Activity, and AccessibilityService", "gradle_coordinate": "com.google.dagger:hilt-android:2.56.2" },
       { "purpose": "Hilt annotation processing via KSP", "gradle_coordinate": "com.google.dagger:hilt-android-compiler:2.56.2" },
@@ -289,7 +303,7 @@
   "working_name": "InkSend",
   "design_system": {
     "icon_name": "pen",
-    "typography": "Google Fonts 'Fraunces' (serif, expressive) for in-app headings/branding, Material 3 default type scale (Roboto Flex) for all other UI chrome and body text — never used for the rendered style output itself, which always uses the user's selected style font.",
+    "typography": "Google Fonts 'Fraunces' (serif, expressive) for in-app headings/branding, Material 3 default type scale (Roboto Flex) for all other UI chrome and body text — never used for the rendered style output itself, which uses the font of the auto-selected mood style.",
     "theme_notes": "Dark mode follows the system default: light theme uses background #F7F5FF / surface #FFFFFF / on-background #1C1B1F; dark theme uses background #16151F / surface #201F2C / on-background #E7E1FF.",
     "color_error_hex": "#D64545",
     "color_primary_hex": "#5B47E0",
@@ -300,8 +314,8 @@
     "category": "Productivity",
     "keywords": ["style text", "text to image", "stylish text", "text styler", "custom text color", "text overlay", "chat styler"],
     "icon_prompt": "Create a 1024x1024 Android app icon for InkSend, a text-styling utility app. Rounded-square adaptive icon style, indigo background (#5B47E0), a simple white fountain-pen nib icon with a short flowing ink stroke. Flat vector design, high contrast, no text, no brand logos, no photorealistic elements.",
-    "long_description": "InkSend turns anything you type, in any app, into a beautifully styled image — your choice of font, text color, background, and a little emoji badge — ready to paste back in with one tap.\n\nJust start typing in any text field. Once your message is long enough, two small floating buttons appear, one for each of your two saved styles. Tap either one, and InkSend renders your exact words as a styled image in that look, copies it to your clipboard, and clears the field — so a long-press and Paste (or your keyboard's clipboard suggestion) drops the image right back in.\n\nCustomize both styles from one simple settings screen: font, an optional emoji badge, text color, background color or gradient, and exactly which text lengths should trigger the buttons — with a live preview of each style as you go. Font size always auto-fits your text, so there's nothing to fiddle with.\n\nEverything happens on your device. No account, no ads, no subscription — InkSend is completely free.",
-    "short_description": "Style any text you type and paste it back in as an image — free, no ads, no account."
+    "long_description": "InkSend turns anything you type, in any app, into a beautifully styled image — font, colors, gradient, and an emoji badge chosen to match your message — ready to paste back in with one tap.\n\nJust start typing in a text field. Once your message is long enough, a small floating button appears. Tap it, and InkSend reads the mood of what you wrote — funny, sad, romantic, excited, grateful and more — picks a matching look, renders your exact words as a styled image, copies it to your clipboard, and clears the field. A long-press and Paste (or your keyboard's clipboard suggestion) drops the image right back in.\n\nThere's nothing to set up. No style list to build, no colors to pick — the styling is automatic, and font size always auto-fits your text. The one setting is which message lengths should trigger the button.\n\nEverything happens on your device. No account, no ads, no subscription — InkSend is completely free.",
+    "short_description": "Type a message and paste it back as an image styled to match its mood — free, no ads, no account."
   },
   "project_context": "This spec describes an independent, alternative Android app you are building from scratch to compete with an existing incumbent app on Google Play — not a modification, clone, or reskin of the incumbent's own code, assets, or branding. Use the incumbent only as a market reference (via the report data below), and design working_name/package_id/store_listing/design_system so the result is clearly its own product.",
   "total_est_weeks": 2.0,

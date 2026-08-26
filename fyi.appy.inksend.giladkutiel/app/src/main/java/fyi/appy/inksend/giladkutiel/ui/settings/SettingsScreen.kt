@@ -5,9 +5,7 @@ import android.content.ContextWrapper
 import android.graphics.Bitmap
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,12 +16,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
@@ -34,7 +30,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -43,16 +38,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.os.LocaleListCompat
 import fyi.appy.inksend.giladkutiel.R
-import fyi.appy.inksend.giladkutiel.data.model.FontChoice
+import fyi.appy.inksend.giladkutiel.data.model.Intent
 import fyi.appy.inksend.giladkutiel.data.model.StyleConfig
 import fyi.appy.inksend.giladkutiel.engine.ImageRenderer
 import kotlinx.coroutines.Dispatchers
@@ -68,7 +61,6 @@ fun SettingsScreen(
     onRequestOverlayPermission: () -> Unit,
     onRequestAccessibilityPermission: () -> Unit,
 ) {
-    val styles by viewModel.stylesState.collectAsState()
     val trigger by viewModel.triggerState.collectAsState()
     val scrollState = rememberScrollState()
 
@@ -113,83 +105,96 @@ fun SettingsScreen(
                 )
             }
 
-            styles.forEachIndexed { index, style ->
-                StyleSection(
-                    index = index,
-                    style = style,
-                    canRemove = styles.size > 1,
-                    onUpdate = { viewModel.updateStyle(it) },
-                    onRemove = { viewModel.removeStyle(style.id) },
-                )
-            }
+            AutoStyleSection()
+        }
+    }
+}
 
-            Button(onClick = { viewModel.addStyle() }, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.add_style_button))
+/**
+ * Explains that the look is now chosen automatically from what the user types, and shows a
+ * scrollable gallery of one sample render per [Intent] so the range is visible at a glance.
+ */
+@Composable
+private fun AutoStyleSection() {
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(stringResource(R.string.auto_style_title), style = MaterialTheme.typography.titleMedium)
+            Text(
+                stringResource(R.string.auto_style_description),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Intent.entries.forEach { intent -> IntentPreview(intent) }
             }
         }
     }
 }
 
-/** One style's full set of editable controls, plus its own remove button when more than one style exists. */
+/** One labelled sample render for [intent], using its first look and the shared sample text. */
 @Composable
-private fun StyleSection(
-    index: Int,
-    style: StyleConfig,
-    canRemove: Boolean,
-    onUpdate: (StyleConfig) -> Unit,
-    onRemove: () -> Unit,
-) {
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    stringResource(R.string.style_section_title_format, index + 1),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f),
-                )
-                if (canRemove) {
-                    Button(onClick = onRemove) { Text(stringResource(R.string.remove_style_button)) }
-                }
+private fun IntentPreview(intent: Intent) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = Modifier.width(120.dp),
+    ) {
+        StylePreviewImage(intent.styles.first(), Modifier.size(120.dp))
+        Text(
+            intentLabel(intent),
+            style = MaterialTheme.typography.labelSmall,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+@Composable
+private fun StylePreviewImage(config: StyleConfig, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val bitmapState = produceState<Bitmap?>(initialValue = null, config) {
+        value = try {
+            kotlinx.coroutines.withContext(Dispatchers.Default) {
+                ImageRenderer.renderBitmap(context, PREVIEW_TEXT, config)
             }
-            LivePreview(style)
-            FontPicker(
-                selected = style.font,
-                onSelect = { onUpdate(style.copy(font = it)) },
-            )
-            EmojiPicker(
-                selected = style.emoji,
-                onSelect = { onUpdate(style.copy(emoji = it)) },
-            )
-            ColorPicker(
-                label = stringResource(R.string.text_color_label),
-                selected = style.textColorHex,
-                onSelect = { onUpdate(style.copy(textColorHex = it)) },
-            )
-            ColorPicker(
-                label = stringResource(R.string.background_color_label),
-                selected = style.backgroundColorHex,
-                onSelect = { onUpdate(style.copy(backgroundColorHex = it)) },
-            )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(R.string.gradient_toggle_label))
-                Box(modifier = Modifier.weight(1f))
-                Switch(
-                    checked = style.isGradientEnabled,
-                    onCheckedChange = { onUpdate(style.copy(isGradientEnabled = it)) },
-                )
-            }
-            if (style.isGradientEnabled) {
-                ColorPicker(
-                    label = stringResource(R.string.gradient_end_color_label),
-                    selected = style.gradientEndColorHex,
-                    onSelect = { onUpdate(style.copy(gradientEndColorHex = it)) },
-                )
-            }
+        } catch (_: Exception) {
+            null
         }
     }
+
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        val bitmap = bitmapState.value
+        if (bitmap != null) {
+            Image(
+                bitmap = bitmap.asImageBitmap(),
+                contentDescription = stringResource(R.string.preview_content_description),
+            )
+        } else {
+            Text(stringResource(R.string.preview_unavailable))
+        }
+    }
+}
+
+@Composable
+private fun intentLabel(intent: Intent): String = when (intent) {
+    Intent.FUNNY -> stringResource(R.string.intent_funny)
+    Intent.SAD -> stringResource(R.string.intent_sad)
+    Intent.ROMANTIC -> stringResource(R.string.intent_romantic)
+    Intent.ANGRY -> stringResource(R.string.intent_angry)
+    Intent.INFORMATIVE -> stringResource(R.string.intent_informative)
+    Intent.EXCITED -> stringResource(R.string.intent_excited)
+    Intent.CELEBRATORY -> stringResource(R.string.intent_celebratory)
+    Intent.CALM -> stringResource(R.string.intent_calm)
+    Intent.MOTIVATIONAL -> stringResource(R.string.intent_motivational)
+    Intent.GRATEFUL -> stringResource(R.string.intent_grateful)
+    Intent.NEUTRAL -> stringResource(R.string.intent_neutral)
 }
 
 @Composable
@@ -315,194 +320,3 @@ private fun LanguagePicker() {
         }
     }
 }
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun FontPicker(selected: FontChoice, onSelect: (FontChoice) -> Unit) {
-    FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        FontChoice.entries.forEach { choice ->
-            val isSelected = choice == selected
-            Button(
-                onClick = { onSelect(choice) },
-                colors = if (isSelected) {
-                    androidx.compose.material3.ButtonDefaults.buttonColors()
-                } else {
-                    androidx.compose.material3.ButtonDefaults.outlinedButtonColors()
-                },
-            ) {
-                Text(stringResource(choice.labelRes))
-            }
-        }
-    }
-}
-
-/** A small, popular, and category-diverse set of emoji offered as badge choices. */
-private val EMOJI_BADGE_CHOICES = listOf(
-    "✨", "🎉", "❤️", "🔥", "😂", "👍", "🙌", "🎨",
-    "🌈", "⭐", "💯", "🎵", "🍀", "🌸", "📌", "🚀", "🏆",
-)
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun EmojiPicker(selected: String, onSelect: (String) -> Unit) {
-    Column {
-        Text(stringResource(R.string.emoji_badge_label), style = MaterialTheme.typography.labelLarge)
-        Text(
-            stringResource(R.string.emoji_badge_description),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Box(modifier = Modifier.height(4.dp))
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            EmojiChoiceChip(
-                content = { Box(modifier = Modifier.size(22.dp)) },
-                isSelected = selected.isBlank(),
-                onClick = { onSelect("") },
-                backgroundColor = Color.White,
-            )
-            EMOJI_BADGE_CHOICES.forEach { emoji ->
-                EmojiChoiceChip(
-                    content = {
-                        Box(modifier = Modifier.size(22.dp), contentAlignment = Alignment.Center) {
-                            Text(emoji, fontSize = 22.sp)
-                        }
-                    },
-                    isSelected = selected == emoji,
-                    onClick = { onSelect(emoji) },
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun EmojiChoiceChip(
-    content: @Composable () -> Unit,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    backgroundColor: Color? = null,
-) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(10.dp))
-            .background(
-                backgroundColor
-                    ?: if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
-            )
-            .border(
-                width = if (isSelected) 2.dp else 1.dp,
-                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
-                shape = RoundedCornerShape(10.dp),
-            )
-            .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        content()
-    }
-}
-
-/** A small, predefined palette of colors offered for text/background/gradient color choices. */
-private val COLOR_PALETTE = listOf(
-    "#FFFFFF", "#000000", "#1E1E2E", "#F5E9DA",
-    "#89B4FA", "#F7B267", "#5B47E0", "#D64545",
-    "#4CAF7D", "#2DB6A3", "#E85D9E", "#9B59D0",
-    "#F2C94C", "#9AA0A6", "#1B2A4A", "#C9B8FF",
-)
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun ColorPicker(label: String, selected: String, onSelect: (String) -> Unit) {
-    Column {
-        Text(label, style = MaterialTheme.typography.labelLarge)
-        Box(modifier = Modifier.height(4.dp))
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            COLOR_PALETTE.forEach { hex ->
-                ColorSwatch(
-                    hex = hex,
-                    isSelected = selected.equals(hex, ignoreCase = true),
-                    onClick = { onSelect(hex) },
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ColorSwatch(hex: String, isSelected: Boolean, onClick: () -> Unit) {
-    val color = colorOrFallback(hex)
-    Box(
-        modifier = Modifier
-            .size(36.dp)
-            .clip(CircleShape)
-            .background(color)
-            .border(
-                width = if (isSelected) 3.dp else 1.dp,
-                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
-                shape = CircleShape,
-            )
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
-        if (isSelected) {
-            Icon(
-                imageVector = Icons.Filled.Check,
-                contentDescription = stringResource(R.string.color_swatch_selected_description),
-                tint = if (isLightColor(color)) Color.Black else Color.White,
-                modifier = Modifier.size(18.dp),
-            )
-        }
-    }
-}
-
-private fun isLightColor(color: Color): Boolean {
-    val luminance = 0.299f * color.red + 0.587f * color.green + 0.114f * color.blue
-    return luminance > 0.6f
-}
-
-@Composable
-private fun LivePreview(config: StyleConfig) {
-    val context = LocalContext.current
-    val bitmapState = produceState<Bitmap?>(initialValue = null, config) {
-        value = try {
-            kotlinx.coroutines.withContext(Dispatchers.Default) {
-                ImageRenderer.renderBitmap(context, PREVIEW_TEXT, config)
-            }
-        } catch (_: Exception) {
-            null
-        }
-    }
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(120.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        val bitmap = bitmapState.value
-        if (bitmap != null) {
-            Image(bitmap = bitmap.asImageBitmap(), contentDescription = stringResource(R.string.preview_content_description))
-        } else {
-            Text(stringResource(R.string.preview_unavailable))
-        }
-    }
-}
-
-private fun colorOrFallback(hex: String): Color =
-    try {
-        Color(android.graphics.Color.parseColor(hex))
-    } catch (_: IllegalArgumentException) {
-        Color.Gray
-    }

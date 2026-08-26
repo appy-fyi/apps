@@ -17,21 +17,23 @@
     <string name="min_length_label">Comprimento mínimo</string>
     <string name="max_length_label">Comprimento máximo</string>
 
-    <string name="style_section_title_format">Estilo %1$d</string>
-    <string name="add_style_button">Adicionar estilo</string>
-    <string name="remove_style_button">Remover estilo</string>
-
     <string name="preview_unavailable">Pré-visualização indisponível</string>
     <string name="preview_content_description">Pré-visualização do estilo</string>
 
-    <string name="emoji_badge_label">Selo de emoji (opcional)</string>
-    <string name="emoji_badge_description">Desenhado no canto superior esquerdo da imagem. Escolha Nenhum para não exibir selo.</string>
+    <string name="auto_style_title">Estilo automático</string>
+    <string name="auto_style_description">A aparência é escolhida por você com base no que digita: o tom, as palavras-chave e os emojis. Veja uma amostra de cada tom:</string>
 
-    <string name="gradient_toggle_label">Ativar fundo em gradiente</string>
-    <string name="text_color_label">Cor do texto</string>
-    <string name="background_color_label">Cor de fundo</string>
-    <string name="gradient_end_color_label">Cor final do gradiente</string>
-    <string name="color_swatch_selected_description">Selecionado</string>
+    <string name="intent_funny">Divertido</string>
+    <string name="intent_sad">Triste</string>
+    <string name="intent_romantic">Romântico</string>
+    <string name="intent_angry">Zangado</string>
+    <string name="intent_informative">Informativo</string>
+    <string name="intent_excited">Empolgado</string>
+    <string name="intent_celebratory">Festivo</string>
+    <string name="intent_calm">Calmo</string>
+    <string name="intent_motivational">Motivacional</string>
+    <string name="intent_grateful">Grato</string>
+    <string name="intent_neutral">Neutro</string>
 
     <string name="app_language_title">Idioma do aplicativo</string>
     <string name="language_system_default">Padrão do sistema</string>

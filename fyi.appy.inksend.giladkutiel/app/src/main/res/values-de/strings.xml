@@ -17,21 +17,23 @@
     <string name="min_length_label">Mindestlänge</string>
     <string name="max_length_label">Maximallänge</string>
 
-    <string name="style_section_title_format">Stil %1$d</string>
-    <string name="add_style_button">Stil hinzufügen</string>
-    <string name="remove_style_button">Stil entfernen</string>
-
     <string name="preview_unavailable">Vorschau nicht verfügbar</string>
     <string name="preview_content_description">Stilvorschau</string>
 
-    <string name="emoji_badge_label">Emoji-Abzeichen (optional)</string>
-    <string name="emoji_badge_description">Wird oben links im Bild angezeigt. Wähle „Kein“, um kein Abzeichen anzuzeigen.</string>
+    <string name="auto_style_title">Automatisches Styling</string>
+    <string name="auto_style_description">Das Aussehen wird anhand deines Textes gewählt – Stimmung, Schlüsselwörter und Emojis. Hier eine Kostprobe jeder Stimmung:</string>
 
-    <string name="gradient_toggle_label">Verlaufshintergrund aktivieren</string>
-    <string name="text_color_label">Textfarbe</string>
-    <string name="background_color_label">Hintergrundfarbe</string>
-    <string name="gradient_end_color_label">Verlauf-Endfarbe</string>
-    <string name="color_swatch_selected_description">Ausgewählt</string>
+    <string name="intent_funny">Lustig</string>
+    <string name="intent_sad">Traurig</string>
+    <string name="intent_romantic">Romantisch</string>
+    <string name="intent_angry">Wütend</string>
+    <string name="intent_informative">Informativ</string>
+    <string name="intent_excited">Aufgeregt</string>
+    <string name="intent_celebratory">Festlich</string>
+    <string name="intent_calm">Ruhig</string>
+    <string name="intent_motivational">Motivierend</string>
+    <string name="intent_grateful">Dankbar</string>
+    <string name="intent_neutral">Neutral</string>
 
     <string name="app_language_title">App-Sprache</string>
     <string name="language_system_default">Systemstandard</string>

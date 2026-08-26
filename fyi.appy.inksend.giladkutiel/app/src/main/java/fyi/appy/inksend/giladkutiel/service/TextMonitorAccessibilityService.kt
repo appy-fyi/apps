@@ -8,8 +8,7 @@ import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.Toast
 import dagger.hilt.android.AndroidEntryPoint
 import fyi.appy.inksend.giladkutiel.R
-import fyi.appy.inksend.giladkutiel.data.model.DEFAULT_STYLES
-import fyi.appy.inksend.giladkutiel.data.model.StyleConfig
+import fyi.appy.inksend.giladkutiel.data.model.AutoStyle
 import fyi.appy.inksend.giladkutiel.data.model.TriggerConfig
 import fyi.appy.inksend.giladkutiel.data.repository.SettingsRepository
 import fyi.appy.inksend.giladkutiel.engine.ClipboardManagerHelper
@@ -26,16 +25,16 @@ private const val WHATSAPP_PACKAGE = "com.whatsapp"
 
 /**
  * Watches WhatsApp's active editable field; when its text length falls within the
- * configured bounds, shows one floating overlay button per saved style that renders the
- * text into a styled image using whichever style was tapped, copies it to the clipboard,
- * and clears the field.
+ * configured bounds, shows a single floating overlay button that renders the text into a
+ * styled image — the style is chosen automatically from the text's content via [AutoStyle] —
+ * copies it to the clipboard, and clears the field.
  *
  * The accessibility service is no longer package-scoped in its config (that's what lets it
  * observe the foreground app changing), so styling is kept WhatsApp-only in code: every
  * text event whose packageName isn't [WHATSAPP_PACKAGE] is ignored. The extra reach is
  * used only to auto-hide the overlay the instant the user leaves WhatsApp — a
- * TYPE_WINDOW_STATE_CHANGED from any non-WhatsApp, non-keyboard window tears the buttons
- * down, and returning to WhatsApp restores them if the tracked field is still focused.
+ * TYPE_WINDOW_STATE_CHANGED from any non-WhatsApp, non-keyboard window tears the button
+ * down, and returning to WhatsApp restores it if the tracked field is still focused.
  */
 @AndroidEntryPoint
 class TextMonitorAccessibilityService : AccessibilityService() {
@@ -46,7 +45,6 @@ class TextMonitorAccessibilityService : AccessibilityService() {
     private var currentText: String = ""
     private var activeNode: AccessibilityNodeInfo? = null
 
-    private var currentStyles: List<StyleConfig> = DEFAULT_STYLES
     private var currentTrigger = TriggerConfig()
 
     @Inject
@@ -56,16 +54,9 @@ class TextMonitorAccessibilityService : AccessibilityService() {
         super.onServiceConnected()
         overlayManager = OverlayWindowManager(
             context = this,
-            stylesProvider = { currentStyles },
-            onStyleClicked = { style -> handleStyleButtonPressed(style) },
+            onButtonClicked = { handleStyleButtonPressed() },
         )
 
-        serviceScope.launch {
-            settingsRepository.stylesFlow.collect { styles ->
-                currentStyles = styles
-                overlayManager?.refreshOverlay()
-            }
-        }
         serviceScope.launch {
             settingsRepository.triggerConfigFlow.collect { trigger ->
                 currentTrigger = trigger
@@ -103,11 +94,11 @@ class TextMonitorAccessibilityService : AccessibilityService() {
 
     /**
      * Hide the overlay the moment the foreground window belongs to something other than
-     * WhatsApp (home screen, another app, the notification shade), so the buttons never
-     * linger over an app the user isn't styling text in. The soft keyboard popping up over
+     * WhatsApp (home screen, another app, the notification shade), so the button never
+     * lingers over an app the user isn't styling text in. The soft keyboard popping up over
      * WhatsApp is itself a separate window whose state change we must ignore, otherwise the
-     * buttons would vanish as soon as the user tapped the message field. Coming back to
-     * WhatsApp re-shows the buttons if the field we were tracking is still the focused one.
+     * button would vanish as soon as the user tapped the message field. Coming back to
+     * WhatsApp re-shows the button if the field we were tracking is still the focused one.
      */
     private fun handleForegroundWindowChanged(event: AccessibilityEvent) {
         val pkg = event.packageName?.toString() ?: return
@@ -146,9 +137,10 @@ class TextMonitorAccessibilityService : AccessibilityService() {
         }
     }
 
-    private fun handleStyleButtonPressed(style: StyleConfig) {
+    private fun handleStyleButtonPressed() {
         if (currentText.isBlank()) return
 
+        val style = AutoStyle.styleFor(currentText)
         val imageUri = ImageRenderer.generateStyledImageUri(this, currentText, style)
         ClipboardManagerHelper.copyImageToClipboard(this, imageUri)
 

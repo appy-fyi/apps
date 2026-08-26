@@ -17,21 +17,23 @@
     <string name="min_length_label">Longitud mínima</string>
     <string name="max_length_label">Longitud máxima</string>
 
-    <string name="style_section_title_format">Estilo %1$d</string>
-    <string name="add_style_button">Añadir estilo</string>
-    <string name="remove_style_button">Eliminar estilo</string>
-
     <string name="preview_unavailable">Vista previa no disponible</string>
     <string name="preview_content_description">Vista previa del estilo</string>
 
-    <string name="emoji_badge_label">Insignia de emoji (opcional)</string>
-    <string name="emoji_badge_description">Se dibuja en la esquina superior izquierda de la imagen. Elige Ninguno para no mostrar insignia.</string>
+    <string name="auto_style_title">Estilo automático</string>
+    <string name="auto_style_description">El aspecto se elige por ti según lo que escribes: su tono, palabras clave y emojis. Aquí tienes una muestra de cada tono:</string>
 
-    <string name="gradient_toggle_label">Activar fondo degradado</string>
-    <string name="text_color_label">Color del texto</string>
-    <string name="background_color_label">Color de fondo</string>
-    <string name="gradient_end_color_label">Color final del degradado</string>
-    <string name="color_swatch_selected_description">Seleccionado</string>
+    <string name="intent_funny">Divertido</string>
+    <string name="intent_sad">Triste</string>
+    <string name="intent_romantic">Romántico</string>
+    <string name="intent_angry">Enfadado</string>
+    <string name="intent_informative">Informativo</string>
+    <string name="intent_excited">Emocionado</string>
+    <string name="intent_celebratory">Festivo</string>
+    <string name="intent_calm">Tranquilo</string>
+    <string name="intent_motivational">Motivador</string>
+    <string name="intent_grateful">Agradecido</string>
+    <string name="intent_neutral">Neutro</string>
 
     <string name="app_language_title">Idioma de la aplicación</string>
     <string name="language_system_default">Predeterminado del sistema</string>
