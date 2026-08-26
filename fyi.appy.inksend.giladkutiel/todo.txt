@@ -1,7 +1,8 @@
 TODO:
-    Styles:
-        Add the option to add additional styles and remove existing ones.
-
+    Emojis:
+        The empty box is still not at the same size.
 DONE:
     Emojis:
         Replace the "None" box with an empty white box with exactly the same size as the other emoji boxes.
+    Styles:
+        Add the option to add additional styles and remove existing ones.

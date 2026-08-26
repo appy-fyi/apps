@@ -7,9 +7,9 @@ import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.Toast
 import dagger.hilt.android.AndroidEntryPoint
 import fyi.appy.inksend.giladkutiel.R
-import fyi.appy.inksend.giladkutiel.data.model.SecondaryStyleConfig
-import fyi.appy.inksend.giladkutiel.data.model.TextStyleConfig
-import fyi.appy.inksend.giladkutiel.data.model.toRenderConfig
+import fyi.appy.inksend.giladkutiel.data.model.DEFAULT_STYLES
+import fyi.appy.inksend.giladkutiel.data.model.StyleConfig
+import fyi.appy.inksend.giladkutiel.data.model.TriggerConfig
 import fyi.appy.inksend.giladkutiel.data.repository.SettingsRepository
 import fyi.appy.inksend.giladkutiel.engine.ClipboardManagerHelper
 import fyi.appy.inksend.giladkutiel.engine.ImageRenderer
@@ -24,9 +24,9 @@ import javax.inject.Inject
 /**
  * Watches WhatsApp's active editable field (scoped via accessibility_service_config's
  * android:packageNames, so events from other apps never reach this service); when its
- * text length falls within the configured bounds, shows two floating overlay buttons —
- * one per configured style — that render the text into a styled image using whichever
- * style was tapped, copy it to the clipboard, and clear the field.
+ * text length falls within the configured bounds, shows one floating overlay button per
+ * saved style that renders the text into a styled image using whichever style was
+ * tapped, copies it to the clipboard, and clears the field.
  */
 @AndroidEntryPoint
 class TextMonitorAccessibilityService : AccessibilityService() {
@@ -37,8 +37,8 @@ class TextMonitorAccessibilityService : AccessibilityService() {
     private var currentText: String = ""
     private var activeNode: AccessibilityNodeInfo? = null
 
-    private var currentConfig = TextStyleConfig()
-    private var currentSecondaryConfig = SecondaryStyleConfig()
+    private var currentStyles: List<StyleConfig> = DEFAULT_STYLES
+    private var currentTrigger = TriggerConfig()
 
     @Inject
     lateinit var settingsRepository: SettingsRepository
@@ -47,21 +47,19 @@ class TextMonitorAccessibilityService : AccessibilityService() {
         super.onServiceConnected()
         overlayManager = OverlayWindowManager(
             context = this,
-            primaryEmoji = { currentConfig.emoji },
-            secondaryEmoji = { currentSecondaryConfig.emoji },
-            onPrimaryClicked = { handleStyleButtonPressed(currentConfig) },
-            onSecondaryClicked = { handleStyleButtonPressed(currentSecondaryConfig.toRenderConfig(currentConfig)) },
+            stylesProvider = { currentStyles },
+            onStyleClicked = { style -> handleStyleButtonPressed(style) },
         )
 
         serviceScope.launch {
-            settingsRepository.styleConfigFlow.collect { config ->
-                currentConfig = config
-                evaluateOverlayVisibility(currentText)
+            settingsRepository.stylesFlow.collect { styles ->
+                currentStyles = styles
             }
         }
         serviceScope.launch {
-            settingsRepository.secondaryStyleConfigFlow.collect { config ->
-                currentSecondaryConfig = config
+            settingsRepository.triggerConfigFlow.collect { trigger ->
+                currentTrigger = trigger
+                evaluateOverlayVisibility(currentText)
             }
         }
     }
@@ -92,8 +90,8 @@ class TextMonitorAccessibilityService : AccessibilityService() {
     private fun evaluateOverlayVisibility(text: String) {
         val withinBounds = TextLengthEvaluator.isWithinBounds(
             trimmedLength = text.trim().length,
-            minLength = currentConfig.minTextLength,
-            maxLength = currentConfig.maxTextLength,
+            minLength = currentTrigger.minTextLength,
+            maxLength = currentTrigger.maxTextLength,
         )
         if (withinBounds) {
             overlayManager?.showOverlay()
@@ -102,10 +100,10 @@ class TextMonitorAccessibilityService : AccessibilityService() {
         }
     }
 
-    private fun handleStyleButtonPressed(renderConfig: TextStyleConfig) {
+    private fun handleStyleButtonPressed(style: StyleConfig) {
         if (currentText.isBlank()) return
 
-        val imageUri = ImageRenderer.generateStyledImageUri(this, currentText, renderConfig)
+        val imageUri = ImageRenderer.generateStyledImageUri(this, currentText, style)
         ClipboardManagerHelper.copyImageToClipboard(this, imageUri)
 
         activeNode?.let { node ->

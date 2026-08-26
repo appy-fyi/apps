@@ -17,8 +17,9 @@
     <string name="min_length_label">Comprimento mínimo</string>
     <string name="max_length_label">Comprimento máximo</string>
 
-    <string name="style1_section_title">Estilo 1 — primeiro botão flutuante</string>
-    <string name="style2_section_title">Estilo 2 — segundo botão flutuante</string>
+    <string name="style_section_title_format">Estilo %1$d</string>
+    <string name="add_style_button">Adicionar estilo</string>
+    <string name="remove_style_button">Remover estilo</string>
 
     <string name="preview_unavailable">Pré-visualização indisponível</string>
     <string name="preview_content_description">Pré-visualização do estilo</string>

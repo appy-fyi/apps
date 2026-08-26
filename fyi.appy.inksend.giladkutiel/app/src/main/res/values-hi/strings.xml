@@ -17,8 +17,9 @@
     <string name="min_length_label">न्यूनतम लंबाई</string>
     <string name="max_length_label">अधिकतम लंबाई</string>
 
-    <string name="style1_section_title">स्टाइल 1 — पहला ओवरले बटन</string>
-    <string name="style2_section_title">स्टाइल 2 — दूसरा ओवरले बटन</string>
+    <string name="style_section_title_format">स्टाइल %1$d</string>
+    <string name="add_style_button">स्टाइल जोड़ें</string>
+    <string name="remove_style_button">स्टाइल हटाएं</string>
 
     <string name="preview_unavailable">पूर्वावलोकन उपलब्ध नहीं</string>
     <string name="preview_content_description">स्टाइल पूर्वावलोकन</string>

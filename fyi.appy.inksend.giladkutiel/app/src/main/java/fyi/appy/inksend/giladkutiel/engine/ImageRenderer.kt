@@ -13,7 +13,7 @@ import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
 import androidx.core.content.FileProvider
-import fyi.appy.inksend.giladkutiel.data.model.TextStyleConfig
+import fyi.appy.inksend.giladkutiel.data.model.StyleConfig
 import java.io.File
 import java.io.FileOutputStream
 
@@ -30,7 +30,7 @@ object ImageRenderer {
     private val EMOJI_SIZE_PX = CANVAS_SIZE_PX * 0.14f
     private val EMOJI_MARGIN_PX = CANVAS_SIZE_PX * 0.06f
 
-    fun renderBitmap(context: Context, text: String, config: TextStyleConfig): Bitmap {
+    fun renderBitmap(context: Context, text: String, config: StyleConfig): Bitmap {
         val density = context.resources.displayMetrics.density
         val paddingPx = (config.paddingDp * density).toInt().coerceIn(0, CANVAS_SIZE_PX / 4)
         val maxContentSize = (CANVAS_SIZE_PX - paddingPx * 2).coerceAtLeast(1)
@@ -146,7 +146,7 @@ object ImageRenderer {
             .filter { it.isNotEmpty() }
             .maxOfOrNull { textPaint.measureText(it) } ?: 0f
 
-    fun generateStyledImageUri(context: Context, text: String, config: TextStyleConfig): Uri {
+    fun generateStyledImageUri(context: Context, text: String, config: StyleConfig): Uri {
         val bitmap = renderBitmap(context, text, config)
 
         val imagesDir = File(context.cacheDir, "images").apply { mkdirs() }

@@ -17,8 +17,9 @@
     <string name="min_length_label">Longueur min.</string>
     <string name="max_length_label">Longueur max.</string>
 
-    <string name="style1_section_title">Style 1 — premier bouton flottant</string>
-    <string name="style2_section_title">Style 2 — second bouton flottant</string>
+    <string name="style_section_title_format">Style %1$d</string>
+    <string name="add_style_button">Ajouter un style</string>
+    <string name="remove_style_button">Supprimer le style</string>
 
     <string name="preview_unavailable">Aperçu indisponible</string>
     <string name="preview_content_description">Aperçu du style</string>

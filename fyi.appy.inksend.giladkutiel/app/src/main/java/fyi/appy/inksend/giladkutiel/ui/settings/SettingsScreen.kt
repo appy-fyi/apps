@@ -53,9 +53,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.os.LocaleListCompat
 import fyi.appy.inksend.giladkutiel.R
 import fyi.appy.inksend.giladkutiel.data.model.FontChoice
-import fyi.appy.inksend.giladkutiel.data.model.SecondaryStyleConfig
-import fyi.appy.inksend.giladkutiel.data.model.TextStyleConfig
-import fyi.appy.inksend.giladkutiel.data.model.toRenderConfig
+import fyi.appy.inksend.giladkutiel.data.model.StyleConfig
 import fyi.appy.inksend.giladkutiel.engine.ImageRenderer
 import kotlinx.coroutines.Dispatchers
 
@@ -70,8 +68,8 @@ fun SettingsScreen(
     onRequestOverlayPermission: () -> Unit,
     onRequestAccessibilityPermission: () -> Unit,
 ) {
-    val config by viewModel.uiState.collectAsState()
-    val secondaryConfig by viewModel.secondaryUiState.collectAsState()
+    val styles by viewModel.stylesState.collectAsState()
+    val trigger by viewModel.triggerState.collectAsState()
     val scrollState = rememberScrollState()
 
     Scaffold(
@@ -96,102 +94,98 @@ fun SettingsScreen(
             Text(stringResource(R.string.text_length_triggers_title), style = MaterialTheme.typography.titleMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
-                    value = config.minTextLength.toString(),
+                    value = trigger.minTextLength.toString(),
                     onValueChange = { raw ->
                         val value = raw.toIntOrNull() ?: return@OutlinedTextField
-                        viewModel.updateConfig(config.copy(minTextLength = value))
+                        viewModel.updateTriggerConfig(trigger.copy(minTextLength = value))
                     },
                     label = { Text(stringResource(R.string.min_length_label)) },
                     modifier = Modifier.weight(1f),
                 )
                 OutlinedTextField(
-                    value = config.maxTextLength.toString(),
+                    value = trigger.maxTextLength.toString(),
                     onValueChange = { raw ->
                         val value = raw.toIntOrNull() ?: return@OutlinedTextField
-                        viewModel.updateConfig(config.copy(maxTextLength = value))
+                        viewModel.updateTriggerConfig(trigger.copy(maxTextLength = value))
                     },
                     label = { Text(stringResource(R.string.max_length_label)) },
                     modifier = Modifier.weight(1f),
                 )
             }
 
-            Text(
-                stringResource(R.string.style1_section_title),
-                style = MaterialTheme.typography.titleMedium,
-            )
-            LivePreview(config)
-            FontPicker(
-                selected = config.font,
-                onSelect = { viewModel.updateConfig(config.copy(font = it)) },
-            )
-            EmojiPicker(
-                selected = config.emoji,
-                onSelect = { viewModel.updateConfig(config.copy(emoji = it)) },
-            )
-            ColorPicker(
-                label = stringResource(R.string.text_color_label),
-                selected = config.textColorHex,
-                onSelect = { viewModel.updateConfig(config.copy(textColorHex = it)) },
-            )
-            ColorPicker(
-                label = stringResource(R.string.background_color_label),
-                selected = config.backgroundColorHex,
-                onSelect = { viewModel.updateConfig(config.copy(backgroundColorHex = it)) },
-            )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(R.string.gradient_toggle_label))
-                Box(modifier = Modifier.weight(1f))
-                Switch(
-                    checked = config.isGradientEnabled,
-                    onCheckedChange = { viewModel.updateConfig(config.copy(isGradientEnabled = it)) },
-                )
-            }
-            if (config.isGradientEnabled) {
-                ColorPicker(
-                    label = stringResource(R.string.gradient_end_color_label),
-                    selected = config.gradientEndColorHex,
-                    onSelect = { viewModel.updateConfig(config.copy(gradientEndColorHex = it)) },
+            styles.forEachIndexed { index, style ->
+                StyleSection(
+                    index = index,
+                    style = style,
+                    canRemove = styles.size > 1,
+                    onUpdate = { viewModel.updateStyle(it) },
+                    onRemove = { viewModel.removeStyle(style.id) },
                 )
             }
 
-            Text(
-                stringResource(R.string.style2_section_title),
-                style = MaterialTheme.typography.titleMedium,
-            )
-            LivePreview(secondaryConfig.toRenderConfig(config))
+            Button(onClick = { viewModel.addStyle() }, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.add_style_button))
+            }
+        }
+    }
+}
+
+/** One style's full set of editable controls, plus its own remove button when more than one style exists. */
+@Composable
+private fun StyleSection(
+    index: Int,
+    style: StyleConfig,
+    canRemove: Boolean,
+    onUpdate: (StyleConfig) -> Unit,
+    onRemove: () -> Unit,
+) {
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    stringResource(R.string.style_section_title_format, index + 1),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f),
+                )
+                if (canRemove) {
+                    Button(onClick = onRemove) { Text(stringResource(R.string.remove_style_button)) }
+                }
+            }
+            LivePreview(style)
             FontPicker(
-                selected = secondaryConfig.font,
-                onSelect = { viewModel.updateSecondaryConfig(secondaryConfig.copy(font = it)) },
+                selected = style.font,
+                onSelect = { onUpdate(style.copy(font = it)) },
             )
             EmojiPicker(
-                selected = secondaryConfig.emoji,
-                onSelect = { viewModel.updateSecondaryConfig(secondaryConfig.copy(emoji = it)) },
+                selected = style.emoji,
+                onSelect = { onUpdate(style.copy(emoji = it)) },
             )
             ColorPicker(
                 label = stringResource(R.string.text_color_label),
-                selected = secondaryConfig.textColorHex,
-                onSelect = { viewModel.updateSecondaryConfig(secondaryConfig.copy(textColorHex = it)) },
+                selected = style.textColorHex,
+                onSelect = { onUpdate(style.copy(textColorHex = it)) },
             )
             ColorPicker(
                 label = stringResource(R.string.background_color_label),
-                selected = secondaryConfig.backgroundColorHex,
-                onSelect = { viewModel.updateSecondaryConfig(secondaryConfig.copy(backgroundColorHex = it)) },
+                selected = style.backgroundColorHex,
+                onSelect = { onUpdate(style.copy(backgroundColorHex = it)) },
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(stringResource(R.string.gradient_toggle_label))
                 Box(modifier = Modifier.weight(1f))
                 Switch(
-                    checked = secondaryConfig.isGradientEnabled,
-                    onCheckedChange = { viewModel.updateSecondaryConfig(secondaryConfig.copy(isGradientEnabled = it)) },
+                    checked = style.isGradientEnabled,
+                    onCheckedChange = { onUpdate(style.copy(isGradientEnabled = it)) },
                 )
             }
-            if (secondaryConfig.isGradientEnabled) {
+            if (style.isGradientEnabled) {
                 ColorPicker(
                     label = stringResource(R.string.gradient_end_color_label),
-                    selected = secondaryConfig.gradientEndColorHex,
-                    onSelect = {
-                        viewModel.updateSecondaryConfig(secondaryConfig.copy(gradientEndColorHex = it))
-                    },
+                    selected = style.gradientEndColorHex,
+                    onSelect = { onUpdate(style.copy(gradientEndColorHex = it)) },
                 )
             }
         }
@@ -475,7 +469,7 @@ private fun isLightColor(color: Color): Boolean {
 }
 
 @Composable
-private fun LivePreview(config: TextStyleConfig) {
+private fun LivePreview(config: StyleConfig) {
     val context = LocalContext.current
     val bitmapState = produceState<Bitmap?>(initialValue = null, config) {
         value = try {

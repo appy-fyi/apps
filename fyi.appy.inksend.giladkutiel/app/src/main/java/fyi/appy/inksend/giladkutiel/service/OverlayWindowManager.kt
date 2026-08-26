@@ -2,7 +2,9 @@ package fyi.appy.inksend.giladkutiel.service
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Color
 import android.graphics.PixelFormat
+import android.graphics.drawable.GradientDrawable
 import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
@@ -15,6 +17,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import fyi.appy.inksend.giladkutiel.R
+import fyi.appy.inksend.giladkutiel.data.model.StyleConfig
 import kotlin.math.abs
 
 private const val TAG = "InkSendOverlay"
@@ -23,21 +26,22 @@ private const val BUTTON_SPACING_DP = 12
 private const val DEFAULT_MARGIN_END_PX = 48
 private const val DEFAULT_MARGIN_BOTTOM_PX = 220
 private const val EMOJI_TEXT_SIZE_SP = 26f
+private const val FALLBACK_BUTTON_COLOR = 0xFF5B47E0.toInt()
 
 /**
- * Inflates, positions, and tears down the pair of floating overlay style buttons via
- * [WindowManager]. Both buttons live inside one draggable container, stacked vertically,
- * so a single drag moves the pair together while each button keeps its own tap target.
+ * Inflates, positions, and tears down one floating overlay button per saved style via
+ * [WindowManager]. All buttons live inside one draggable container, stacked vertically,
+ * so a single drag moves the whole set together while each button keeps its own tap target.
  * Each button's icon is that style's configured emoji badge (falling back to a generic
- * icon when the style's badge is set to "None"), read fresh at [showOverlay] time so the
- * buttons always reflect the latest saved styles.
+ * icon when the style's badge is set to "None"); its background circle is tinted with that
+ * style's own background color so buttons stay visually distinct at any list length. Styles
+ * are read fresh from [stylesProvider] at [showOverlay] time so the buttons always reflect
+ * the latest saved list.
  */
 class OverlayWindowManager(
     private val context: Context,
-    private val primaryEmoji: () -> String,
-    private val secondaryEmoji: () -> String,
-    private val onPrimaryClicked: () -> Unit,
-    private val onSecondaryClicked: () -> Unit,
+    private val stylesProvider: () -> List<StyleConfig>,
+    private val onStyleClicked: (StyleConfig) -> Unit,
 ) {
     private val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
@@ -51,11 +55,13 @@ class OverlayWindowManager(
     @SuppressLint("InflateParams", "ClickableViewAccessibility")
     fun showOverlay() {
         if (isShowing) return
+        val styles = stylesProvider()
+        if (styles.isEmpty()) return
 
         val density = context.resources.displayMetrics.density
         val buttonSizePx = (BUTTON_SIZE_DP * density).toInt()
         val spacingPx = (BUTTON_SPACING_DP * density).toInt()
-        val containerHeightPx = buttonSizePx * 2 + spacingPx
+        val containerHeightPx = buttonSizePx * styles.size + spacingPx * (styles.size - 1)
 
         val params = WindowManager.LayoutParams(
             buttonSizePx,
@@ -73,32 +79,28 @@ class OverlayWindowManager(
 
         val paddingPx = (12 * density).toInt()
         val dragListener = createDragListener(params)
-        val primaryButton = createStyleButton(
-            buttonSizePx = buttonSizePx,
-            paddingPx = paddingPx,
-            backgroundRes = R.drawable.bg_overlay_button,
-            emoji = primaryEmoji(),
-            onClick = onPrimaryClicked,
-            touchListener = dragListener,
-        )
-        val secondaryButton = createStyleButton(
-            buttonSizePx = buttonSizePx,
-            paddingPx = paddingPx,
-            backgroundRes = R.drawable.bg_overlay_button_secondary,
-            emoji = secondaryEmoji(),
-            onClick = onSecondaryClicked,
-            touchListener = dragListener,
-        )
-        val spacer = View(context).apply {
-            layoutParams = LinearLayout.LayoutParams(buttonSizePx, spacingPx)
-        }
-
         val container = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             layoutParams = ViewGroup.LayoutParams(buttonSizePx, containerHeightPx)
-            addView(primaryButton)
-            addView(spacer)
-            addView(secondaryButton)
+        }
+        styles.forEachIndexed { index, style ->
+            container.addView(
+                createStyleButton(
+                    buttonSizePx = buttonSizePx,
+                    paddingPx = paddingPx,
+                    backgroundColor = colorForStyle(style),
+                    emoji = style.emoji,
+                    onClick = { onStyleClicked(style) },
+                    touchListener = dragListener,
+                ),
+            )
+            if (index != styles.lastIndex) {
+                container.addView(
+                    View(context).apply {
+                        layoutParams = LinearLayout.LayoutParams(buttonSizePx, spacingPx)
+                    },
+                )
+            }
         }
 
         overlayView = container
@@ -111,6 +113,13 @@ class OverlayWindowManager(
         }
     }
 
+    private fun colorForStyle(style: StyleConfig): Int =
+        try {
+            Color.parseColor(style.backgroundColorHex)
+        } catch (_: IllegalArgumentException) {
+            FALLBACK_BUTTON_COLOR
+        }
+
     /**
      * A button's icon is its style's emoji when set, otherwise the generic fallback icon —
      * both layered in the same [buttonSizePx] square and centered identically so swapping
@@ -119,7 +128,7 @@ class OverlayWindowManager(
     private fun createStyleButton(
         buttonSizePx: Int,
         paddingPx: Int,
-        backgroundRes: Int,
+        backgroundColor: Int,
         emoji: String,
         onClick: () -> Unit,
         touchListener: View.OnTouchListener,
@@ -142,9 +151,13 @@ class OverlayWindowManager(
             gravity = Gravity.CENTER
             visibility = if (emoji.isBlank()) View.GONE else View.VISIBLE
         }
+        val buttonBackground = GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            setColor(backgroundColor)
+        }
         return FrameLayout(context).apply {
             layoutParams = LinearLayout.LayoutParams(buttonSizePx, buttonSizePx)
-            setBackgroundResource(backgroundRes)
+            background = buttonBackground
             setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
             addView(fallbackIcon)
             addView(emojiLabel)

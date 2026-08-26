@@ -17,8 +17,9 @@
     <string name="min_length_label">Mindestlänge</string>
     <string name="max_length_label">Maximallänge</string>
 
-    <string name="style1_section_title">Stil 1 — erster Overlay-Button</string>
-    <string name="style2_section_title">Stil 2 — zweiter Overlay-Button</string>
+    <string name="style_section_title_format">Stil %1$d</string>
+    <string name="add_style_button">Stil hinzufügen</string>
+    <string name="remove_style_button">Stil entfernen</string>
 
     <string name="preview_unavailable">Vorschau nicht verfügbar</string>
     <string name="preview_content_description">Stilvorschau</string>

@@ -5,7 +5,7 @@ import android.graphics.Typeface
 import android.text.TextPaint
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import fyi.appy.inksend.giladkutiel.data.model.TextStyleConfig
+import fyi.appy.inksend.giladkutiel.data.model.StyleConfig
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -17,7 +17,7 @@ class ImageRendererTest {
 
     @Test
     fun bitmapIsAlwaysAFixed512SquareRegardlessOfTextLength() {
-        val config = TextStyleConfig()
+        val config = StyleConfig()
         val shortBitmap = ImageRenderer.renderBitmap(context, "Hi", config)
         val longText = "This is a much longer message that should wrap across several lines " +
             "of styled text without overflowing the rendered bitmap boundaries."
@@ -29,7 +29,7 @@ class ImageRendererTest {
 
     @Test
     fun invalidHexColorsFallBackInsteadOfCrashing() {
-        val config = TextStyleConfig(textColorHex = "not-a-color", backgroundColorHex = "also-bad")
+        val config = StyleConfig(textColorHex = "not-a-color", backgroundColorHex = "also-bad")
         val bitmap = ImageRenderer.renderBitmap(context, "Fallback check", config)
 
         assertTrue(bitmap.width > 0 && bitmap.height > 0)
@@ -37,8 +37,8 @@ class ImageRendererTest {
 
     @Test
     fun rendersSuccessfullyWithAndWithoutAnEmojiBadge() {
-        val withEmoji = ImageRenderer.renderBitmap(context, "Hello", TextStyleConfig(emoji = "✨"))
-        val withoutEmoji = ImageRenderer.renderBitmap(context, "Hello", TextStyleConfig(emoji = ""))
+        val withEmoji = ImageRenderer.renderBitmap(context, "Hello", StyleConfig(emoji = "✨"))
+        val withoutEmoji = ImageRenderer.renderBitmap(context, "Hello", StyleConfig(emoji = ""))
 
         assertTrue(withEmoji.width == 512 && withEmoji.height == 512)
         assertTrue(withoutEmoji.width == 512 && withoutEmoji.height == 512)
@@ -46,7 +46,7 @@ class ImageRendererTest {
 
     @Test
     fun longTextWrapsOnlyAtSpacesNotMidWord() {
-        val config = TextStyleConfig()
+        val config = StyleConfig()
         val text = "The quick brown fox jumps over the lazy dog while wandering through " +
             "a sunlit meadow full of wildflowers and tall grass."
         val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {

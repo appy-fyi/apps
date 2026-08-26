@@ -3,8 +3,9 @@ package fyi.appy.inksend.giladkutiel.ui.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import fyi.appy.inksend.giladkutiel.data.model.SecondaryStyleConfig
-import fyi.appy.inksend.giladkutiel.data.model.TextStyleConfig
+import fyi.appy.inksend.giladkutiel.data.model.DEFAULT_STYLES
+import fyi.appy.inksend.giladkutiel.data.model.StyleConfig
+import fyi.appy.inksend.giladkutiel.data.model.TriggerConfig
 import fyi.appy.inksend.giladkutiel.data.repository.SettingsRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -17,21 +18,37 @@ class SettingsViewModel @Inject constructor(
     private val repository: SettingsRepository,
 ) : ViewModel() {
 
-    val uiState: StateFlow<TextStyleConfig> = repository.styleConfigFlow
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TextStyleConfig())
+    val stylesState: StateFlow<List<StyleConfig>> = repository.stylesFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DEFAULT_STYLES)
 
-    val secondaryUiState: StateFlow<SecondaryStyleConfig> = repository.secondaryStyleConfigFlow
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SecondaryStyleConfig())
+    val triggerState: StateFlow<TriggerConfig> = repository.triggerConfigFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TriggerConfig())
 
-    fun updateConfig(newConfig: TextStyleConfig) {
+    fun updateStyle(updated: StyleConfig) {
         viewModelScope.launch {
-            repository.updateConfig(newConfig)
+            repository.updateStyles(stylesState.value.map { if (it.id == updated.id) updated else it })
         }
     }
 
-    fun updateSecondaryConfig(newConfig: SecondaryStyleConfig) {
+    fun addStyle() {
         viewModelScope.launch {
-            repository.updateSecondaryConfig(newConfig)
+            repository.updateStyles(stylesState.value + StyleConfig())
+        }
+    }
+
+    /** No-ops if [id] is the last remaining style — the overlay always needs at least one. */
+    fun removeStyle(id: String) {
+        viewModelScope.launch {
+            val remaining = stylesState.value.filterNot { it.id == id }
+            if (remaining.isNotEmpty()) {
+                repository.updateStyles(remaining)
+            }
+        }
+    }
+
+    fun updateTriggerConfig(config: TriggerConfig) {
+        viewModelScope.launch {
+            repository.updateTriggerConfig(config)
         }
     }
 }

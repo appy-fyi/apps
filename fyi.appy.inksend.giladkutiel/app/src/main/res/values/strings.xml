@@ -17,8 +17,9 @@
     <string name="min_length_label">Min Length</string>
     <string name="max_length_label">Max Length</string>
 
-    <string name="style1_section_title">Style 1 — first overlay button</string>
-    <string name="style2_section_title">Style 2 — second overlay button</string>
+    <string name="style_section_title_format">Style %1$d</string>
+    <string name="add_style_button">Add Style</string>
+    <string name="remove_style_button">Remove Style</string>
 
     <string name="preview_unavailable">Preview unavailable</string>
     <string name="preview_content_description">Style preview</string>
