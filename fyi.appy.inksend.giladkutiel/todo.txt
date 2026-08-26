@@ -1,4 +1,6 @@
 TODO:
+    Button:
+        - Make a loading indicator for the button when busy (e.g. translating, downloading language model, etc...)
 DONE:
     Auto Style:
         Do not keep a dictionary per language, always translate the text to English then use the English dictionary to select the style.
