@@ -23,7 +23,6 @@ class SettingsRepository @Inject constructor(
 ) {
     private object Keys {
         val FONT = stringPreferencesKey("font")
-        val FONT_SIZE = floatPreferencesKey("font_size")
         val TEXT_COLOR = stringPreferencesKey("text_color")
         val BG_COLOR = stringPreferencesKey("bg_color")
         val GRADIENT_ENABLED = booleanPreferencesKey("gradient_enabled")
@@ -39,7 +38,6 @@ class SettingsRepository @Inject constructor(
         TextStyleConfig(
             font = prefs[Keys.FONT]?.let { name -> FontChoice.entries.find { it.name == name } }
                 ?: defaults.font,
-            fontSizeSp = prefs[Keys.FONT_SIZE] ?: defaults.fontSizeSp,
             textColorHex = prefs[Keys.TEXT_COLOR] ?: defaults.textColorHex,
             backgroundColorHex = prefs[Keys.BG_COLOR] ?: defaults.backgroundColorHex,
             isGradientEnabled = prefs[Keys.GRADIENT_ENABLED] ?: defaults.isGradientEnabled,
@@ -54,7 +52,6 @@ class SettingsRepository @Inject constructor(
     suspend fun updateConfig(config: TextStyleConfig) {
         context.dataStore.edit { prefs ->
             prefs[Keys.FONT] = config.font.name
-            prefs[Keys.FONT_SIZE] = config.fontSizeSp
             prefs[Keys.TEXT_COLOR] = config.textColorHex
             prefs[Keys.BG_COLOR] = config.backgroundColorHex
             prefs[Keys.GRADIENT_ENABLED] = config.isGradientEnabled

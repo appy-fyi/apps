@@ -6,7 +6,6 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.LinearGradient
 import android.graphics.Paint
-import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.Typeface
 import android.net.Uri
@@ -24,49 +23,40 @@ import java.io.FileOutputStream
  */
 object ImageRenderer {
 
-    private const val MAX_CANVAS_WIDTH_DP = 800
-    private const val MIN_CANVAS_WIDTH_DP = 250
+    private const val CANVAS_SIZE_PX = 512
+    private const val MIN_FONT_SIZE_PX = 12f
+    private const val MAX_FONT_SIZE_PX = 320f
+    private const val FONT_SIZE_SEARCH_STEPS = 20
 
     fun renderBitmap(context: Context, text: String, config: TextStyleConfig): Bitmap {
         val density = context.resources.displayMetrics.density
-        val paddingPx = (config.paddingDp * density).toInt()
-        val cornerRadiusPx = config.cornerRadiusDp * density
+        val paddingPx = (config.paddingDp * density).toInt().coerceIn(0, CANVAS_SIZE_PX / 4)
+        val maxContentSize = (CANVAS_SIZE_PX - paddingPx * 2).coerceAtLeast(1)
 
         val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             color = parseColorOrDefault(config.textColorHex, Color.WHITE)
-            textSize = config.fontSizeSp * density
             typeface = Typeface.create(config.font.typefaceName, Typeface.BOLD)
         }
 
-        val maxCanvasWidthPx = (MAX_CANVAS_WIDTH_DP * density).toInt()
-        val minCanvasWidthPx = (MIN_CANVAS_WIDTH_DP * density).toInt()
-        val maxContentWidth = (maxCanvasWidthPx - paddingPx * 2).coerceAtLeast(1)
-
-        // Measure the text's own ideal width first so short strings get a tight-fit
-        // box instead of always filling the max canvas width.
-        val desiredWidth = Layout.getDesiredWidth(text, textPaint).toInt().coerceIn(1, maxContentWidth)
+        // Always render onto a fixed 512x512 square, so font size is the only free
+        // variable: binary-search the largest size whose wrapped layout still fits.
+        textPaint.textSize = findFillingFontSizePx(text, textPaint, maxContentSize, maxContentSize)
 
         val staticLayout = StaticLayout.Builder
-            .obtain(text, 0, text.length, textPaint, desiredWidth)
+            .obtain(text, 0, text.length, textPaint, maxContentSize)
             .setAlignment(Layout.Alignment.ALIGN_CENTER)
             .setLineSpacing(0f, 1.2f)
             .setIncludePad(true)
             .build()
 
-        val contentWidth = desiredWidth
-        val contentHeight = staticLayout.height
-
-        val finalWidth = (contentWidth + paddingPx * 2).coerceAtLeast(minCanvasWidthPx)
-        val finalHeight = contentHeight + paddingPx * 2
-
-        val bitmap = Bitmap.createBitmap(finalWidth, finalHeight, Bitmap.Config.ARGB_8888)
+        val bitmap = Bitmap.createBitmap(CANVAS_SIZE_PX, CANVAS_SIZE_PX, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
         val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style = Paint.Style.FILL
             if (config.isGradientEnabled) {
                 shader = LinearGradient(
-                    0f, 0f, finalWidth.toFloat(), finalHeight.toFloat(),
+                    0f, 0f, CANVAS_SIZE_PX.toFloat(), CANVAS_SIZE_PX.toFloat(),
                     parseColorOrDefault(config.backgroundColorHex, Color.DKGRAY),
                     parseColorOrDefault(config.gradientEndColorHex, Color.DKGRAY),
                     Shader.TileMode.CLAMP,
@@ -76,17 +66,42 @@ object ImageRenderer {
             }
         }
 
-        val rect = RectF(0f, 0f, finalWidth.toFloat(), finalHeight.toFloat())
-        canvas.drawRoundRect(rect, cornerRadiusPx, cornerRadiusPx, bgPaint)
+        // Full square, no border radius.
+        canvas.drawRect(0f, 0f, CANVAS_SIZE_PX.toFloat(), CANVAS_SIZE_PX.toFloat(), bgPaint)
 
-        // Center the (possibly narrower-than-canvas) text block inside the canvas.
-        val xOffset = (finalWidth - contentWidth) / 2f
+        // Center the text block both horizontally and vertically inside the square.
+        val xOffset = paddingPx.toFloat()
+        val yOffset = ((CANVAS_SIZE_PX - staticLayout.height) / 2f).coerceAtLeast(0f)
         canvas.save()
-        canvas.translate(xOffset, paddingPx.toFloat())
+        canvas.translate(xOffset, yOffset)
         staticLayout.draw(canvas)
         canvas.restore()
 
         return bitmap
+    }
+
+    /** Binary-searches the largest text size (in px) whose wrapped layout fits within [maxWidth]x[maxHeight]. */
+    private fun findFillingFontSizePx(text: String, textPaint: TextPaint, maxWidth: Int, maxHeight: Int): Float {
+        var low = MIN_FONT_SIZE_PX
+        var high = MAX_FONT_SIZE_PX
+        var best = low
+        repeat(FONT_SIZE_SEARCH_STEPS) {
+            val mid = (low + high) / 2f
+            textPaint.textSize = mid
+            val layout = StaticLayout.Builder
+                .obtain(text, 0, text.length, textPaint, maxWidth)
+                .setAlignment(Layout.Alignment.ALIGN_CENTER)
+                .setLineSpacing(0f, 1.2f)
+                .setIncludePad(true)
+                .build()
+            if (layout.height <= maxHeight) {
+                best = mid
+                low = mid
+            } else {
+                high = mid
+            }
+        }
+        return best
     }
 
     fun generateStyledImageUri(context: Context, text: String, config: TextStyleConfig): Uri {

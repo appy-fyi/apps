@@ -24,7 +24,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -100,19 +99,11 @@ fun SettingsScreen(
                 )
             }
 
-            Text("Font & Size", style = MaterialTheme.typography.titleMedium)
+            Text("Font", style = MaterialTheme.typography.titleMedium)
             FontPicker(
                 selected = config.font,
                 onSelect = { viewModel.updateConfig(config.copy(font = it)) },
             )
-            Column {
-                Text("Font size: ${config.fontSizeSp.toInt()}sp")
-                Slider(
-                    value = config.fontSizeSp,
-                    onValueChange = { viewModel.updateConfig(config.copy(fontSizeSp = it)) },
-                    valueRange = 12f..64f,
-                )
-            }
 
             Text("Styling & Colors", style = MaterialTheme.typography.titleMedium)
             HexColorField(

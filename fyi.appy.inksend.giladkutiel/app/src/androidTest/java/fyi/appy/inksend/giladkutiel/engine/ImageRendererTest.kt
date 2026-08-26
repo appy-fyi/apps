@@ -13,24 +13,15 @@ class ImageRendererTest {
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
 
     @Test
-    fun longTextWrapsIntoMultipleLinesWithoutOverflowingBounds() {
+    fun bitmapIsAlwaysAFixed512SquareRegardlessOfTextLength() {
         val config = TextStyleConfig()
         val shortBitmap = ImageRenderer.renderBitmap(context, "Hi", config)
         val longText = "This is a much longer message that should wrap across several lines " +
             "of styled text without overflowing the rendered bitmap boundaries."
         val longBitmap = ImageRenderer.renderBitmap(context, longText, config)
 
-        assertTrue("long text should render a taller bitmap", longBitmap.height > shortBitmap.height)
-        assertTrue("width should stay within the max canvas bound", longBitmap.width <= 800 * context.resources.displayMetrics.density + 1)
-    }
-
-    @Test
-    fun shortTextRendersATightFitBitmapNotTheFullMaxWidth() {
-        val config = TextStyleConfig()
-        val bitmap = ImageRenderer.renderBitmap(context, "Hi", config)
-        val maxWidthPx = (800 * context.resources.displayMetrics.density).toInt()
-
-        assertTrue("short text should not need the full max canvas width", bitmap.width < maxWidthPx)
+        assertTrue("short bitmap should be a 512x512 square", shortBitmap.width == 512 && shortBitmap.height == 512)
+        assertTrue("long bitmap should be a 512x512 square", longBitmap.width == 512 && longBitmap.height == 512)
     }
 
     @Test

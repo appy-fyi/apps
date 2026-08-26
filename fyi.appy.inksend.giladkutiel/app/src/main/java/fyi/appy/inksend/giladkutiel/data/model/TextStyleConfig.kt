@@ -10,7 +10,6 @@ enum class FontChoice(val typefaceName: String, val label: String) {
 
 data class TextStyleConfig(
     val font: FontChoice = FontChoice.SANS_SERIF,
-    val fontSizeSp: Float = 28f,
     val textColorHex: String = "#FFFFFF",
     val backgroundColorHex: String = "#1E1E2E",
     val isGradientEnabled: Boolean = true,
