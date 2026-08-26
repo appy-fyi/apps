@@ -26,8 +26,8 @@
       "key_ui_elements": [
         "Required System Permissions card with an Overlay row and an Accessibility Service row, each showing a granted/not-granted status icon and an 'Open' button that deep-links to the matching system Settings screen",
         "Min/Max text length fields that gate when the floating overlay buttons appear (shared by both styles)",
-        "Style 1 section: live preview, font picker (Sans Serif / Serif / Monospace / Cursive), an emoji badge text field (optional, rendered in the image's top-left corner), text/background color hex fields with inline swatch + validation, gradient toggle and gradient end-color field — font size is not user-configurable; it is auto-computed from text length",
-        "Style 2 section: an identical set of controls, including its own emoji badge field, for the second overlay button's independent style"
+        "Style 1 section: live preview, font picker (Sans Serif / Serif / Monospace / Cursive), an emoji badge picker (optional, tap-to-select from a small predefined palette plus a None option, rendered in the image's top-left corner), text/background color hex fields with inline swatch + validation, gradient toggle and gradient end-color field — font size is not user-configurable; it is auto-computed from text length",
+        "Style 2 section: an identical set of controls, including its own emoji badge picker, for the second overlay button's independent style"
       ]
     }
   ],
@@ -54,12 +54,13 @@
       "acceptance_criteria": [
         "The rendered bitmap is always exactly 512x512, regardless of text length.",
         "Long strings wrap across multiple lines without overflowing the bitmap bounds, and font size shrinks automatically to fit.",
+        "Line wrapping only breaks at whitespace between words, never in the middle of a word, for any text whose individual words fit within the padded content width.",
         "Text is centered both horizontally and vertically within the square.",
         "An invalid hex color string falls back to a default color instead of crashing.",
         "When a style's emoji field is non-blank, that emoji is drawn as a badge in the image's top-left corner, on top of the main text; a blank emoji field draws no badge.",
         "The emoji glyph renders as a proper glyph (color emoji on modern devices) rather than a tofu box, regardless of which of the four bundled fonts the style uses."
       ],
-      "implementation_notes": "ImageRenderer.renderBitmap() binary-searches the largest text size (12px-320px) whose StaticLayout still fits the padded content area, builds the StaticLayout at that size, and draws it centered onto a fixed 512x512 Canvas-backed Bitmap with a solid or LinearGradient square background (no rounded corners — config.cornerRadiusDp is no longer read). fontSizeSp has been removed entirely from TextStyleConfig, SettingsRepository, and the Settings UI, since font size is now always auto-computed. If config.emoji is non-blank, drawEmojiBadge() draws it last (on top of the main text) near the top-left corner using Typeface.DEFAULT rather than the style's own FontChoice — Android resolves emoji code points through the system-wide font fallback chain regardless of typeface family, so this reliably reaches the system's (vector/COLRv1 on modern devices) color emoji font instead of the four bundled type families needing their own emoji glyph coverage. generateStyledImageUri() writes the PNG to cacheDir/images and returns a FileProvider content URI."
+      "implementation_notes": "ImageRenderer.renderBitmap() delegates to buildFittedLayout(), which binary-searches the largest text size (12px-320px) whose StaticLayout both fits the padded content area's height AND keeps every whitespace-delimited word's measured width within the content width — a height-only check would accept sizes that only 'fit' by letting Android's line breaker split an overlong word mid-way, since the breaker forcibly wraps any word wider than the line rather than overflowing it. The chosen-size StaticLayout is then drawn centered onto a fixed 512x512 Canvas-backed Bitmap with a solid or LinearGradient square background (no rounded corners — config.cornerRadiusDp is no longer read). fontSizeSp has been removed entirely from TextStyleConfig, SettingsRepository, and the Settings UI, since font size is now always auto-computed. If config.emoji is non-blank, drawEmojiBadge() draws it last (on top of the main text) near the top-left corner using Typeface.DEFAULT rather than the style's own FontChoice — Android resolves emoji code points through the system-wide font fallback chain regardless of typeface family, so this reliably reaches the system's (vector/COLRv1 on modern devices) color emoji font instead of the four bundled type families needing their own emoji glyph coverage. generateStyledImageUri() writes the PNG to cacheDir/images and returns a FileProvider content URI."
     },
     {
       "name": "Clipboard Copy & Field Clear",
@@ -95,7 +96,7 @@
         "Settings for both styles persist independently across app restarts.",
         "An invalid hex color shows an inline error state on the field instead of silently discarding the input."
       ],
-      "implementation_notes": "SettingsRepository wraps a single Preferences DataStore (`user_settings`) exposing TextStyleConfig (Style 1) and SecondaryStyleConfig (Style 2, under style2_* keys) as separate Flows; SettingsViewModel exposes each as its own StateFlow via stateIn(WhileSubscribed(5000)). SettingsScreen's LivePreview composable calls ImageRenderer.renderBitmap() on Dispatchers.Default inside produceState(config) and renders the result via Image(bitmap.asImageBitmap()) — called once per style, with Style 2's preview built via SecondaryStyleConfig.toRenderConfig(primaryConfig)."
+      "implementation_notes": "SettingsRepository wraps a single Preferences DataStore (`user_settings`) exposing TextStyleConfig (Style 1) and SecondaryStyleConfig (Style 2, under style2_* keys) as separate Flows; SettingsViewModel exposes each as its own StateFlow via stateIn(WhileSubscribed(5000)). SettingsScreen's LivePreview composable calls ImageRenderer.renderBitmap() on Dispatchers.Default inside produceState(config) and renders the result via Image(bitmap.asImageBitmap()) — called once per style, with Style 2's preview built via SecondaryStyleConfig.toRenderConfig(primaryConfig). The emoji field is a tap-to-select EmojiPicker (a FlowRow of EmojiChoiceChip boxes) over a fixed EMOJI_BADGE_CHOICES palette of 16 popular, category-diverse emoji plus a None chip that sets emoji to blank — not a free-text field — so the persisted emoji string is always either blank or one of the palette entries."
     }
   ],
   "non_goals": [
@@ -125,6 +126,15 @@
         "Compare the resulting bitmap dimensions."
       ],
       "expected": "Both the short and long string bitmaps are exactly 512x512, regardless of text length."
+    },
+    {
+      "kind": "instrumented",
+      "scenario": "Line wrapping never breaks a word mid-way",
+      "steps": [
+        "Build the fitted StaticLayout (via ImageRenderer.buildFittedLayout) for a multi-word sentence long enough to wrap across several lines.",
+        "For each line break, check whether the character immediately before and after the break are both non-whitespace."
+      ],
+      "expected": "Every line break falls on whitespace between words; no line ends mid-word."
     },
     {
       "kind": "instrumented",

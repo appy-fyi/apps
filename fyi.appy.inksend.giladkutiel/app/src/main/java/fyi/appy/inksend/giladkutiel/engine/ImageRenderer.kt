@@ -42,14 +42,7 @@ object ImageRenderer {
 
         // Always render onto a fixed 512x512 square, so font size is the only free
         // variable: binary-search the largest size whose wrapped layout still fits.
-        textPaint.textSize = findFillingFontSizePx(text, textPaint, maxContentSize, maxContentSize)
-
-        val staticLayout = StaticLayout.Builder
-            .obtain(text, 0, text.length, textPaint, maxContentSize)
-            .setAlignment(Layout.Alignment.ALIGN_CENTER)
-            .setLineSpacing(0f, 1.2f)
-            .setIncludePad(true)
-            .build()
+        val staticLayout = buildFittedLayout(text, textPaint, maxContentSize)
 
         val bitmap = Bitmap.createBitmap(CANVAS_SIZE_PX, CANVAS_SIZE_PX, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
@@ -102,7 +95,27 @@ object ImageRenderer {
         canvas.drawText(emoji, EMOJI_MARGIN_PX, baselineY, emojiPaint)
     }
 
-    /** Binary-searches the largest text size (in px) whose wrapped layout fits within [maxWidth]x[maxHeight]. */
+    /**
+     * Builds the largest-fitting [StaticLayout] for [text] within a [maxContentSize] square,
+     * choosing the font size via [findFillingFontSizePx] and wrapping at that size.
+     */
+    internal fun buildFittedLayout(text: String, textPaint: TextPaint, maxContentSize: Int): StaticLayout {
+        textPaint.textSize = findFillingFontSizePx(text, textPaint, maxContentSize, maxContentSize)
+        return StaticLayout.Builder
+            .obtain(text, 0, text.length, textPaint, maxContentSize)
+            .setAlignment(Layout.Alignment.ALIGN_CENTER)
+            .setLineSpacing(0f, 1.2f)
+            .setIncludePad(true)
+            .build()
+    }
+
+    /**
+     * Binary-searches the largest text size (in px) whose wrapped layout fits within
+     * [maxWidth]x[maxHeight] *and* whose widest single word still fits on one line — a plain
+     * height check alone would happily accept a size that only fits by breaking a word
+     * mid-way, since Android's line breaker splits a word that's wider than the line rather
+     * than overflow it.
+     */
     private fun findFillingFontSizePx(text: String, textPaint: TextPaint, maxWidth: Int, maxHeight: Int): Float {
         var low = MIN_FONT_SIZE_PX
         var high = MAX_FONT_SIZE_PX
@@ -116,7 +129,8 @@ object ImageRenderer {
                 .setLineSpacing(0f, 1.2f)
                 .setIncludePad(true)
                 .build()
-            if (layout.height <= maxHeight) {
+            val fits = layout.height <= maxHeight && widestWordWidth(text, textPaint) <= maxWidth
+            if (fits) {
                 best = mid
                 low = mid
             } else {
@@ -125,6 +139,12 @@ object ImageRenderer {
         }
         return best
     }
+
+    /** Widest rendered width, at [textPaint]'s current size, among [text]'s whitespace-delimited words. */
+    private fun widestWordWidth(text: String, textPaint: TextPaint): Float =
+        text.split(Regex("\\s+"))
+            .filter { it.isNotEmpty() }
+            .maxOfOrNull { textPaint.measureText(it) } ?: 0f
 
     fun generateStyledImageUri(context: Context, text: String, config: TextStyleConfig): Uri {
         val bitmap = renderBitmap(context, text, config)

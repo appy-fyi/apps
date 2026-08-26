@@ -3,15 +3,20 @@ package fyi.appy.inksend.giladkutiel.ui.settings
 import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
@@ -34,10 +39,12 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import fyi.appy.inksend.giladkutiel.data.model.FontChoice
 import fyi.appy.inksend.giladkutiel.data.model.SecondaryStyleConfig
 import fyi.appy.inksend.giladkutiel.data.model.TextStyleConfig
@@ -108,9 +115,9 @@ fun SettingsScreen(
                 selected = config.font,
                 onSelect = { viewModel.updateConfig(config.copy(font = it)) },
             )
-            EmojiField(
-                value = config.emoji,
-                onValueChange = { viewModel.updateConfig(config.copy(emoji = it)) },
+            EmojiPicker(
+                selected = config.emoji,
+                onSelect = { viewModel.updateConfig(config.copy(emoji = it)) },
             )
             HexColorField(
                 label = "Text Color (Hex)",
@@ -147,9 +154,9 @@ fun SettingsScreen(
                 selected = secondaryConfig.font,
                 onSelect = { viewModel.updateSecondaryConfig(secondaryConfig.copy(font = it)) },
             )
-            EmojiField(
-                value = secondaryConfig.emoji,
-                onValueChange = { viewModel.updateSecondaryConfig(secondaryConfig.copy(emoji = it)) },
+            EmojiPicker(
+                selected = secondaryConfig.emoji,
+                onSelect = { viewModel.updateSecondaryConfig(secondaryConfig.copy(emoji = it)) },
             )
             HexColorField(
                 label = "Text Color (Hex)",
@@ -228,9 +235,14 @@ private fun PermissionRow(granted: Boolean, label: String, onClick: () -> Unit) 
 @Composable
 private fun Spacer() = Box(modifier = Modifier.height(8.dp))
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun FontPicker(selected: FontChoice, onSelect: (FontChoice) -> Unit) {
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
         FontChoice.entries.forEach { choice ->
             val isSelected = choice == selected
             Button(
@@ -247,16 +259,63 @@ private fun FontPicker(selected: FontChoice, onSelect: (FontChoice) -> Unit) {
     }
 }
 
+/** A small, popular, and category-diverse set of emoji offered as badge choices. */
+private val EMOJI_BADGE_CHOICES = listOf(
+    "✨", "🎉", "❤️", "🔥", "😂", "👍", "🙌", "🎨",
+    "🌈", "⭐", "💯", "🎵", "🍀", "🌸", "📌", "🚀",
+)
+
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun EmojiField(value: String, onValueChange: (String) -> Unit) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = { new -> if (new.length <= 8) onValueChange(new) },
-        label = { Text("Emoji Badge (optional)") },
-        supportingText = { Text("Drawn in the top-left corner of the image. Leave blank for none.") },
-        singleLine = true,
-        modifier = Modifier.fillMaxWidth(),
-    )
+private fun EmojiPicker(selected: String, onSelect: (String) -> Unit) {
+    Column {
+        Text("Emoji Badge (optional)", style = MaterialTheme.typography.labelLarge)
+        Text(
+            "Drawn in the top-left corner of the image. Choose None for no badge.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Box(modifier = Modifier.height(4.dp))
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            EmojiChoiceChip(
+                content = { Text("None", style = MaterialTheme.typography.labelMedium) },
+                isSelected = selected.isBlank(),
+                onClick = { onSelect("") },
+            )
+            EMOJI_BADGE_CHOICES.forEach { emoji ->
+                EmojiChoiceChip(
+                    content = { Text(emoji, fontSize = 22.sp) },
+                    isSelected = selected == emoji,
+                    onClick = { onSelect(emoji) },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun EmojiChoiceChip(content: @Composable () -> Unit, isSelected: Boolean, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(10.dp))
+            .background(
+                if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+            )
+            .border(
+                width = if (isSelected) 2.dp else 1.dp,
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                shape = RoundedCornerShape(10.dp),
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        content()
+    }
 }
 
 @Composable
