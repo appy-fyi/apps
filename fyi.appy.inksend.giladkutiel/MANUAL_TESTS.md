@@ -18,6 +18,28 @@ run by a person on a real device.
 the in-app guided steps, confirmed by successfully typing in the live test box — unlike the
 incumbent's own reviews flagging missing Samsung setup directions.
 
+## On-device translation of the typed text (ML Kit)
+
+Mood detection scores an English-only dictionary, so non-English text is translated to English
+on-device first. The translation is async + needs a one-time per-language model download, which
+is not unit-testable.
+
+**Steps:**
+1. On a device with network, enable the accessibility + overlay permissions and open WhatsApp.
+2. Type a clearly non-English, clearly moody line — e.g. Spanish `te quiero mucho mi amor`
+   (romantic) or French `je suis vraiment furieux` (angry). Wait ~1s after you stop typing.
+3. Watch the floating button: within a second or two of the pause it should recolour/reglyph
+   to the matching mood (romantic pink + ❤️, angry red + 😤), not stay on the neutral 🫟.
+4. Tap it and confirm the rendered image uses that mood's look **and still shows your original
+   (non-English) text**, not an English translation.
+5. Turn off all networking and repeat step 2 with a *new* language whose model never downloaded:
+   the button stays neutral (translation unavailable) but emoji in the text still drive the mood,
+   and the app never blocks or crashes.
+
+**Expected:** after the brief debounce, non-English text drives the correct mood; the rendered
+image keeps the user's original text; offline with no model, it degrades quietly to neutral /
+emoji-only.
+
 ## One-Time Purchase, No Ads (Play Billing test-purchase flow)
 
 The `test_plan` billing scenario ("Trial/subscription confusion") is written as an instrumented

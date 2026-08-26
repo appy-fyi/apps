@@ -41,19 +41,23 @@ class AutoStyleTest {
     }
 
     @Test
-    fun `non-English keywords are detected`() {
-        assertEquals(Intent.ROMANTIC, AutoStyle.detectIntent("te quiero mucho"))          // es
-        assertEquals(Intent.SAD, AutoStyle.detectIntent("je suis très triste ce soir"))  // fr
-        assertEquals(Intent.GRATEFUL, AutoStyle.detectIntent("vielen dank für alles"))   // de
-        assertEquals(Intent.CELEBRATORY, AutoStyle.detectIntent("parabéns pelo novo emprego")) // pt
-        assertEquals(Intent.FUNNY, AutoStyle.detectIntent("यह बहुत मज़ेदार है"))          // hi
-        assertEquals(Intent.MOTIVATIONAL, AutoStyle.detectIntent("तुम कर सकते हो, हार मत मानो")) // hi phrase
+    fun `detection runs on English only - non-English text falls back to neutral`() {
+        // Non-English text reaches detectIntent already translated to English by the caller
+        // (TextTranslator); the dictionaries here carry English triggers only, so raw
+        // non-English input matches nothing.
+        assertEquals(Intent.NEUTRAL, AutoStyle.detectIntent("je suis très triste ce soir"))
+        assertEquals(Intent.NEUTRAL, AutoStyle.detectIntent("vielen dank für alles"))
+        // The English translation of that same text is what actually gets scored:
+        assertEquals(Intent.SAD, AutoStyle.detectIntent("i am very sad tonight"))
+        assertEquals(Intent.GRATEFUL, AutoStyle.detectIntent("thanks for everything"))
     }
 
     @Test
-    fun `accent-folded spelling still matches`() {
-        assertEquals(Intent.FUNNY, AutoStyle.detectIntent("c'est vraiment drole"))
-        assertEquals(Intent.CELEBRATORY, AutoStyle.detectIntent("feliz cumpleanos"))
+    fun `emoji still work without translation`() {
+        // Emoji are language-independent and are matched in the raw text, so a styled mood
+        // still comes through even when translation is unavailable.
+        assertEquals(Intent.ROMANTIC, AutoStyle.detectIntent("bonne nuit ❤️"))
+        assertEquals(Intent.CELEBRATORY, AutoStyle.detectIntent("lo logramos 🎉"))
     }
 
     @Test

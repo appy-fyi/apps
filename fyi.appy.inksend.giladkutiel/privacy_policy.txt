@@ -18,7 +18,18 @@ What stays entirely on your device
 - Any personal handwriting font you draw and compile in the Handwriting Font Creator.
 - Text you type through InkSend's keyboard, only for as long as needed to render the styled
   image you asked to send — it is never transmitted anywhere by InkSend itself, logged, or
-  stored beyond your device.
+  stored beyond your device. To choose a style that matches the mood of what you wrote, the
+  app translates your text to English on your device using Google's ML Kit on-device
+  translation; the text itself is processed entirely on your device and is not sent to Google
+  or anyone else.
+
+On-device translation models
+
+The one time InkSend needs to translate from a language it hasn't handled before, ML Kit
+downloads that language's translation model (a data file, roughly 30 MB) from Google's
+servers. This download contains no information about you or your text — it is just the model
+file. After it is downloaded once, translation for that language works fully offline. This is
+the only network connection InkSend makes.
 
 Images you choose to send
 

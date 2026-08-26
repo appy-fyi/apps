@@ -16,12 +16,20 @@ import fyi.appy.inksend.giladkutiel.engine.ImageRenderer
 import fyi.appy.inksend.giladkutiel.util.TextLengthEvaluator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private const val WHATSAPP_PACKAGE = "com.whatsapp"
+
+/**
+ * How long the text must stay unchanged before the button preview translates it. Keeps a
+ * translation from firing on every keystroke while the user is still typing.
+ */
+private const val PREVIEW_DEBOUNCE_MS = 350L
 
 /**
  * Watches WhatsApp's active editable field; when its text length falls within the
@@ -41,6 +49,8 @@ class TextMonitorAccessibilityService : AccessibilityService() {
 
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var overlayManager: OverlayWindowManager? = null
+    private val translator = TextTranslator()
+    private var previewJob: Job? = null
 
     private var currentText: String = ""
     private var activeNode: AccessibilityNodeInfo? = null
@@ -56,6 +66,7 @@ class TextMonitorAccessibilityService : AccessibilityService() {
             context = this,
             onButtonClicked = { handleStyleButtonPressed() },
         )
+        translator.warmUp()
 
         serviceScope.launch {
             settingsRepository.triggerConfigFlow.collect { trigger ->
@@ -134,42 +145,62 @@ class TextMonitorAccessibilityService : AccessibilityService() {
             applyButtonPreview(text)
             overlayManager?.showOverlay()
         } else {
+            previewJob?.cancel()
             overlayManager?.hideOverlay()
         }
     }
 
     /**
      * Keeps the overlay button's colour and glyph in sync with the mood [AutoStyle] detects
-     * in [text], so it previews the look a tap will produce. detectIntent is only dictionary
-     * lookups, cheap enough to run on every text change; text matching no mood falls back to
-     * the button's neutral default.
+     * in [text], so it previews the look a tap will produce. The text is first translated to
+     * English on-device via [translator] so a single English mood dictionary covers every
+     * language; that call is async, so the work is debounced ([PREVIEW_DEBOUNCE_MS]) and the
+     * result is discarded if the field changed underneath it. Text matching no mood — or a
+     * translation that failed while offline — falls back to the button's neutral default.
      */
     private fun applyButtonPreview(text: String) {
-        val hint = AutoStyle.buttonHintFor(text)
-        if (hint != null) {
-            overlayManager?.setAppearance(hint.backgroundColorHex, hint.emoji)
-        } else {
-            overlayManager?.resetAppearance()
+        previewJob?.cancel()
+        previewJob = serviceScope.launch {
+            delay(PREVIEW_DEBOUNCE_MS)
+            val english = translator.toEnglish(text)
+            if (text != currentText) return@launch // field moved on while we translated
+            val hint = AutoStyle.buttonHintFor(english)
+            if (hint != null) {
+                overlayManager?.setAppearance(hint.backgroundColorHex, hint.emoji)
+            } else {
+                overlayManager?.resetAppearance()
+            }
         }
     }
 
     private fun handleStyleButtonPressed() {
-        if (currentText.isBlank()) return
+        val text = currentText
+        if (text.isBlank()) return
 
-        val style = AutoStyle.styleFor(currentText)
-        val imageUri = ImageRenderer.generateStyledImageUri(this, currentText, style)
-        ClipboardManagerHelper.copyImageToClipboard(this, imageUri)
+        serviceScope.launch {
+            val style = AutoStyle.styleFor(translator.toEnglish(text))
+            val imageUri = ImageRenderer.generateStyledImageUri(
+                this@TextMonitorAccessibilityService, text, style,
+            )
+            ClipboardManagerHelper.copyImageToClipboard(
+                this@TextMonitorAccessibilityService, imageUri,
+            )
 
-        activeNode?.let { node ->
-            val arguments = Bundle().apply {
-                putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, "")
+            activeNode?.let { node ->
+                val arguments = Bundle().apply {
+                    putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, "")
+                }
+                node.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, arguments)
             }
-            node.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, arguments)
-        }
 
-        currentText = ""
-        overlayManager?.hideOverlay()
-        Toast.makeText(this, getString(R.string.toast_image_copied), Toast.LENGTH_SHORT).show()
+            currentText = ""
+            overlayManager?.hideOverlay()
+            Toast.makeText(
+                this@TextMonitorAccessibilityService,
+                getString(R.string.toast_image_copied),
+                Toast.LENGTH_SHORT,
+            ).show()
+        }
     }
 
     override fun onInterrupt() {
@@ -179,6 +210,7 @@ class TextMonitorAccessibilityService : AccessibilityService() {
     override fun onDestroy() {
         super.onDestroy()
         serviceScope.cancel()
+        translator.close()
         overlayManager?.hideOverlay()
     }
 }

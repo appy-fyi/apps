@@ -1,7 +1,7 @@
 TODO:
-    Auto Style:
 DONE:
     Auto Style:
+        Do not keep a dictionary per language, always translate the text to English then use the English dictionary to select the style.
         Make sure fonts for the other languages are supported and look good.
         Make sure languages that are not English also work
         Always use color gradient for the background.
