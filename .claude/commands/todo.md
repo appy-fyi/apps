@@ -4,8 +4,9 @@ allowed-tools: [Read, Edit, Write, Bash, Agent]
 ---
 
 # Todo
+Each subfolder has a `todo.txt` file.
 
-1. Read `todo.txt`.
+1. Read a single `todo.txt` file.
 2. Pick the single most actionable top-level item (or sub-item if the parent is a group).
 3. Implement it fully — explore the codebase as needed, make all required changes.
 4. Move **only that item** to the `Done:` section at the bottom of `todo.txt` (create it if it doesn't exist). Leave everything else untouched.
