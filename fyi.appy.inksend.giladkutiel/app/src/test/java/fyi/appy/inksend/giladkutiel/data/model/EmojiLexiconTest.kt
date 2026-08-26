@@ -60,6 +60,13 @@ class EmojiLexiconTest {
     }
 
     @Test
+    fun `a question about eating resolves to a food emoji, not the ink drop`() {
+        val picked = EmojiLexicon.select("Do you want to eat something?")
+        assertEquals("🍽️", picked.first())
+        assertTrue("🍽️" in picked)
+    }
+
+    @Test
     fun `selects at most three, in first-seen order`() {
         val picked = EmojiLexicon.select("love the cake music dance party")
         assertTrue(picked.size <= 3)

@@ -109,6 +109,7 @@ object EmojiLexicon {
         "sandwich" to "🥪", "breakfast" to "🍳", "lunch" to "🍱", "dinner" to "🍽️",
         "snack" to "🍿", "fruit" to "🍓", "vegetable" to "🥦", "grocery" to "🛒",
         "cook" to "🍳", "bake" to "🧁", "spicy" to "🌶️", "hungry2" to "🍽️", "thirsty" to "🥤",
+        "eat" to "🍽️", "meal" to "🍽️",
         "noodles" to "🍜", "donut" to "🍩", "popcorn" to "🍿", "pancake" to "🥞",
         // shopping & money (more)
         "shop" to "🛍️", "store" to "🏬", "market" to "🏪", "mall" to "🏬", "buy" to "🛒",
