@@ -21,31 +21,30 @@
         "permissions_partially_granted",
         "permissions_fully_granted"
       ],
-      "purpose": "The app's single screen: guides the user through granting the two required system permissions, lets them customize the rendered style (font, colors, gradient, text-length bounds), and shows a live preview of the current style.",
+      "purpose": "The app's single screen: guides the user through granting the two required system permissions, lets them customize each of the two overlay button styles (font, colors, gradient) and the shared text-length bounds, and shows a live preview of each style.",
       "entry_points": ["app launch"],
       "key_ui_elements": [
         "Required System Permissions card with an Overlay row and an Accessibility Service row, each showing a granted/not-granted status icon and an 'Open' button that deep-links to the matching system Settings screen",
-        "Live style preview rendering sample text with the current font/color/background/gradient",
-        "Min/Max text length fields that gate when the floating overlay appears",
-        "Font picker (Sans Serif / Serif / Monospace / Cursive) — font size is not user-configurable; it is auto-computed from text length",
-        "Text color and background color hex fields with inline swatch + validation",
-        "Gradient toggle and gradient end-color hex field"
+        "Min/Max text length fields that gate when the floating overlay buttons appear (shared by both styles)",
+        "Style 1 section: live preview, font picker (Sans Serif / Serif / Monospace / Cursive), text/background color hex fields with inline swatch + validation, gradient toggle and gradient end-color field — font size is not user-configurable; it is auto-computed from text length",
+        "Style 2 section: an identical set of controls for the second overlay button's independent style"
       ]
     }
   ],
   "features": [
     {
-      "name": "Floating Style Overlay Trigger",
+      "name": "Floating Style Overlay Triggers",
       "screens": ["Settings"],
-      "est_hours": 30,
-      "description": "A background AccessibilityService watches the actively focused editable field system-wide and shows a small floating overlay button whenever the typed text's trimmed length falls within the user-configured min/max bounds.",
+      "est_hours": 34,
+      "description": "A background AccessibilityService watches the actively focused editable field system-wide and shows two small floating overlay buttons — one per configured style — whenever the typed text's trimmed length falls within the user-configured min/max bounds.",
       "acceptance_criteria": [
-        "Typing in any editable field in any app shows the overlay once trimmed length is within [minTextLength, maxTextLength].",
-        "The overlay never appears for an empty field, even if the user configures minTextLength down to 0.",
-        "Overlay hides immediately when length falls back out of bounds or focus moves to a non-editable view.",
-        "Overlay position and visibility react live to settings changes without restarting the app."
+        "Typing in any editable field in any app shows both overlay buttons once trimmed length is within [minTextLength, maxTextLength].",
+        "The overlay buttons never appear for an empty field, even if the user configures minTextLength down to 0.",
+        "The two buttons render with visually distinct backgrounds and are independently tappable, each triggering its own style's render.",
+        "Overlay buttons hide immediately when length falls back out of bounds or focus moves to a non-editable view.",
+        "Dragging either button moves both together as a single draggable pair, and the position reacts live to settings changes without restarting the app."
       ],
-      "implementation_notes": "TextMonitorAccessibilityService (AccessibilityService, @AndroidEntryPoint) listens for TYPE_VIEW_TEXT_CHANGED/TYPE_VIEW_FOCUSED, tracks the current AccessibilityNodeInfo + text, and delegates the length check to a pure TextLengthEvaluator.isWithinBounds() so the boundary logic is unit-testable outside the framework. isWithinBounds() requires trimmedLength > 0 in addition to the configured [minLength, maxLength] range, guaranteeing the overlay only shows once the user has actually entered text. OverlayWindowManager owns a WindowManager TYPE_APPLICATION_OVERLAY view (Gravity.BOTTOM|END) shown/hidden via addView/removeView."
+      "implementation_notes": "TextMonitorAccessibilityService (AccessibilityService, @AndroidEntryPoint) listens for TYPE_VIEW_TEXT_CHANGED/TYPE_VIEW_FOCUSED, tracks the current AccessibilityNodeInfo + text, and delegates the length check to a pure TextLengthEvaluator.isWithinBounds() so the boundary logic is unit-testable outside the framework. isWithinBounds() requires trimmedLength > 0 in addition to the configured [minLength, maxLength] range, guaranteeing the overlay only shows once the user has actually entered text. OverlayWindowManager stacks two ImageViews (bg_overlay_button / bg_overlay_button_secondary) inside one vertical LinearLayout container shown via a single WindowManager TYPE_APPLICATION_OVERLAY addView/removeView; each button gets its own onClick callback (onPrimaryClicked/onSecondaryClicked) but shares one drag-listener instance so both move together. Style 1 renders with the collected TextStyleConfig; Style 2 renders with SecondaryStyleConfig.toRenderConfig(primaryConfig), which merges the secondary font/colors/gradient onto the primary config's shared paddingDp."
     },
     {
       "name": "Styled Image Rendering",
@@ -64,13 +63,13 @@
       "name": "Clipboard Copy & Field Clear",
       "screens": ["Settings"],
       "est_hours": 10,
-      "description": "Tapping the overlay copies the rendered image to the system clipboard as an image/png ClipData and clears the original text field, so the user can immediately paste the styled image in place of what they typed.",
+      "description": "Tapping either overlay button copies that button's rendered image to the system clipboard as an image/png ClipData and clears the original text field, so the user can immediately paste the styled image in place of what they typed.",
       "acceptance_criteria": [
-        "After tapping the overlay, the system clipboard holds a ClipData whose item URI resolves to image/png.",
+        "After tapping either overlay button, the system clipboard holds a ClipData whose item URI resolves to image/png, rendered with the tapped button's own style.",
         "The originating text field is cleared via ACTION_SET_TEXT immediately after the copy.",
         "A short confirmation Toast appears telling the user to paste."
       ],
-      "implementation_notes": "ClipboardManagerHelper.copyImageToClipboard() uses ClipData.newUri(contentResolver, label, uri) so the MIME type is resolved from FileProvider's own getType(). TextMonitorAccessibilityService then calls AccessibilityNodeInfo.performAction(ACTION_SET_TEXT, empty string) on the tracked node."
+      "implementation_notes": "ClipboardManagerHelper.copyImageToClipboard() uses ClipData.newUri(contentResolver, label, uri) so the MIME type is resolved from FileProvider's own getType(). TextMonitorAccessibilityService.handleStyleButtonPressed(renderConfig) is shared by both buttons' click callbacks — each passes its own resolved TextStyleConfig — then calls AccessibilityNodeInfo.performAction(ACTION_SET_TEXT, empty string) on the tracked node."
     },
     {
       "name": "Guided Permission Setup",
@@ -88,18 +87,18 @@
       "name": "Live Style Preview & Customization",
       "screens": ["Settings"],
       "est_hours": 12,
-      "description": "Every style control (font, size, text/background/gradient color, gradient toggle, min/max length) persists to DataStore and immediately re-renders a live preview bitmap of sample text so the user sees the effect of a change before it's ever used on real typed text.",
+      "description": "Every style control across both Style 1 and Style 2 sections (font, text/background/gradient color, gradient toggle) plus the shared min/max length bounds persists to DataStore and immediately re-renders that style's live preview bitmap of sample text so the user sees the effect of a change before it's ever used on real typed text.",
       "acceptance_criteria": [
-        "Changing any style control updates the live preview image within one recomposition, without a manual 'apply' step.",
-        "Settings persist across app restarts.",
+        "Changing any Style 1 or Style 2 control updates that style's own live preview image within one recomposition, without a manual 'apply' step.",
+        "Settings for both styles persist independently across app restarts.",
         "An invalid hex color shows an inline error state on the field instead of silently discarding the input."
       ],
-      "implementation_notes": "SettingsRepository wraps a single Preferences DataStore (`user_settings`) exposing TextStyleConfig as a Flow; SettingsViewModel exposes it as a StateFlow via stateIn(WhileSubscribed(5000)). SettingsScreen's LivePreview composable calls ImageRenderer.renderBitmap() on Dispatchers.Default inside produceState(config) and renders the result via Image(bitmap.asImageBitmap())."
+      "implementation_notes": "SettingsRepository wraps a single Preferences DataStore (`user_settings`) exposing TextStyleConfig (Style 1) and SecondaryStyleConfig (Style 2, under style2_* keys) as separate Flows; SettingsViewModel exposes each as its own StateFlow via stateIn(WhileSubscribed(5000)). SettingsScreen's LivePreview composable calls ImageRenderer.renderBitmap() on Dispatchers.Default inside produceState(config) and renders the result via Image(bitmap.asImageBitmap()) — called once per style, with Style 2's preview built via SecondaryStyleConfig.toRenderConfig(primaryConfig)."
     }
   ],
   "non_goals": [
     "No custom Input Method (IME) / system keyboard in this version — text is styled and cleared in place via AccessibilityService, not typed through a replacement keyboard.",
-    "No multiple saved style presets or a style gallery — there is exactly one active TextStyleConfig at a time, edited directly in Settings.",
+    "No arbitrary number of saved style presets or a style gallery — there are exactly two fixed style slots (Style 1 / Style 2), each edited directly in Settings and each backing its own overlay button.",
     "No in-app purchases, ads, or any billing integration — the app is entirely free with no monetization.",
     "No handwriting font creation — only the four bundled system type families (Sans Serif, Serif, Monospace, Cursive) are offered.",
     "No cloud backend, accounts, or sync — all settings live in local DataStore on the one device.",
@@ -147,10 +146,21 @@
       "kind": "manual",
       "scenario": "Permission handling when revoked dynamically",
       "steps": [
-        "Grant both the overlay and accessibility permissions, confirm the overlay appears while typing.",
+        "Grant both the overlay and accessibility permissions, confirm both overlay buttons appear while typing.",
         "Revoke one permission from system Settings, return to the app."
       ],
-      "expected": "The revoked permission's row reverts to 'not granted' on the very next onResume, and the overlay stops appearing until it's re-granted."
+      "expected": "The revoked permission's row reverts to 'not granted' on the very next onResume, and the overlay buttons stop appearing until it's re-granted."
+    },
+    {
+      "kind": "manual",
+      "scenario": "Two overlay buttons with independent styles",
+      "steps": [
+        "Set clearly different fonts/colors for Style 1 and Style 2 in Settings.",
+        "Type qualifying text in a monitored field and observe both floating buttons.",
+        "Drag one of the buttons and confirm both move together as a pair.",
+        "Tap the Style 1 button, paste, then repeat typing and tap the Style 2 button, paste."
+      ],
+      "expected": "Both buttons appear together and stay paired while dragging; pasting after the Style 1 tap shows an image in Style 1's look, and pasting after the Style 2 tap shows an image in Style 2's distinct look."
     }
   ],
   "data_model": [
@@ -164,10 +174,22 @@
         { "name": "gradientEndColorHex", "type": "String", "notes": "used only when isGradientEnabled" },
         { "name": "paddingDp", "type": "Int", "notes": "default 32" },
         { "name": "cornerRadiusDp", "type": "Float", "notes": "default 24" },
-        { "name": "minTextLength", "type": "Int", "notes": "default 3 — overlay trigger lower bound" },
-        { "name": "maxTextLength", "type": "Int", "notes": "default 280 — overlay trigger upper bound" }
+        { "name": "minTextLength", "type": "Int", "notes": "default 3 — overlay trigger lower bound, shared by both style buttons" },
+        { "name": "maxTextLength", "type": "Int", "notes": "default 280 — overlay trigger upper bound, shared by both style buttons" }
       ],
       "storage": "datastore_preferences"
+    },
+    {
+      "entity": "SecondaryStyleConfig",
+      "fields": [
+        { "name": "font", "type": "FontChoice enum (SANS_SERIF/SERIF/MONOSPACE/CURSIVE)", "notes": "default SERIF, independent of the primary style's font" },
+        { "name": "textColorHex", "type": "String", "notes": "default #1E1E2E" },
+        { "name": "backgroundColorHex", "type": "String", "notes": "default #F5E9DA — solid color, or gradient start color" },
+        { "name": "isGradientEnabled", "type": "Boolean", "notes": "default false" },
+        { "name": "gradientEndColorHex", "type": "String", "notes": "default #F7B267 — used only when isGradientEnabled" }
+      ],
+      "storage": "datastore_preferences",
+      "notes": "Backs the second overlay button. Only visual fields — paddingDp, minTextLength, and maxTextLength are borrowed from TextStyleConfig via SecondaryStyleConfig.toRenderConfig(base) when rendering."
     }
   ],
   "package_id": "fyi.appy.inksend.giladkutiel",
@@ -218,7 +240,7 @@
     "category": "Productivity",
     "keywords": ["style text", "text to image", "stylish text", "text styler", "custom text color", "text overlay", "chat styler"],
     "icon_prompt": "Create a 1024x1024 Android app icon for InkSend, a text-styling utility app. Rounded-square adaptive icon style, indigo background (#5B47E0), a simple white fountain-pen nib icon with a short flowing ink stroke. Flat vector design, high contrast, no text, no brand logos, no photorealistic elements.",
-    "long_description": "InkSend turns anything you type, in any app, into a beautifully styled image — your choice of font, text color, and background — ready to paste back in with one tap.\n\nJust start typing in any text field. Once your message is long enough, a small floating button appears. Tap it, and InkSend renders your exact words as a styled image, copies it to your clipboard, and clears the field — so a long-press and Paste (or your keyboard's clipboard suggestion) drops the image right back in.\n\nCustomize everything from one simple settings screen: font, text color, background color or gradient, padding, corner rounding, and exactly which text lengths should trigger the button — with a live preview as you go. Font size always auto-fits your text, so there's nothing to fiddle with.\n\nEverything happens on your device. No account, no ads, no subscription — InkSend is completely free.",
+    "long_description": "InkSend turns anything you type, in any app, into a beautifully styled image — your choice of font, text color, and background — ready to paste back in with one tap.\n\nJust start typing in any text field. Once your message is long enough, two small floating buttons appear, one for each of your two saved styles. Tap either one, and InkSend renders your exact words as a styled image in that look, copies it to your clipboard, and clears the field — so a long-press and Paste (or your keyboard's clipboard suggestion) drops the image right back in.\n\nCustomize both styles from one simple settings screen: font, text color, background color or gradient, and exactly which text lengths should trigger the buttons — with a live preview of each style as you go. Font size always auto-fits your text, so there's nothing to fiddle with.\n\nEverything happens on your device. No account, no ads, no subscription — InkSend is completely free.",
     "short_description": "Style any text you type and paste it back in as an image — free, no ads, no account."
   },
   "project_context": "This spec describes an independent, alternative Android app you are building from scratch to compete with an existing incumbent app on Google Play — not a modification, clone, or reskin of the incumbent's own code, assets, or branding. Use the incumbent only as a market reference (via the report data below), and design working_name/package_id/store_listing/design_system so the result is clearly its own product.",
