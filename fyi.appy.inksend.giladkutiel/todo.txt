@@ -1,7 +1,7 @@
 TODO:
-    Languages:
-        Can we render an image in any language? If not write a document into doc/i18n.md that explains this topic.
 DONE:
+    Languages (image rendering):
+        Can we render an image in any language? If not write a document into doc/i18n.md that explains this topic.
     Buttons:
         Use the emoji as the button icon instead of the text, and make sure the buttons are aligned properly.
     Emojis:
