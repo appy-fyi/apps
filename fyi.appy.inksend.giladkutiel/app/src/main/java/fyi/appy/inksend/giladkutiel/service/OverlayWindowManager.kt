@@ -2,6 +2,7 @@ package fyi.appy.inksend.giladkutiel.service
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.drawable.GradientDrawable
 import android.util.Log
@@ -34,8 +35,8 @@ private const val BUTTON_EMOJI = "🫟"
  * Inflates, positions, and tears down the single floating overlay button via [WindowManager].
  * There is now exactly one button: tapping it renders the typed text with a style chosen
  * automatically from the text's content (see
- * [fyi.appy.inksend.giladkutiel.data.model.AutoStyle]), so the overlay no longer needs to
- * reflect any user-configured style list.
+ * [fyi.appy.inksend.giladkutiel.data.model.AutoStyle]). While the user types, [setAppearance]
+ * / [resetAppearance] recolour it and swap its glyph so it previews the look a tap produces.
  */
 class OverlayWindowManager(
     private val context: Context,
@@ -45,6 +46,14 @@ class OverlayWindowManager(
     private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
     private var overlayView: View? = null
     private var isShowing = false
+
+    // Live handles to the button's parts, non-null only while the overlay is shown.
+    private var emojiView: TextView? = null
+    private var backgroundDrawable: GradientDrawable? = null
+
+    // Current previewed look, remembered so a rebuilt button keeps the last appearance.
+    private var currentBgColor = BUTTON_BG_COLOR
+    private var currentEmoji = BUTTON_EMOJI
 
     // Remembered across hide/show cycles so a drag "sticks" while typing continues.
     private var marginEndPx = DEFAULT_MARGIN_END_PX
@@ -94,16 +103,18 @@ class OverlayWindowManager(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT,
             )
-            text = BUTTON_EMOJI
+            text = currentEmoji
             textSize = EMOJI_TEXT_SIZE_SP
             gravity = Gravity.CENTER
         }
         val strokePx = (BUTTON_STROKE_WIDTH_DP * context.resources.displayMetrics.density).toInt()
         val buttonBackground = GradientDrawable().apply {
             shape = GradientDrawable.OVAL
-            setColor(BUTTON_BG_COLOR)
+            setColor(currentBgColor)
             setStroke(strokePx, BUTTON_STROKE_COLOR)
         }
+        emojiView = emojiLabel
+        backgroundDrawable = buttonBackground
         return FrameLayout(context).apply {
             // Square bounds + an OVAL background == a perfect circle.
             layoutParams = ViewGroup.LayoutParams(buttonSizePx, buttonSizePx)
@@ -113,6 +124,29 @@ class OverlayWindowManager(
             setOnClickListener { onButtonClicked() }
             setOnTouchListener(touchListener)
         }
+    }
+
+    /**
+     * Previews the look the typed text will render with: recolours the button's fill and
+     * swaps its glyph. [backgroundColorHex] is a "#RRGGBB" string straight from the chosen
+     * style; an unparseable value falls back to the neutral fill. The hairline border is
+     * left untouched so the circle stays visible on any fill. Remembered across hide/show
+     * cycles and applied live when the button is on screen.
+     */
+    fun setAppearance(backgroundColorHex: String, emoji: String) {
+        val color = runCatching { Color.parseColor(backgroundColorHex) }.getOrDefault(BUTTON_BG_COLOR)
+        currentBgColor = color
+        currentEmoji = emoji
+        backgroundDrawable?.setColor(color)
+        emojiView?.text = emoji
+    }
+
+    /** Restores the neutral default look — light lavender fill, ink-drop glyph. */
+    fun resetAppearance() {
+        currentBgColor = BUTTON_BG_COLOR
+        currentEmoji = BUTTON_EMOJI
+        backgroundDrawable?.setColor(BUTTON_BG_COLOR)
+        emojiView?.text = BUTTON_EMOJI
     }
 
     /**
@@ -182,6 +216,8 @@ class OverlayWindowManager(
             Log.e(TAG, "hideOverlay: removeView failed", e)
         }
         overlayView = null
+        emojiView = null
+        backgroundDrawable = null
         isShowing = false
     }
 

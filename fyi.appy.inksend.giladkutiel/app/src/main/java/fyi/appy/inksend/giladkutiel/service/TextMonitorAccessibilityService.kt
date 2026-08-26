@@ -131,9 +131,25 @@ class TextMonitorAccessibilityService : AccessibilityService() {
             maxLength = currentTrigger.maxTextLength,
         )
         if (withinBounds) {
+            applyButtonPreview(text)
             overlayManager?.showOverlay()
         } else {
             overlayManager?.hideOverlay()
+        }
+    }
+
+    /**
+     * Keeps the overlay button's colour and glyph in sync with the mood [AutoStyle] detects
+     * in [text], so it previews the look a tap will produce. detectIntent is only dictionary
+     * lookups, cheap enough to run on every text change; text matching no mood falls back to
+     * the button's neutral default.
+     */
+    private fun applyButtonPreview(text: String) {
+        val hint = AutoStyle.buttonHintFor(text)
+        if (hint != null) {
+            overlayManager?.setAppearance(hint.backgroundColorHex, hint.emoji)
+        } else {
+            overlayManager?.resetAppearance()
         }
     }
 

@@ -96,4 +96,20 @@ class AutoStyleTest {
             AutoStyle.styleFor(text, Random(42)),
         )
     }
+
+    @Test
+    fun `buttonHintFor reflects the detected intent and never picks at random`() {
+        val text = "haha this is hilarious 😂"
+        val hint = AutoStyle.buttonHintFor(text)
+        assertEquals(Intent.FUNNY.displayEmoji, hint?.emoji)
+        assertEquals(Intent.FUNNY.styles.first().backgroundColorHex, hint?.backgroundColorHex)
+        // Same input -> identical hint every call, so the button doesn't flicker while typing.
+        repeat(10) { assertEquals(hint, AutoStyle.buttonHintFor(text)) }
+    }
+
+    @Test
+    fun `buttonHintFor is null when the text matches no mood`() {
+        assertEquals(null, AutoStyle.buttonHintFor("asdfjkl qwerty zxcvbnm"))
+        assertEquals(null, AutoStyle.buttonHintFor(""))
+    }
 }

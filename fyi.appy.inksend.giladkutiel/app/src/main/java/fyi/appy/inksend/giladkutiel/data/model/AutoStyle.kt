@@ -307,6 +307,13 @@ val EMOJI_KEYWORDS: Map<String, Intent> = buildKeywordMap(
     Intent.GRATEFUL to listOf("🙏", "💛", "🌻"),
 )
 
+/**
+ * A stable colour + glyph for the floating overlay button to show while the user types, so
+ * the button previews the look a tap will produce. Carries hex straight from the chosen
+ * [StyleConfig]; the caller parses it.
+ */
+data class ButtonHint(val emoji: String, val backgroundColorHex: String)
+
 private fun buildKeywordMap(vararg entries: Pair<Intent, List<String>>): Map<String, Intent> {
     val map = LinkedHashMap<String, Intent>()
     for ((intent, keywords) in entries) {
@@ -357,4 +364,18 @@ object AutoStyle {
     /** Detects the intent for [text] and returns one of its looks, chosen with [random]. */
     fun styleFor(text: String, random: Random = Random.Default): StyleConfig =
         detectIntent(text).styles.random(random)
+
+    /**
+     * A non-random appearance for the overlay button to preview [text]'s detected mood as
+     * the user types. Unlike [styleFor] it never picks at random — it pairs the intent's
+     * representative emoji with its first (canonical) look's background colour — so the
+     * button stays put between keystrokes for the same text. [detectIntent] is only
+     * dictionary lookups over the typed string, cheap enough to run on every text change.
+     * Returns null when nothing matches, so the caller keeps the button's neutral default.
+     */
+    fun buttonHintFor(text: String): ButtonHint? {
+        val intent = detectIntent(text)
+        if (intent == Intent.NEUTRAL) return null
+        return ButtonHint(intent.displayEmoji, intent.styles.first().backgroundColorHex)
+    }
 }
