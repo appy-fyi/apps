@@ -31,4 +31,13 @@ class ImageRendererTest {
 
         assertTrue(bitmap.width > 0 && bitmap.height > 0)
     }
+
+    @Test
+    fun rendersSuccessfullyWithAndWithoutAnEmojiBadge() {
+        val withEmoji = ImageRenderer.renderBitmap(context, "Hello", TextStyleConfig(emoji = "✨"))
+        val withoutEmoji = ImageRenderer.renderBitmap(context, "Hello", TextStyleConfig(emoji = ""))
+
+        assertTrue(withEmoji.width == 512 && withEmoji.height == 512)
+        assertTrue(withoutEmoji.width == 512 && withoutEmoji.height == 512)
+    }
 }

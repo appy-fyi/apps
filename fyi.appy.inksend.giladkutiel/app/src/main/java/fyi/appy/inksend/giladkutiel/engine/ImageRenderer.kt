@@ -27,6 +27,8 @@ object ImageRenderer {
     private const val MIN_FONT_SIZE_PX = 12f
     private const val MAX_FONT_SIZE_PX = 320f
     private const val FONT_SIZE_SEARCH_STEPS = 20
+    private val EMOJI_SIZE_PX = CANVAS_SIZE_PX * 0.14f
+    private val EMOJI_MARGIN_PX = CANVAS_SIZE_PX * 0.06f
 
     fun renderBitmap(context: Context, text: String, config: TextStyleConfig): Bitmap {
         val density = context.resources.displayMetrics.density
@@ -77,7 +79,27 @@ object ImageRenderer {
         staticLayout.draw(canvas)
         canvas.restore()
 
+        if (config.emoji.isNotBlank()) {
+            drawEmojiBadge(canvas, config.emoji)
+        }
+
         return bitmap
+    }
+
+    /**
+     * Draws the style's emoji badge in the top-start corner, on top of the main text.
+     * Uses the default typeface rather than [config]'s font — Android resolves emoji
+     * glyphs through the system-wide font fallback chain regardless of typeface family,
+     * so this reliably picks up the system's (vector, on modern devices) color emoji font
+     * instead of risking tofu boxes from a font family that doesn't declare emoji coverage.
+     */
+    private fun drawEmojiBadge(canvas: Canvas, emoji: String) {
+        val emojiPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            typeface = Typeface.DEFAULT
+            textSize = EMOJI_SIZE_PX
+        }
+        val baselineY = EMOJI_MARGIN_PX - emojiPaint.ascent()
+        canvas.drawText(emoji, EMOJI_MARGIN_PX, baselineY, emojiPaint)
     }
 
     /** Binary-searches the largest text size (in px) whose wrapped layout fits within [maxWidth]x[maxHeight]. */

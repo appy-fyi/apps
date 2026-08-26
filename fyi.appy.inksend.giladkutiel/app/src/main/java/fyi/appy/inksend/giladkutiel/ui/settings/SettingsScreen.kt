@@ -108,6 +108,10 @@ fun SettingsScreen(
                 selected = config.font,
                 onSelect = { viewModel.updateConfig(config.copy(font = it)) },
             )
+            EmojiField(
+                value = config.emoji,
+                onValueChange = { viewModel.updateConfig(config.copy(emoji = it)) },
+            )
             HexColorField(
                 label = "Text Color (Hex)",
                 value = config.textColorHex,
@@ -142,6 +146,10 @@ fun SettingsScreen(
             FontPicker(
                 selected = secondaryConfig.font,
                 onSelect = { viewModel.updateSecondaryConfig(secondaryConfig.copy(font = it)) },
+            )
+            EmojiField(
+                value = secondaryConfig.emoji,
+                onValueChange = { viewModel.updateSecondaryConfig(secondaryConfig.copy(emoji = it)) },
             )
             HexColorField(
                 label = "Text Color (Hex)",
@@ -237,6 +245,18 @@ private fun FontPicker(selected: FontChoice, onSelect: (FontChoice) -> Unit) {
             }
         }
     }
+}
+
+@Composable
+private fun EmojiField(value: String, onValueChange: (String) -> Unit) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = { new -> if (new.length <= 8) onValueChange(new) },
+        label = { Text("Emoji Badge (optional)") },
+        supportingText = { Text("Drawn in the top-left corner of the image. Leave blank for none.") },
+        singleLine = true,
+        modifier = Modifier.fillMaxWidth(),
+    )
 }
 
 @Composable

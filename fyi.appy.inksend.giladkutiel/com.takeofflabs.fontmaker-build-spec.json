@@ -26,8 +26,8 @@
       "key_ui_elements": [
         "Required System Permissions card with an Overlay row and an Accessibility Service row, each showing a granted/not-granted status icon and an 'Open' button that deep-links to the matching system Settings screen",
         "Min/Max text length fields that gate when the floating overlay buttons appear (shared by both styles)",
-        "Style 1 section: live preview, font picker (Sans Serif / Serif / Monospace / Cursive), text/background color hex fields with inline swatch + validation, gradient toggle and gradient end-color field — font size is not user-configurable; it is auto-computed from text length",
-        "Style 2 section: an identical set of controls for the second overlay button's independent style"
+        "Style 1 section: live preview, font picker (Sans Serif / Serif / Monospace / Cursive), an emoji badge text field (optional, rendered in the image's top-left corner), text/background color hex fields with inline swatch + validation, gradient toggle and gradient end-color field — font size is not user-configurable; it is auto-computed from text length",
+        "Style 2 section: an identical set of controls, including its own emoji badge field, for the second overlay button's independent style"
       ]
     }
   ],
@@ -44,20 +44,22 @@
         "Overlay buttons hide immediately when length falls back out of bounds or focus moves to a non-editable view.",
         "Dragging either button moves both together as a single draggable pair, and the position reacts live to settings changes without restarting the app."
       ],
-      "implementation_notes": "TextMonitorAccessibilityService (AccessibilityService, @AndroidEntryPoint) listens for TYPE_VIEW_TEXT_CHANGED/TYPE_VIEW_FOCUSED, tracks the current AccessibilityNodeInfo + text, and delegates the length check to a pure TextLengthEvaluator.isWithinBounds() so the boundary logic is unit-testable outside the framework. isWithinBounds() requires trimmedLength > 0 in addition to the configured [minLength, maxLength] range, guaranteeing the overlay only shows once the user has actually entered text. OverlayWindowManager stacks two ImageViews (bg_overlay_button / bg_overlay_button_secondary) inside one vertical LinearLayout container shown via a single WindowManager TYPE_APPLICATION_OVERLAY addView/removeView; each button gets its own onClick callback (onPrimaryClicked/onSecondaryClicked) but shares one drag-listener instance so both move together. Style 1 renders with the collected TextStyleConfig; Style 2 renders with SecondaryStyleConfig.toRenderConfig(primaryConfig), which merges the secondary font/colors/gradient onto the primary config's shared paddingDp."
+      "implementation_notes": "TextMonitorAccessibilityService (AccessibilityService, @AndroidEntryPoint) listens for TYPE_VIEW_TEXT_CHANGED/TYPE_VIEW_FOCUSED, tracks the current AccessibilityNodeInfo + text, and delegates the length check to a pure TextLengthEvaluator.isWithinBounds() so the boundary logic is unit-testable outside the framework. isWithinBounds() requires trimmedLength > 0 in addition to the configured [minLength, maxLength] range, guaranteeing the overlay only shows once the user has actually entered text. OverlayWindowManager stacks two ImageViews (bg_overlay_button / bg_overlay_button_secondary) inside one vertical LinearLayout container shown via a single WindowManager TYPE_APPLICATION_OVERLAY addView/removeView; each button gets its own onClick callback (onPrimaryClicked/onSecondaryClicked) but shares one drag-listener instance so both move together. Style 1 renders with the collected TextStyleConfig; Style 2 renders with SecondaryStyleConfig.toRenderConfig(primaryConfig), which merges the secondary font/colors/gradient/emoji onto the primary config's shared paddingDp."
     },
     {
       "name": "Styled Image Rendering",
       "screens": ["Settings"],
       "est_hours": 20,
-      "description": "Renders the captured text into a fixed 512x512 PNG square using the current TextStyleConfig — font, text color, solid or 2-stop gradient background, and padding — with the font size auto-computed to fill the square and the text centered both horizontally and vertically. The square always has sharp corners (no border radius).",
+      "description": "Renders the captured text into a fixed 512x512 PNG square using the current TextStyleConfig — font, text color, solid or 2-stop gradient background, padding, and an optional emoji badge — with the font size auto-computed to fill the square and the text centered both horizontally and vertically. The square always has sharp corners (no border radius).",
       "acceptance_criteria": [
         "The rendered bitmap is always exactly 512x512, regardless of text length.",
         "Long strings wrap across multiple lines without overflowing the bitmap bounds, and font size shrinks automatically to fit.",
         "Text is centered both horizontally and vertically within the square.",
-        "An invalid hex color string falls back to a default color instead of crashing."
+        "An invalid hex color string falls back to a default color instead of crashing.",
+        "When a style's emoji field is non-blank, that emoji is drawn as a badge in the image's top-left corner, on top of the main text; a blank emoji field draws no badge.",
+        "The emoji glyph renders as a proper glyph (color emoji on modern devices) rather than a tofu box, regardless of which of the four bundled fonts the style uses."
       ],
-      "implementation_notes": "ImageRenderer.renderBitmap() binary-searches the largest text size (12px-320px) whose StaticLayout still fits the padded content area, builds the StaticLayout at that size, and draws it centered onto a fixed 512x512 Canvas-backed Bitmap with a solid or LinearGradient square background (no rounded corners — config.cornerRadiusDp is no longer read). fontSizeSp has been removed entirely from TextStyleConfig, SettingsRepository, and the Settings UI, since font size is now always auto-computed. generateStyledImageUri() writes the PNG to cacheDir/images and returns a FileProvider content URI."
+      "implementation_notes": "ImageRenderer.renderBitmap() binary-searches the largest text size (12px-320px) whose StaticLayout still fits the padded content area, builds the StaticLayout at that size, and draws it centered onto a fixed 512x512 Canvas-backed Bitmap with a solid or LinearGradient square background (no rounded corners — config.cornerRadiusDp is no longer read). fontSizeSp has been removed entirely from TextStyleConfig, SettingsRepository, and the Settings UI, since font size is now always auto-computed. If config.emoji is non-blank, drawEmojiBadge() draws it last (on top of the main text) near the top-left corner using Typeface.DEFAULT rather than the style's own FontChoice — Android resolves emoji code points through the system-wide font fallback chain regardless of typeface family, so this reliably reaches the system's (vector/COLRv1 on modern devices) color emoji font instead of the four bundled type families needing their own emoji glyph coverage. generateStyledImageUri() writes the PNG to cacheDir/images and returns a FileProvider content URI."
     },
     {
       "name": "Clipboard Copy & Field Clear",
@@ -87,7 +89,7 @@
       "name": "Live Style Preview & Customization",
       "screens": ["Settings"],
       "est_hours": 12,
-      "description": "Every style control across both Style 1 and Style 2 sections (font, text/background/gradient color, gradient toggle) plus the shared min/max length bounds persists to DataStore and immediately re-renders that style's live preview bitmap of sample text so the user sees the effect of a change before it's ever used on real typed text.",
+      "description": "Every style control across both Style 1 and Style 2 sections (font, emoji badge, text/background/gradient color, gradient toggle) plus the shared min/max length bounds persists to DataStore and immediately re-renders that style's live preview bitmap of sample text so the user sees the effect of a change before it's ever used on real typed text.",
       "acceptance_criteria": [
         "Changing any Style 1 or Style 2 control updates that style's own live preview image within one recomposition, without a manual 'apply' step.",
         "Settings for both styles persist independently across app restarts.",
@@ -134,6 +136,14 @@
     },
     {
       "kind": "instrumented",
+      "scenario": "Emoji badge renders without breaking the fixed square",
+      "steps": [
+        "Render the same text with a TextStyleConfig whose emoji is a non-blank string, and again with emoji blank."
+      ],
+      "expected": "Both renders succeed and return an exact 512x512 bitmap; the non-blank case has a visible glyph badge in the top-left corner, the blank case has none."
+    },
+    {
+      "kind": "instrumented",
       "scenario": "Clipboard paste integrity",
       "steps": [
         "Launch MainActivity via ActivityScenario so the process holds window focus.",
@@ -175,7 +185,8 @@
         { "name": "paddingDp", "type": "Int", "notes": "default 32" },
         { "name": "cornerRadiusDp", "type": "Float", "notes": "default 24" },
         { "name": "minTextLength", "type": "Int", "notes": "default 3 — overlay trigger lower bound, shared by both style buttons" },
-        { "name": "maxTextLength", "type": "Int", "notes": "default 280 — overlay trigger upper bound, shared by both style buttons" }
+        { "name": "maxTextLength", "type": "Int", "notes": "default 280 — overlay trigger upper bound, shared by both style buttons" },
+        { "name": "emoji", "type": "String", "notes": "default \"✨\" — optional badge drawn in the image's top-left corner; blank means no badge" }
       ],
       "storage": "datastore_preferences"
     },
@@ -186,7 +197,8 @@
         { "name": "textColorHex", "type": "String", "notes": "default #1E1E2E" },
         { "name": "backgroundColorHex", "type": "String", "notes": "default #F5E9DA — solid color, or gradient start color" },
         { "name": "isGradientEnabled", "type": "Boolean", "notes": "default false" },
-        { "name": "gradientEndColorHex", "type": "String", "notes": "default #F7B267 — used only when isGradientEnabled" }
+        { "name": "gradientEndColorHex", "type": "String", "notes": "default #F7B267 — used only when isGradientEnabled" },
+        { "name": "emoji", "type": "String", "notes": "default \"🎨\" — optional badge, independent of the primary style's emoji" }
       ],
       "storage": "datastore_preferences",
       "notes": "Backs the second overlay button. Only visual fields — paddingDp, minTextLength, and maxTextLength are borrowed from TextStyleConfig via SecondaryStyleConfig.toRenderConfig(base) when rendering."
@@ -240,7 +252,7 @@
     "category": "Productivity",
     "keywords": ["style text", "text to image", "stylish text", "text styler", "custom text color", "text overlay", "chat styler"],
     "icon_prompt": "Create a 1024x1024 Android app icon for InkSend, a text-styling utility app. Rounded-square adaptive icon style, indigo background (#5B47E0), a simple white fountain-pen nib icon with a short flowing ink stroke. Flat vector design, high contrast, no text, no brand logos, no photorealistic elements.",
-    "long_description": "InkSend turns anything you type, in any app, into a beautifully styled image — your choice of font, text color, and background — ready to paste back in with one tap.\n\nJust start typing in any text field. Once your message is long enough, two small floating buttons appear, one for each of your two saved styles. Tap either one, and InkSend renders your exact words as a styled image in that look, copies it to your clipboard, and clears the field — so a long-press and Paste (or your keyboard's clipboard suggestion) drops the image right back in.\n\nCustomize both styles from one simple settings screen: font, text color, background color or gradient, and exactly which text lengths should trigger the buttons — with a live preview of each style as you go. Font size always auto-fits your text, so there's nothing to fiddle with.\n\nEverything happens on your device. No account, no ads, no subscription — InkSend is completely free.",
+    "long_description": "InkSend turns anything you type, in any app, into a beautifully styled image — your choice of font, text color, background, and a little emoji badge — ready to paste back in with one tap.\n\nJust start typing in any text field. Once your message is long enough, two small floating buttons appear, one for each of your two saved styles. Tap either one, and InkSend renders your exact words as a styled image in that look, copies it to your clipboard, and clears the field — so a long-press and Paste (or your keyboard's clipboard suggestion) drops the image right back in.\n\nCustomize both styles from one simple settings screen: font, an optional emoji badge, text color, background color or gradient, and exactly which text lengths should trigger the buttons — with a live preview of each style as you go. Font size always auto-fits your text, so there's nothing to fiddle with.\n\nEverything happens on your device. No account, no ads, no subscription — InkSend is completely free.",
     "short_description": "Style any text you type and paste it back in as an image — free, no ads, no account."
   },
   "project_context": "This spec describes an independent, alternative Android app you are building from scratch to compete with an existing incumbent app on Google Play — not a modification, clone, or reskin of the incumbent's own code, assets, or branding. Use the incumbent only as a market reference (via the report data below), and design working_name/package_id/store_listing/design_system so the result is clearly its own product.",

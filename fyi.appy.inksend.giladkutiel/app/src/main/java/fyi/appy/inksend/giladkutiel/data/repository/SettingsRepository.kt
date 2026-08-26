@@ -32,12 +32,14 @@ class SettingsRepository @Inject constructor(
         val CORNER_RADIUS = floatPreferencesKey("corner_radius")
         val MIN_LENGTH = intPreferencesKey("min_length")
         val MAX_LENGTH = intPreferencesKey("max_length")
+        val EMOJI = stringPreferencesKey("emoji")
 
         val STYLE2_FONT = stringPreferencesKey("style2_font")
         val STYLE2_TEXT_COLOR = stringPreferencesKey("style2_text_color")
         val STYLE2_BG_COLOR = stringPreferencesKey("style2_bg_color")
         val STYLE2_GRADIENT_ENABLED = booleanPreferencesKey("style2_gradient_enabled")
         val STYLE2_GRADIENT_END_COLOR = stringPreferencesKey("style2_gradient_end_color")
+        val STYLE2_EMOJI = stringPreferencesKey("style2_emoji")
     }
 
     val styleConfigFlow: Flow<TextStyleConfig> = context.dataStore.data.map { prefs ->
@@ -53,6 +55,7 @@ class SettingsRepository @Inject constructor(
             cornerRadiusDp = prefs[Keys.CORNER_RADIUS] ?: defaults.cornerRadiusDp,
             minTextLength = prefs[Keys.MIN_LENGTH] ?: defaults.minTextLength,
             maxTextLength = prefs[Keys.MAX_LENGTH] ?: defaults.maxTextLength,
+            emoji = prefs[Keys.EMOJI] ?: defaults.emoji,
         )
     }
 
@@ -67,6 +70,7 @@ class SettingsRepository @Inject constructor(
             prefs[Keys.CORNER_RADIUS] = config.cornerRadiusDp
             prefs[Keys.MIN_LENGTH] = config.minTextLength
             prefs[Keys.MAX_LENGTH] = config.maxTextLength
+            prefs[Keys.EMOJI] = config.emoji
         }
     }
 
@@ -79,6 +83,7 @@ class SettingsRepository @Inject constructor(
             backgroundColorHex = prefs[Keys.STYLE2_BG_COLOR] ?: defaults.backgroundColorHex,
             isGradientEnabled = prefs[Keys.STYLE2_GRADIENT_ENABLED] ?: defaults.isGradientEnabled,
             gradientEndColorHex = prefs[Keys.STYLE2_GRADIENT_END_COLOR] ?: defaults.gradientEndColorHex,
+            emoji = prefs[Keys.STYLE2_EMOJI] ?: defaults.emoji,
         )
     }
 
@@ -89,6 +94,7 @@ class SettingsRepository @Inject constructor(
             prefs[Keys.STYLE2_BG_COLOR] = config.backgroundColorHex
             prefs[Keys.STYLE2_GRADIENT_ENABLED] = config.isGradientEnabled
             prefs[Keys.STYLE2_GRADIENT_END_COLOR] = config.gradientEndColorHex
+            prefs[Keys.STYLE2_EMOJI] = config.emoji
         }
     }
 }

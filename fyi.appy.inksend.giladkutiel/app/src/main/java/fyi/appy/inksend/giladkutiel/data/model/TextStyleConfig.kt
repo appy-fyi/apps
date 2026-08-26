@@ -18,6 +18,8 @@ data class TextStyleConfig(
     val cornerRadiusDp: Float = 24f,
     val minTextLength: Int = 3,
     val maxTextLength: Int = 280,
+    /** Small badge drawn in a corner of the rendered image. Blank means no badge. */
+    val emoji: String = "✨",
 )
 
 /**
@@ -31,6 +33,7 @@ data class SecondaryStyleConfig(
     val backgroundColorHex: String = "#F5E9DA",
     val isGradientEnabled: Boolean = false,
     val gradientEndColorHex: String = "#F7B267",
+    val emoji: String = "🎨",
 )
 
 /** Builds the full render config for the second overlay button, borrowing shared layout fields from [base]. */
@@ -40,4 +43,5 @@ fun SecondaryStyleConfig.toRenderConfig(base: TextStyleConfig): TextStyleConfig 
     backgroundColorHex = backgroundColorHex,
     isGradientEnabled = isGradientEnabled,
     gradientEndColorHex = gradientEndColorHex,
+    emoji = emoji,
 )
