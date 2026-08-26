@@ -36,7 +36,8 @@ private const val FALLBACK_BUTTON_COLOR = 0xFF5B47E0.toInt()
  * icon when the style's badge is set to "None"); its background circle is tinted with that
  * style's own background color so buttons stay visually distinct at any list length. Styles
  * are read fresh from [stylesProvider] at [showOverlay] time so the buttons always reflect
- * the latest saved list.
+ * the latest saved list; [refreshOverlay] rebuilds an already-visible overlay in place so
+ * style edits made mid-display show up immediately too.
  */
 class OverlayWindowManager(
     private val context: Context,
@@ -223,6 +224,18 @@ class OverlayWindowManager(
                 else -> false
             }
         }
+    }
+
+    /**
+     * Rebuilds the button set in place from the latest [stylesProvider] list — used when
+     * styles are added, removed, or edited while the overlay is already visible, so changes
+     * in Settings show up immediately instead of only on the next show/hide cycle. A no-op
+     * when the overlay isn't currently showing.
+     */
+    fun refreshOverlay() {
+        if (!isShowing) return
+        hideOverlay()
+        showOverlay()
     }
 
     fun hideOverlay() {

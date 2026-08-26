@@ -54,6 +54,7 @@ class TextMonitorAccessibilityService : AccessibilityService() {
         serviceScope.launch {
             settingsRepository.stylesFlow.collect { styles ->
                 currentStyles = styles
+                overlayManager?.refreshOverlay()
             }
         }
         serviceScope.launch {
