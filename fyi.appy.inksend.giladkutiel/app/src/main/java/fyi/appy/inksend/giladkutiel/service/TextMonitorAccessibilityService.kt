@@ -2,6 +2,7 @@ package fyi.appy.inksend.giladkutiel.service
 
 import android.accessibilityservice.AccessibilityService
 import android.os.Bundle
+import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.Toast
@@ -21,12 +22,20 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val WHATSAPP_PACKAGE = "com.whatsapp"
+
 /**
- * Watches WhatsApp's active editable field (scoped via accessibility_service_config's
- * android:packageNames, so events from other apps never reach this service); when its
- * text length falls within the configured bounds, shows one floating overlay button per
- * saved style that renders the text into a styled image using whichever style was
- * tapped, copies it to the clipboard, and clears the field.
+ * Watches WhatsApp's active editable field; when its text length falls within the
+ * configured bounds, shows one floating overlay button per saved style that renders the
+ * text into a styled image using whichever style was tapped, copies it to the clipboard,
+ * and clears the field.
+ *
+ * The accessibility service is no longer package-scoped in its config (that's what lets it
+ * observe the foreground app changing), so styling is kept WhatsApp-only in code: every
+ * text event whose packageName isn't [WHATSAPP_PACKAGE] is ignored. The extra reach is
+ * used only to auto-hide the overlay the instant the user leaves WhatsApp — a
+ * TYPE_WINDOW_STATE_CHANGED from any non-WhatsApp, non-keyboard window tears the buttons
+ * down, and returning to WhatsApp restores them if the tracked field is still focused.
  */
 @AndroidEntryPoint
 class TextMonitorAccessibilityService : AccessibilityService() {
@@ -69,9 +78,13 @@ class TextMonitorAccessibilityService : AccessibilityService() {
         if (event == null) return
 
         when (event.eventType) {
+            AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> handleForegroundWindowChanged(event)
+
             AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED,
             AccessibilityEvent.TYPE_VIEW_FOCUSED,
             -> {
+                // Styling is WhatsApp-only; the service just isn't package-scoped anymore.
+                if (event.packageName?.toString() != WHATSAPP_PACKAGE) return
                 val node = event.source ?: return
                 if (node.isEditable) {
                     activeNode = node
@@ -86,6 +99,38 @@ class TextMonitorAccessibilityService : AccessibilityService() {
                 }
             }
         }
+    }
+
+    /**
+     * Hide the overlay the moment the foreground window belongs to something other than
+     * WhatsApp (home screen, another app, the notification shade), so the buttons never
+     * linger over an app the user isn't styling text in. The soft keyboard popping up over
+     * WhatsApp is itself a separate window whose state change we must ignore, otherwise the
+     * buttons would vanish as soon as the user tapped the message field. Coming back to
+     * WhatsApp re-shows the buttons if the field we were tracking is still the focused one.
+     */
+    private fun handleForegroundWindowChanged(event: AccessibilityEvent) {
+        val pkg = event.packageName?.toString() ?: return
+        when {
+            pkg == WHATSAPP_PACKAGE -> {
+                val node = activeNode ?: return
+                if (node.refresh() && node.isEditable && node.isFocused) {
+                    currentText = node.text?.toString() ?: ""
+                    evaluateOverlayVisibility(currentText)
+                }
+            }
+            isKeyboardPackage(pkg) -> Unit
+            else -> overlayManager?.hideOverlay()
+        }
+    }
+
+    /** The current input method (and our own process) show windows over WhatsApp that must not count as "left WhatsApp". */
+    private fun isKeyboardPackage(pkg: String): Boolean {
+        if (pkg == packageName) return true
+        val ime = Settings.Secure
+            .getString(contentResolver, Settings.Secure.DEFAULT_INPUT_METHOD)
+            ?.substringBefore('/')
+        return pkg == ime
     }
 
     private fun evaluateOverlayVisibility(text: String) {

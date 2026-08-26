@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  typeWindowStateChanged is needed (alongside the text events) so the service can tell
+  when the foreground app changes and hide the overlay the moment the user leaves
+  WhatsApp. That detection requires seeing events from other packages, so there is no
+  android:packageNames filter here; TextMonitorAccessibilityService instead ignores every
+  text event whose packageName isn't com.whatsapp, so styling stays WhatsApp-only.
+-->
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
-    android:accessibilityEventTypes="typeViewTextChanged|typeViewFocused"
+    android:accessibilityEventTypes="typeViewTextChanged|typeViewFocused|typeWindowStateChanged"
     android:accessibilityFeedbackType="feedbackGeneric"
     android:accessibilityFlags="flagDefault|flagRetrieveInteractiveWindows"
     android:canRetrieveWindowContent="true"
     android:description="@string/accessibility_service_description"
-    android:notificationTimeout="100"
-    android:packageNames="com.whatsapp" />
+    android:notificationTimeout="100" />
