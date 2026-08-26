@@ -47,18 +47,20 @@ object ImageRenderer {
         val bitmap = Bitmap.createBitmap(CANVAS_SIZE_PX, CANVAS_SIZE_PX, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
+        // The background is always a 2-stop diagonal gradient — never a flat fill. A style
+        // that defines no explicit end colour (isGradientEnabled == false) still gets one,
+        // derived as a gently shade-shifted variant of its start colour, so every render
+        // has some depth.
+        val startColor = parseColorOrDefault(config.backgroundColorHex, Color.DKGRAY)
+        val endColor =
+            if (config.isGradientEnabled) parseColorOrDefault(config.gradientEndColorHex, startColor)
+            else shadeShift(startColor)
         val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style = Paint.Style.FILL
-            if (config.isGradientEnabled) {
-                shader = LinearGradient(
-                    0f, 0f, CANVAS_SIZE_PX.toFloat(), CANVAS_SIZE_PX.toFloat(),
-                    parseColorOrDefault(config.backgroundColorHex, Color.DKGRAY),
-                    parseColorOrDefault(config.gradientEndColorHex, Color.DKGRAY),
-                    Shader.TileMode.CLAMP,
-                )
-            } else {
-                color = parseColorOrDefault(config.backgroundColorHex, Color.DKGRAY)
-            }
+            shader = LinearGradient(
+                0f, 0f, CANVAS_SIZE_PX.toFloat(), CANVAS_SIZE_PX.toFloat(),
+                startColor, endColor, Shader.TileMode.CLAMP,
+            )
         }
 
         // Full square, no border radius.
@@ -169,4 +171,19 @@ object ImageRenderer {
         } catch (_: IllegalArgumentException) {
             default
         }
+
+    /**
+     * A subtly shifted version of [color] for the gradient's second stop when a style
+     * defines no explicit end colour: dark colours are lightened and light colours are
+     * darkened, each blended ~18% toward white/black. The hue is preserved, so the result
+     * reads as depth rather than a second colour.
+     */
+    private fun shadeShift(color: Int): Int {
+        val luminance =
+            (0.299f * Color.red(color) + 0.587f * Color.green(color) + 0.114f * Color.blue(color)) / 255f
+        val target = if (luminance < 0.5f) 255 else 0
+        val amount = 0.18f
+        fun mix(channel: Int) = (channel + (target - channel) * amount).toInt().coerceIn(0, 255)
+        return Color.rgb(mix(Color.red(color)), mix(Color.green(color)), mix(Color.blue(color)))
+    }
 }

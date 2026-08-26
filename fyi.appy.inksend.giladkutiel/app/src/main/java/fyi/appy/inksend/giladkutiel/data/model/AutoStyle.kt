@@ -31,7 +31,7 @@ enum class Intent(val displayEmoji: String, val styles: List<StyleConfig>) {
     FUNNY(
         "😂",
         listOf(
-            StyleConfig(font = FontChoice.CURSIVE, textColorHex = "#1E1E2E", backgroundColorHex = "#F2C94C", isGradientEnabled = false, emoji = "😂"),
+            StyleConfig(font = FontChoice.CURSIVE, textColorHex = "#1E1E2E", backgroundColorHex = "#F2C94C", isGradientEnabled = true, gradientEndColorHex = "#F7B267", emoji = "😂"),
             StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#FFFFFF", backgroundColorHex = "#E85D9E", isGradientEnabled = true, gradientEndColorHex = "#F7B267", emoji = "🤣"),
             StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#1E1E2E", backgroundColorHex = "#F7B267", isGradientEnabled = true, gradientEndColorHex = "#F2C94C", emoji = "😜"),
         ),
@@ -41,14 +41,14 @@ enum class Intent(val displayEmoji: String, val styles: List<StyleConfig>) {
         listOf(
             StyleConfig(font = FontChoice.SERIF, textColorHex = "#C9B8FF", backgroundColorHex = "#1B2A4A", isGradientEnabled = true, gradientEndColorHex = "#1E1E2E", emoji = "😢"),
             StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#FFFFFF", backgroundColorHex = "#9AA0A6", isGradientEnabled = true, gradientEndColorHex = "#1B2A4A", emoji = "💧"),
-            StyleConfig(font = FontChoice.SERIF, textColorHex = "#89B4FA", backgroundColorHex = "#1E1E2E", isGradientEnabled = false, emoji = "🥀"),
+            StyleConfig(font = FontChoice.SERIF, textColorHex = "#89B4FA", backgroundColorHex = "#1E1E2E", isGradientEnabled = true, gradientEndColorHex = "#1B2A4A", emoji = "🥀"),
         ),
     ),
     ROMANTIC(
         "❤️",
         listOf(
             StyleConfig(font = FontChoice.CURSIVE, textColorHex = "#FFFFFF", backgroundColorHex = "#E85D9E", isGradientEnabled = true, gradientEndColorHex = "#9B59D0", emoji = "❤️"),
-            StyleConfig(font = FontChoice.SERIF, textColorHex = "#D64545", backgroundColorHex = "#F5E9DA", isGradientEnabled = false, emoji = "🌹"),
+            StyleConfig(font = FontChoice.SERIF, textColorHex = "#D64545", backgroundColorHex = "#F5E9DA", isGradientEnabled = true, gradientEndColorHex = "#EAD3C0", emoji = "🌹"),
             StyleConfig(font = FontChoice.CURSIVE, textColorHex = "#1E1E2E", backgroundColorHex = "#C9B8FF", isGradientEnabled = true, gradientEndColorHex = "#E85D9E", emoji = "💕"),
         ),
     ),
@@ -56,15 +56,15 @@ enum class Intent(val displayEmoji: String, val styles: List<StyleConfig>) {
         "😠",
         listOf(
             StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#FFFFFF", backgroundColorHex = "#D64545", isGradientEnabled = true, gradientEndColorHex = "#1E1E2E", emoji = "😤"),
-            StyleConfig(font = FontChoice.MONOSPACE, textColorHex = "#D64545", backgroundColorHex = "#000000", isGradientEnabled = false, emoji = "🔥"),
+            StyleConfig(font = FontChoice.MONOSPACE, textColorHex = "#D64545", backgroundColorHex = "#000000", isGradientEnabled = true, gradientEndColorHex = "#2A0D0D", emoji = "🔥"),
             StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#F2C94C", backgroundColorHex = "#1B2A4A", isGradientEnabled = true, gradientEndColorHex = "#D64545", emoji = "⚡"),
         ),
     ),
     INFORMATIVE(
         "📌",
         listOf(
-            StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#1E1E2E", backgroundColorHex = "#FFFFFF", isGradientEnabled = false, emoji = "📌"),
-            StyleConfig(font = FontChoice.SERIF, textColorHex = "#1B2A4A", backgroundColorHex = "#F5E9DA", isGradientEnabled = false, emoji = "ℹ️"),
+            StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#1E1E2E", backgroundColorHex = "#FFFFFF", isGradientEnabled = true, gradientEndColorHex = "#E6ECF3", emoji = "📌"),
+            StyleConfig(font = FontChoice.SERIF, textColorHex = "#1B2A4A", backgroundColorHex = "#F5E9DA", isGradientEnabled = true, gradientEndColorHex = "#E6EAF0", emoji = "ℹ️"),
             StyleConfig(font = FontChoice.MONOSPACE, textColorHex = "#FFFFFF", backgroundColorHex = "#1B2A4A", isGradientEnabled = true, gradientEndColorHex = "#89B4FA", emoji = "📊"),
         ),
     ),
@@ -81,14 +81,14 @@ enum class Intent(val displayEmoji: String, val styles: List<StyleConfig>) {
         listOf(
             StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#1E1E2E", backgroundColorHex = "#F2C94C", isGradientEnabled = true, gradientEndColorHex = "#F7B267", emoji = "🎉"),
             StyleConfig(font = FontChoice.CURSIVE, textColorHex = "#FFFFFF", backgroundColorHex = "#9B59D0", isGradientEnabled = true, gradientEndColorHex = "#89B4FA", emoji = "🥳"),
-            StyleConfig(font = FontChoice.SERIF, textColorHex = "#5B47E0", backgroundColorHex = "#F5E9DA", isGradientEnabled = false, emoji = "🎊"),
+            StyleConfig(font = FontChoice.SERIF, textColorHex = "#5B47E0", backgroundColorHex = "#F5E9DA", isGradientEnabled = true, gradientEndColorHex = "#E7DAF5", emoji = "🎊"),
         ),
     ),
     CALM(
         "🌿",
         listOf(
             StyleConfig(font = FontChoice.SERIF, textColorHex = "#FFFFFF", backgroundColorHex = "#2DB6A3", isGradientEnabled = true, gradientEndColorHex = "#4CAF7D", emoji = "🌿"),
-            StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#1E1E2E", backgroundColorHex = "#C9B8FF", isGradientEnabled = false, emoji = "🧘"),
+            StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#1E1E2E", backgroundColorHex = "#C9B8FF", isGradientEnabled = true, gradientEndColorHex = "#A9E0D5", emoji = "🧘"),
             StyleConfig(font = FontChoice.SERIF, textColorHex = "#1B2A4A", backgroundColorHex = "#89B4FA", isGradientEnabled = true, gradientEndColorHex = "#F5E9DA", emoji = "☁️"),
         ),
     ),
@@ -96,7 +96,7 @@ enum class Intent(val displayEmoji: String, val styles: List<StyleConfig>) {
         "💪",
         listOf(
             StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#FFFFFF", backgroundColorHex = "#5B47E0", isGradientEnabled = true, gradientEndColorHex = "#1E1E2E", emoji = "💪"),
-            StyleConfig(font = FontChoice.MONOSPACE, textColorHex = "#F2C94C", backgroundColorHex = "#000000", isGradientEnabled = false, emoji = "🏆"),
+            StyleConfig(font = FontChoice.MONOSPACE, textColorHex = "#F2C94C", backgroundColorHex = "#000000", isGradientEnabled = true, gradientEndColorHex = "#1E1E2E", emoji = "🏆"),
             StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#1E1E2E", backgroundColorHex = "#F7B267", isGradientEnabled = true, gradientEndColorHex = "#F2C94C", emoji = "🔥"),
         ),
     ),
@@ -104,7 +104,7 @@ enum class Intent(val displayEmoji: String, val styles: List<StyleConfig>) {
         "🙏",
         listOf(
             StyleConfig(font = FontChoice.SERIF, textColorHex = "#1E1E2E", backgroundColorHex = "#F5E9DA", isGradientEnabled = true, gradientEndColorHex = "#F7B267", emoji = "🙏"),
-            StyleConfig(font = FontChoice.CURSIVE, textColorHex = "#1B2A4A", backgroundColorHex = "#F2C94C", isGradientEnabled = false, emoji = "💛"),
+            StyleConfig(font = FontChoice.CURSIVE, textColorHex = "#1B2A4A", backgroundColorHex = "#F2C94C", isGradientEnabled = true, gradientEndColorHex = "#F7B267", emoji = "💛"),
             StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#FFFFFF", backgroundColorHex = "#F7B267", isGradientEnabled = true, gradientEndColorHex = "#E85D9E", emoji = "🌻"),
         ),
     ),
@@ -114,7 +114,7 @@ enum class Intent(val displayEmoji: String, val styles: List<StyleConfig>) {
         "✨",
         listOf(
             StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#FFFFFF", backgroundColorHex = "#1E1E2E", isGradientEnabled = true, gradientEndColorHex = "#89B4FA", emoji = "✨"),
-            StyleConfig(font = FontChoice.SERIF, textColorHex = "#1E1E2E", backgroundColorHex = "#F5E9DA", isGradientEnabled = false, emoji = "🎨"),
+            StyleConfig(font = FontChoice.SERIF, textColorHex = "#1E1E2E", backgroundColorHex = "#F5E9DA", isGradientEnabled = true, gradientEndColorHex = "#E9DECB", emoji = "🎨"),
             StyleConfig(font = FontChoice.SANS_SERIF, textColorHex = "#FFFFFF", backgroundColorHex = "#5B47E0", isGradientEnabled = true, gradientEndColorHex = "#C9B8FF", emoji = "⭐"),
         ),
     ),

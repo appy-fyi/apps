@@ -21,7 +21,12 @@ data class StyleConfig(
     val id: String = UUID.randomUUID().toString(),
     val font: FontChoice = FontChoice.SANS_SERIF,
     val textColorHex: String = "#FFFFFF",
+    /** Gradient start colour. The renderer always draws a 2-stop gradient, never a flat fill. */
     val backgroundColorHex: String = "#1E1E2E",
+    /**
+     * When true, [gradientEndColorHex] is the gradient's second stop. When false, the renderer
+     * still draws a gradient, deriving the second stop as a shade-shifted [backgroundColorHex].
+     */
     val isGradientEnabled: Boolean = true,
     val gradientEndColorHex: String = "#89B4FA",
     val paddingDp: Int = 32,
