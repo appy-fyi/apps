@@ -47,6 +47,8 @@ class TextMonitorAccessibilityService : AccessibilityService() {
         super.onServiceConnected()
         overlayManager = OverlayWindowManager(
             context = this,
+            primaryEmoji = { currentConfig.emoji },
+            secondaryEmoji = { currentSecondaryConfig.emoji },
             onPrimaryClicked = { handleStyleButtonPressed(currentConfig) },
             onSecondaryClicked = { handleStyleButtonPressed(currentSecondaryConfig.toRenderConfig(currentConfig)) },
         )

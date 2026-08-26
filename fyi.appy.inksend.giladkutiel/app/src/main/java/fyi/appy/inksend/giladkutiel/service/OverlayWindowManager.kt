@@ -10,8 +10,10 @@ import android.view.View
 import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
 import fyi.appy.inksend.giladkutiel.R
 import kotlin.math.abs
 
@@ -20,14 +22,20 @@ private const val BUTTON_SIZE_DP = 56
 private const val BUTTON_SPACING_DP = 12
 private const val DEFAULT_MARGIN_END_PX = 48
 private const val DEFAULT_MARGIN_BOTTOM_PX = 220
+private const val EMOJI_TEXT_SIZE_SP = 26f
 
 /**
  * Inflates, positions, and tears down the pair of floating overlay style buttons via
  * [WindowManager]. Both buttons live inside one draggable container, stacked vertically,
  * so a single drag moves the pair together while each button keeps its own tap target.
+ * Each button's icon is that style's configured emoji badge (falling back to a generic
+ * icon when the style's badge is set to "None"), read fresh at [showOverlay] time so the
+ * buttons always reflect the latest saved styles.
  */
 class OverlayWindowManager(
     private val context: Context,
+    private val primaryEmoji: () -> String,
+    private val secondaryEmoji: () -> String,
     private val onPrimaryClicked: () -> Unit,
     private val onSecondaryClicked: () -> Unit,
 ) {
@@ -69,6 +77,7 @@ class OverlayWindowManager(
             buttonSizePx = buttonSizePx,
             paddingPx = paddingPx,
             backgroundRes = R.drawable.bg_overlay_button,
+            emoji = primaryEmoji(),
             onClick = onPrimaryClicked,
             touchListener = dragListener,
         )
@@ -76,6 +85,7 @@ class OverlayWindowManager(
             buttonSizePx = buttonSizePx,
             paddingPx = paddingPx,
             backgroundRes = R.drawable.bg_overlay_button_secondary,
+            emoji = secondaryEmoji(),
             onClick = onSecondaryClicked,
             touchListener = dragListener,
         )
@@ -101,19 +111,46 @@ class OverlayWindowManager(
         }
     }
 
+    /**
+     * A button's icon is its style's emoji when set, otherwise the generic fallback icon —
+     * both layered in the same [buttonSizePx] square and centered identically so swapping
+     * between them (as the user edits their badge choice) never shifts the tap target.
+     */
     private fun createStyleButton(
         buttonSizePx: Int,
         paddingPx: Int,
         backgroundRes: Int,
+        emoji: String,
         onClick: () -> Unit,
         touchListener: View.OnTouchListener,
-    ): ImageView = ImageView(context).apply {
-        layoutParams = LinearLayout.LayoutParams(buttonSizePx, buttonSizePx)
-        setImageResource(R.drawable.ic_style_convert)
-        setBackgroundResource(backgroundRes)
-        setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
-        setOnClickListener { onClick() }
-        setOnTouchListener(touchListener)
+    ): FrameLayout {
+        val fallbackIcon = ImageView(context).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT,
+            )
+            setImageResource(R.drawable.ic_style_convert)
+            visibility = if (emoji.isBlank()) View.VISIBLE else View.GONE
+        }
+        val emojiLabel = TextView(context).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT,
+            )
+            text = emoji
+            textSize = EMOJI_TEXT_SIZE_SP
+            gravity = Gravity.CENTER
+            visibility = if (emoji.isBlank()) View.GONE else View.VISIBLE
+        }
+        return FrameLayout(context).apply {
+            layoutParams = LinearLayout.LayoutParams(buttonSizePx, buttonSizePx)
+            setBackgroundResource(backgroundRes)
+            setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
+            addView(fallbackIcon)
+            addView(emojiLabel)
+            setOnClickListener { onClick() }
+            setOnTouchListener(touchListener)
+        }
     }
 
     /**
