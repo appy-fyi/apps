@@ -369,9 +369,10 @@ private fun EmojiPicker(selected: String, onSelect: (String) -> Unit) {
             modifier = Modifier.fillMaxWidth(),
         ) {
             EmojiChoiceChip(
-                content = { Text(stringResource(R.string.emoji_none_choice), fontSize = 22.sp) },
+                content = { Box(modifier = Modifier.size(22.dp)) },
                 isSelected = selected.isBlank(),
                 onClick = { onSelect("") },
+                backgroundColor = Color.White,
             )
             EMOJI_BADGE_CHOICES.forEach { emoji ->
                 EmojiChoiceChip(
@@ -385,12 +386,18 @@ private fun EmojiPicker(selected: String, onSelect: (String) -> Unit) {
 }
 
 @Composable
-private fun EmojiChoiceChip(content: @Composable () -> Unit, isSelected: Boolean, onClick: () -> Unit) {
+private fun EmojiChoiceChip(
+    content: @Composable () -> Unit,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    backgroundColor: Color? = null,
+) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(10.dp))
             .background(
-                if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+                backgroundColor
+                    ?: if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
             )
             .border(
                 width = if (isSelected) 2.dp else 1.dp,

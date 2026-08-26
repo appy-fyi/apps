@@ -25,7 +25,6 @@
 
     <string name="emoji_badge_label">Emoji-Abzeichen (optional)</string>
     <string name="emoji_badge_description">Wird oben links im Bild angezeigt. Wähle „Kein“, um kein Abzeichen anzuzeigen.</string>
-    <string name="emoji_none_choice">Kein</string>
 
     <string name="gradient_toggle_label">Verlaufshintergrund aktivieren</string>
     <string name="text_color_label">Textfarbe</string>

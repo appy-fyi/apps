@@ -25,7 +25,6 @@
 
     <string name="emoji_badge_label">Selo de emoji (opcional)</string>
     <string name="emoji_badge_description">Desenhado no canto superior esquerdo da imagem. Escolha Nenhum para não exibir selo.</string>
-    <string name="emoji_none_choice">Nenhum</string>
 
     <string name="gradient_toggle_label">Ativar fundo em gradiente</string>
     <string name="text_color_label">Cor do texto</string>

@@ -25,7 +25,6 @@
 
     <string name="emoji_badge_label">Badge emoji (facultatif)</string>
     <string name="emoji_badge_description">Dessiné dans le coin supérieur gauche de l\'image. Choisissez Aucun pour ne pas afficher de badge.</string>
-    <string name="emoji_none_choice">Aucun</string>
 
     <string name="gradient_toggle_label">Activer le fond dégradé</string>
     <string name="text_color_label">Couleur du texte</string>

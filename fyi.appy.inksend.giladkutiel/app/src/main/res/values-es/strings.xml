@@ -25,7 +25,6 @@
 
     <string name="emoji_badge_label">Insignia de emoji (opcional)</string>
     <string name="emoji_badge_description">Se dibuja en la esquina superior izquierda de la imagen. Elige Ninguno para no mostrar insignia.</string>
-    <string name="emoji_none_choice">Ninguno</string>
 
     <string name="gradient_toggle_label">Activar fondo degradado</string>
     <string name="text_color_label">Color del texto</string>

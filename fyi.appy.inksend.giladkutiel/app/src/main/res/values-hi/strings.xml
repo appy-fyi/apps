@@ -25,7 +25,6 @@
 
     <string name="emoji_badge_label">इमोजी बैज (वैकल्पिक)</string>
     <string name="emoji_badge_description">छवि के ऊपरी-बाएं कोने में दिखाया जाता है। बैज न दिखाने के लिए कोई नहीं चुनें।</string>
-    <string name="emoji_none_choice">कोई नहीं</string>
 
     <string name="gradient_toggle_label">ग्रेडिएंट बैकग्राउंड सक्षम करें</string>
     <string name="text_color_label">टेक्स्ट रंग</string>
