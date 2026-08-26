@@ -41,10 +41,11 @@
       "description": "A background AccessibilityService watches the actively focused editable field system-wide and shows a small floating overlay button whenever the typed text's trimmed length falls within the user-configured min/max bounds.",
       "acceptance_criteria": [
         "Typing in any editable field in any app shows the overlay once trimmed length is within [minTextLength, maxTextLength].",
+        "The overlay never appears for an empty field, even if the user configures minTextLength down to 0.",
         "Overlay hides immediately when length falls back out of bounds or focus moves to a non-editable view.",
         "Overlay position and visibility react live to settings changes without restarting the app."
       ],
-      "implementation_notes": "TextMonitorAccessibilityService (AccessibilityService, @AndroidEntryPoint) listens for TYPE_VIEW_TEXT_CHANGED/TYPE_VIEW_FOCUSED, tracks the current AccessibilityNodeInfo + text, and delegates the length check to a pure TextLengthEvaluator.isWithinBounds() so the boundary logic is unit-testable outside the framework. OverlayWindowManager owns a WindowManager TYPE_APPLICATION_OVERLAY view (Gravity.BOTTOM|END) shown/hidden via addView/removeView."
+      "implementation_notes": "TextMonitorAccessibilityService (AccessibilityService, @AndroidEntryPoint) listens for TYPE_VIEW_TEXT_CHANGED/TYPE_VIEW_FOCUSED, tracks the current AccessibilityNodeInfo + text, and delegates the length check to a pure TextLengthEvaluator.isWithinBounds() so the boundary logic is unit-testable outside the framework. isWithinBounds() requires trimmedLength > 0 in addition to the configured [minLength, maxLength] range, guaranteeing the overlay only shows once the user has actually entered text. OverlayWindowManager owns a WindowManager TYPE_APPLICATION_OVERLAY view (Gravity.BOTTOM|END) shown/hidden via addView/removeView."
     },
     {
       "name": "Styled Image Rendering",
@@ -110,9 +111,10 @@
       "kind": "unit",
       "scenario": "Text-length boundary evaluation",
       "steps": [
-        "Call TextLengthEvaluator.isWithinBounds with lengths below, at, and above the configured min/max bounds."
+        "Call TextLengthEvaluator.isWithinBounds with lengths below, at, and above the configured min/max bounds.",
+        "Call it again with trimmedLength = 0 and minLength = 0."
       ],
-      "expected": "Lengths strictly below minLength or strictly above maxLength return false; lengths equal to either bound or in between return true."
+      "expected": "Lengths strictly below minLength or strictly above maxLength return false; lengths equal to either bound or in between return true. A trimmedLength of 0 always returns false, even when minLength is 0."
     },
     {
       "kind": "instrumented",

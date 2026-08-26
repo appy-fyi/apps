@@ -30,4 +30,9 @@ class TextLengthEvaluatorTest {
     fun `length in the middle of the range is within bounds`() {
         assertTrue(TextLengthEvaluator.isWithinBounds(trimmedLength = 50, minLength = 3, maxLength = 280))
     }
+
+    @Test
+    fun `empty text is out of bounds even when minimum length is zero`() {
+        assertFalse(TextLengthEvaluator.isWithinBounds(trimmedLength = 0, minLength = 0, maxLength = 280))
+    }
 }
