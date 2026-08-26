@@ -326,7 +326,7 @@ object AutoStyle {
         val fonts = if (isHebrew) intent.hebrewFonts else intent.englishFonts
         val font = fonts.random(random)
         val gradient = intent.gradients.random(random)
-        var emojis = EmojiLexicon.select(TextTokens.stemList(translatedText), translatedText)
+        var emojis = EmojiLexicon.select(TextTokens.stemList(translatedText), translatedText, random = random)
         if (emojis == listOf(EmojiLexicon.DEFAULT)) {
             val hebrew = if (isHebrew) HebrewFallback.emojis(originalText) else emptyList()
             emojis = hebrew.ifEmpty { INTENT_EMOJIS.getValue(intent) }

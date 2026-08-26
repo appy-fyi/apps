@@ -2,18 +2,20 @@ package fyi.appy.inksend.giladkutiel.data.model
 
 import fyi.appy.inksend.giladkutiel.text.PorterStemmer
 import fyi.appy.inksend.giladkutiel.text.TextTokens
+import kotlin.random.Random
 
 /**
  * Maps the words a message uses to emojis for the rendered image. The pipeline picks **up to
- * three** emojis for the bottom strip: any emoji the user already typed (kept in the order
- * they appear), then one per matching keyword stem, in first-seen order. When nothing
- * matches at all it falls back to the single ink-drop [DEFAULT] — the app's namesake glyph.
+ * three** emojis: any emoji the user already typed (kept in the order they appear), then the
+ * matching keyword stems in first-seen order. When nothing matches at all it falls back to
+ * the single ink-drop [DEFAULT] — the app's namesake glyph.
  *
- * [STEM_TO_EMOJI] is keyed by [PorterStemmer] output: each human-readable keyword below is
+ * [STEM_TO_EMOJIS] is keyed by [PorterStemmer] output: each human-readable keyword below is
  * run through the same stemmer [TextTokens] uses at query time, so "party", "partying" and
- * "parties" all resolve to the one 🎉 entry that "party" seeds. There are well over 100
- * distinct emojis here, spread across faces, feelings, symbols, nature, animals, food,
- * travel, activities and objects.
+ * "parties" all resolve to the one "parti" bucket that "party" seeds. The stem→emoji relation
+ * is **many-to-many**: a stem can list several emojis ("night" → 🌙 😴 🛌) and an emoji can be
+ * shared by several stems. There are well over 100 distinct emojis here, spread across faces,
+ * feelings, symbols, nature, animals, food, travel, activities and objects.
  */
 object EmojiLexicon {
 
@@ -54,7 +56,7 @@ object EmojiLexicon {
         "storm" to "⛈️", "rainbow" to "🌈", "flower" to "🌸", "rose" to "🌹", "tree" to "🌳",
         "leaf" to "🍃", "plant" to "🌱", "cactus" to "🌵", "mountain" to "⛰️", "ocean" to "🌊",
         "wave" to "🌊", "earth" to "🌍", "lightning" to "⚡", "wind" to "🌬️", "sunrise" to "🌅",
-        "night" to "🌌", "sprout" to "🌿",
+        "night" to "🌙", "sprout" to "🌿",
         // animals
         "dog" to "🐶", "cat" to "🐱", "bird" to "🐦", "fish" to "🐟", "lion" to "🦁",
         "tiger" to "🐯", "bear" to "🐻", "panda" to "🐼", "monkey" to "🐵", "rabbit" to "🐰",
@@ -153,23 +155,81 @@ object EmojiLexicon {
         // quantities & qualities
         "new" to "🆕", "fast" to "💨", "slow" to "🐌", "free" to "🆓", "full" to "💯",
         "top" to "🔝", "first" to "🥇", "third" to "🥉", "huge" to "🐘", "tiny" to "🐜",
+        // many-to-many: extra emojis for vivid stems (the primary — the row above — stays
+        // first in the bucket; these are the alternates a random pick can land on).
+        "night" to "😴", "night" to "🛌", "night" to "🌌",
+        "moon" to "🌕", "moon" to "🌑",
+        "sun" to "🌞", "sun" to "🔆",
+        "love" to "❤️", "love" to "🥰",
+        "happy" to "😄", "happy" to "🥳",
+        "joy" to "😊", "joy" to "🥳",
+        "sad" to "😢", "sad" to "😔",
+        "cry" to "😭", "cry" to "💧",
+        "laugh" to "🤣", "laugh" to "😹",
+        "funny" to "😂", "funny" to "😆",
+        "angry" to "😡", "angry" to "😤",
+        "fire" to "🥵", "fire" to "🎆",
+        "star" to "🌟", "star" to "✨",
+        "heart" to "💖", "heart" to "💗",
+        "party" to "🎉", "party" to "🎊",
+        "gift" to "🎀", "gift" to "🛍️",
+        "music" to "🎶", "music" to "🎧",
+        "dog" to "🐕", "dog" to "🦴",
+        "cat" to "🐈", "cat" to "😺",
+        "rain" to "☔", "rain" to "💧",
+        "snow" to "⛄", "snow" to "🌨️",
+        "work" to "💻", "work" to "🧑‍💻",
+        "money" to "💵", "money" to "🤑",
+        "birthday" to "🎈", "birthday" to "🥳",
+        "kiss" to "💋", "kiss" to "😗",
+        "hug" to "🫂",
+        "sleep" to "🛌", "sleep" to "💤",
+        "sick" to "🤢", "sick" to "🤧",
+        "win" to "🏆", "win" to "🎉",
+        "flower" to "🌺", "flower" to "🌼",
+        "tree" to "🌲", "tree" to "🎄",
+        "ocean" to "🏄", "ocean" to "🐚",
+        "book" to "📖", "book" to "📕",
+        "phone" to "☎️", "phone" to "📲",
+        "home" to "🏡", "home" to "🛋️",
+        "car" to "🚙", "car" to "🏎️",
+        "rocket" to "🛸", "rocket" to "🌠",
+        "coffee" to "🫖", "coffee" to "🧋",
     )
 
-    /** Stem → emoji, first entry wins on stem collisions. */
-    val STEM_TO_EMOJI: Map<String, String> = buildMap {
+    /**
+     * Stem → **every** emoji seen for it, in declared order and de-duplicated (the primary
+     * mapping first). The relation is many-to-many: one stem can carry several emojis
+     * ("night" → 🌙 😴 🛌) and one emoji can be shared by several stems.
+     */
+    val STEM_TO_EMOJIS: Map<String, List<String>> = buildMap<String, MutableList<String>> {
         val stemmer = PorterStemmer()
-        for ((word, emoji) in KEYWORDS) putIfAbsent(stemmer.stem(word), emoji)
-    }
+        for ((word, emoji) in KEYWORDS) {
+            val stem = stemmer.stem(word)
+            if (stem.isEmpty()) continue
+            val bucket = getOrPut(stem) { mutableListOf() }
+            if (emoji !in bucket) bucket.add(emoji)
+        }
+    }.mapValues { it.value.toList() }
 
-    /** Every distinct emoji this lexicon can produce — 100+, used for "already typed" hits. */
+    /** Every distinct emoji this lexicon can produce, used for "already typed" hits. */
     val ALL_EMOJIS: List<String> = KEYWORDS.map { it.second }.distinct()
 
     /**
      * Up to [max] emojis for [translatedText] given its precomputed [stems]: emojis the user
-     * already typed first (in the order they appear), then one per matching keyword stem in
-     * first-seen order, de-duplicated. Falls back to [DEFAULT] when the result would be empty.
+     * already typed first (in the order they appear), then the matching keyword stems in
+     * first-seen order — one emoji per stem per pass, cycling back for more until [max] is
+     * reached, so a single rich stem ("night") can still fill the strip. When [random] is
+     * given, each stem's bucket is shuffled with it (fresh image per tap); without it the
+     * buckets keep their declared order, so the result is deterministic. Falls back to
+     * [DEFAULT] when nothing matched.
      */
-    fun select(stems: List<String>, translatedText: String, max: Int = 3): List<String> {
+    fun select(
+        stems: List<String>,
+        translatedText: String,
+        max: Int = 3,
+        random: Random? = null,
+    ): List<String> {
         val picked = LinkedHashSet<String>()
 
         ALL_EMOJIS.asSequence()
@@ -177,15 +237,21 @@ object EmojiLexicon {
             .sortedBy { translatedText.indexOf(it) }
             .forEach { if (picked.size < max) picked.add(it) }
 
-        for (stem in stems) {
-            if (picked.size >= max) break
-            STEM_TO_EMOJI[stem]?.let { picked.add(it) }
+        val buckets = stems.mapNotNull { STEM_TO_EMOJIS[it] }
+            .map { if (random != null) it.shuffled(random) else it }
+        var pass = 0
+        while (picked.size < max && buckets.any { pass < it.size }) {
+            for (bucket in buckets) {
+                if (picked.size >= max) break
+                bucket.getOrNull(pass)?.let { picked.add(it) }
+            }
+            pass++
         }
 
         return if (picked.isEmpty()) listOf(DEFAULT) else picked.take(max)
     }
 
     /** Convenience overload that tokenizes [translatedText] itself. */
-    fun select(translatedText: String, max: Int = 3): List<String> =
-        select(TextTokens.stemList(translatedText), translatedText, max)
+    fun select(translatedText: String, max: Int = 3, random: Random? = null): List<String> =
+        select(TextTokens.stemList(translatedText), translatedText, max, random)
 }

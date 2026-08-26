@@ -1,6 +1,7 @@
 TODO:
-    Emojis: 
-        - Spread the emojis around the borders (-90deg, 30deg, 150deg) instead of just at the bottom.
+    Emojis:
+        - Expand the vocabulary of emojis to at least 2000 stems.
+        - Pick at most 3 emojis and place them around the image (-90deg, 30deg, 150deg) instead of just at the bottom.
     Button:
         - Make a loading indicator for the button when busy (e.g. translating, downloading language model, etc...)
 DONE:
@@ -93,3 +94,15 @@ DONE:
               clitic-tolerant, multi-word needles first; used before the intent-keyword net.
             - Tests: AutoStyleTest batch (no realistic EN/HE message renders 🫟) +
               HebrewFallbackTest concept-word/clitic cases.
+
+    Emojis:
+        - stem -> emojis is now many-to-many.
+          EmojiLexicon.STEM_TO_EMOJIS: Map<String, List<String>> accumulates every emoji seen
+          for a stem (primary first, de-duped); one emoji can be shared by many stems. ~50
+          vivid stems enriched with alternates (night -> 🌙 😴 🛌 🌌, moon -> 🌙 🌕 🌑, ...).
+          select(stems, text, max, random?): "already typed" emojis first, then the matching
+          stems round-robin — one per stem per pass, cycling until max — so a single rich stem
+          can fill the strip. With a random the per-stem bucket is shuffled (fresh image per
+          tap); without one it's deterministic (primary emoji), which keeps existing callers
+          and tests stable. AutoStyle.planFor threads its Random through.
+          Tests: EmojiLexiconTest many-to-many + deterministic-vs-RNG cases (51 JVM pass).

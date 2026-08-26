@@ -3,8 +3,43 @@ package fyi.appy.inksend.giladkutiel.data.model
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlin.random.Random
 
 class EmojiLexiconTest {
+
+    @Test
+    fun `the stem to emoji relation is many-to-many`() {
+        // one stem -> several emojis
+        val night = EmojiLexicon.STEM_TO_EMOJIS.getValue("night")
+        val moon = EmojiLexicon.STEM_TO_EMOJIS.getValue("moon")
+        assertTrue("night carries several emojis, got $night", night.size >= 3)
+        assertTrue("moon carries several emojis, got $moon", moon.size >= 3)
+        // several stems -> one shared emoji
+        assertTrue("🌙" in night && "🌙" in moon)
+    }
+
+    @Test
+    fun `without an RNG selection is deterministic and keeps each stem's primary emoji`() {
+        val primary = EmojiLexicon.STEM_TO_EMOJIS.getValue("night").first()
+        repeat(5) {
+            assertEquals(listOf(primary), EmojiLexicon.select(listOf("night"), "night", max = 1))
+        }
+    }
+
+    @Test
+    fun `with an RNG a rich stem varies its pick and can fill the strip alone`() {
+        val night = EmojiLexicon.STEM_TO_EMOJIS.getValue("night")
+        val seen = (0 until 40)
+            .map { seed -> EmojiLexicon.select(listOf("night"), "x", max = 1, random = Random(seed)).single() }
+            .toSet()
+        assertTrue("expected varied picks across seeds, got $seen", seen.size >= 2)
+        assertTrue("every pick must come from the night bucket", seen.all { it in night })
+
+        val strip = EmojiLexicon.select(listOf("night"), "x", max = 3, random = Random(1))
+        assertEquals(3, strip.size)
+        assertEquals(3, strip.toSet().size)
+        assertTrue(strip.all { it in night })
+    }
 
     @Test
     fun `has at least 100 distinct emojis`() {
