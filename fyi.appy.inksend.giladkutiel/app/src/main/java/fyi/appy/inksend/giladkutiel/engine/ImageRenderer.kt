@@ -29,8 +29,9 @@ import java.util.concurrent.ConcurrentHashMap
  *  - the background is always a 2-stop diagonal gradient (never a flat fill);
  *  - the text sits at the **top**, aligned to the start — left for LTR, right for RTL —
  *    which `ALIGN_NORMAL` + the first-strong direction heuristic give for free;
- *  - up to three emojis sit in a strip along the **bottom**, centered horizontally;
- *  - the font size is binary-searched to fill the space above the emoji strip, wrapping
+ *  - up to three emojis sit in a row along the **bottom**, centered as a group with an
+ *    even gap between adjacent glyphs;
+ *  - the font size is binary-searched to fill the space above the emoji row, wrapping
  *    between words but never breaking one, and clamped between [MIN_FONT_SIZE_PX] and
  *    [MAX_FONT_SIZE_PX] so it is never microscopic or absurdly large.
  */
@@ -42,9 +43,21 @@ object ImageRenderer {
     private const val MAX_FONT_SIZE_PX = 300f
     private const val FONT_SIZE_SEARCH_STEPS = 22
 
-    /** Fraction of the square reserved at the bottom for the emoji strip when there is one. */
+    /** Fraction of the square reserved at the bottom for the emoji row when there is one. */
     private const val EMOJI_BAND_RATIO = 0.22f
     private const val TEXT_TO_EMOJI_GAP_PX = 14f
+
+    /** Emoji glyph size as a fraction of the canvas edge. */
+    private const val EMOJI_GLYPH_RATIO = 0.15f
+
+    /** Horizontal gap between adjacent emojis in the bottom row. */
+    private const val EMOJI_SPACING_PX = 24f
+
+    /** Fewest px an emoji glyph is allowed to shrink to when the row is squeezed to fit. */
+    private const val MIN_EMOJI_SIZE_PX = 16f
+
+    /** How many emojis the bottom row shows at most. */
+    private const val MAX_EMOJIS = 3
 
     private val typefaceCache = ConcurrentHashMap<String, Typeface>()
 
@@ -81,25 +94,39 @@ object ImageRenderer {
         layout.draw(canvas)
         canvas.restore()
 
-        if (hasEmoji) drawEmojiStrip(canvas, plan.emojis)
+        if (hasEmoji) drawEmojiRow(canvas, plan.emojis)
 
         return bitmap
     }
 
-    /** Draws up to three emojis centered horizontally in the bottom strip. */
-    private fun drawEmojiStrip(canvas: Canvas, emojis: List<String>) {
-        val joined = emojis.take(3).joinToString("  ")
-        val maxWidth = CANVAS_SIZE_PX - PADDING_PX * 2
+    /**
+     * Draws up to three emojis in a row along the bottom of the image, centered as a group
+     * with an [EMOJI_SPACING_PX] gap between adjacent glyphs, shrinking the glyphs together
+     * if the row would otherwise be wider than the padded content width.
+     */
+    private fun drawEmojiRow(canvas: Canvas, emojis: List<String>) {
+        val picked = emojis.take(MAX_EMOJIS)
+        if (picked.isEmpty()) return
+
+        val maxWidth = (CANVAS_SIZE_PX - PADDING_PX * 2).toFloat()
         val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             typeface = Typeface.DEFAULT
-            textSize = CANVAS_SIZE_PX * EMOJI_BAND_RATIO * 0.62f
+            textSize = CANVAS_SIZE_PX * EMOJI_GLYPH_RATIO
         }
-        while (paint.measureText(joined) > maxWidth && paint.textSize > 16f) {
+
+        fun glyphsWidth() = picked.fold(0f) { acc, emoji -> acc + paint.measureText(emoji) }
+        fun rowWidth() = glyphsWidth() + EMOJI_SPACING_PX * (picked.size - 1)
+
+        while (rowWidth() > maxWidth && paint.textSize > MIN_EMOJI_SIZE_PX) {
             paint.textSize -= 2f
         }
-        val x = (CANVAS_SIZE_PX - paint.measureText(joined)) / 2f
+
+        var x = (CANVAS_SIZE_PX - rowWidth()) / 2f
         val baselineY = CANVAS_SIZE_PX - PADDING_PX - paint.descent()
-        canvas.drawText(joined, x, baselineY, paint)
+        for (emoji in picked) {
+            canvas.drawText(emoji, x, baselineY, paint)
+            x += paint.measureText(emoji) + EMOJI_SPACING_PX
+        }
     }
 
     /**

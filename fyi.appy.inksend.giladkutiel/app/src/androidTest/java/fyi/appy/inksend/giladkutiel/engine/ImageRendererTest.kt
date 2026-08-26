@@ -44,11 +44,15 @@ class ImageRendererTest {
     }
 
     @Test
-    fun rendersWithAndWithoutAnEmojiStrip() {
-        val withEmoji = ImageRenderer.renderBitmap(context, "Hello", plan(emojis = listOf("😂", "🎉", "❤️")))
-        val withoutEmoji = ImageRenderer.renderBitmap(context, "Hello", plan(emojis = emptyList()))
-        assertTrue(withEmoji.width == 512 && withEmoji.height == 512)
-        assertTrue(withoutEmoji.width == 512 && withoutEmoji.height == 512)
+    fun rendersABottomEmojiRowWithoutBreakingTheFixedSquare() {
+        val one = ImageRenderer.renderBitmap(context, "Hello", plan(emojis = listOf("😂")))
+        val two = ImageRenderer.renderBitmap(context, "Hello", plan(emojis = listOf("😂", "🎉")))
+        val three = ImageRenderer.renderBitmap(context, "Hello", plan(emojis = listOf("😂", "🎉", "❤️")))
+        val overflow = ImageRenderer.renderBitmap(context, "Hello", plan(emojis = listOf("😂", "🎉", "❤️", "🔥")))
+        val none = ImageRenderer.renderBitmap(context, "Hello", plan(emojis = emptyList()))
+        for (bitmap in listOf(one, two, three, overflow, none)) {
+            assertTrue(bitmap.width == 512 && bitmap.height == 512)
+        }
     }
 
     @Test

@@ -1,7 +1,6 @@
 TODO:
     Emojis:
         - Expand the vocabulary of emojis to at least 2000 stems.
-        - Pick at most 3 emojis and place them around the image (-90deg, 30deg, 150deg) instead of just at the bottom.
     Button:
         - Make a loading indicator for the button when busy (e.g. translating, downloading language model, etc...)
 DONE:
@@ -106,3 +105,12 @@ DONE:
           tap); without one it's deterministic (primary emoji), which keeps existing callers
           and tests stable. AutoStyle.planFor threads its Random through.
           Tests: EmojiLexiconTest many-to-many + deterministic-vs-RNG cases (51 JVM pass).
+        - Pick at most 3 emojis and place them at the bottom, horizontally centered with
+          space between them.
+          ImageRenderer: drawEmojiStrip -> drawEmojiRow. Up to MAX_EMOJIS (3) emojis drawn
+          left-to-right at glyph size 0.15*512 with an EMOJI_SPACING_PX (24px) gap between
+          adjacent glyphs, the whole group centered on the canvas width, its baseline just
+          above the bottom padding. The row shrinks the glyphs together (down to
+          MIN_EMOJI_SIZE_PX = 16px) if it would exceed the padded content width. A 4th+
+          emoji is ignored; the fitted text still reserves the 0.22*512 bottom band.
+          Tests: ImageRendererTest bottom-emoji-row (1/2/3/4/none stay 512^2).

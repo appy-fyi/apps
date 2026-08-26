@@ -59,7 +59,7 @@
     "Settings"
    ],
    "est_hours": 20,
-   "description": "Renders the captured text into a fixed 512x512 PNG square from a fully-resolved RenderPlan (bundled font asset, two gradient stops, an auto-contrast text colour, and up to three emojis). The background is always a 2-stop diagonal gradient. The text sits at the TOP, aligned to the start edge — left for LTR, right for RTL. Up to three emojis sit in a strip along the BOTTOM, centered horizontally. Font size is auto-computed to fill the space above the emoji strip, wrapping between words but never breaking one, clamped between a min and max guardian. Sharp corners.",
+   "description": "Renders the captured text into a fixed 512x512 PNG square from a fully-resolved RenderPlan (bundled font asset, two gradient stops, an auto-contrast text colour, and up to three emojis). The background is always a 2-stop diagonal gradient. The text sits at the TOP, aligned to the start edge — left for LTR, right for RTL. Up to three emojis sit in a row along the BOTTOM, centered as a group with an even gap between adjacent glyphs and shrunk together to fit the padded width if needed. Font size is auto-computed to fill the space above the emoji row, wrapping between words but never breaking one, clamped between a min and max guardian. Sharp corners.",
    "acceptance_criteria": [
     "The rendered bitmap is always exactly 512x512, regardless of text length.",
     "Long strings wrap across multiple lines without overflowing the bitmap bounds; font size shrinks automatically to fit and is clamped to the 15px-300px guardians.",
@@ -68,11 +68,11 @@
     "The text block is anchored to the top padding and aligned to the start edge; a Hebrew (RTL) line hugs the right edge, an English line the left.",
     "An invalid hex color string falls back to a default color instead of crashing.",
     "The background is always a 2-stop diagonal gradient, never a flat fill.",
-    "When the plan carries 1-3 emojis they are drawn as a horizontally-centered strip along the bottom edge, shrunk to fit the width if needed; an empty emoji list draws no strip.",
-    "The emoji glyphs render as proper glyphs (color emoji on modern devices) rather than tofu, since the strip is drawn with Typeface.DEFAULT regardless of the plan's text font.",
+    "When the plan carries 1-3 emojis they are drawn as a horizontally-centered row along the bottom edge with an even gap between adjacent glyphs, shrunk together to fit the width if needed; a 4th+ emoji is ignored and an empty emoji list draws none.",
+    "The emoji glyphs render as proper glyphs (color emoji on modern devices) rather than tofu, since the row is drawn with Typeface.DEFAULT regardless of the plan's text font.",
     "A missing or unreadable font asset path falls back to the system bold typeface instead of crashing."
    ],
-   "implementation_notes": "ImageRenderer.renderBitmap(context, text, plan: RenderPlan). buildFittedLayout() binary-searches the largest text size (15px-300px guardians) whose StaticLayout both fits the available height (square minus padding minus the bottom emoji band when there is one) AND keeps its widest unbreakable unit within the content width — a height-only check would accept sizes that only 'fit' by letting Android's line breaker split an overlong word. widestUnbreakableWidth() measures the spans between consecutive android.icu.text.BreakIterator.getLineInstance(ULocale.ROOT) boundaries (trailing whitespace trimmed), so space-delimited scripts break on words and space-less scripts (CJK/Thai/Lao/Khmer) break on characters. The layout uses Layout.Alignment.ALIGN_NORMAL + TextDirectionHeuristics.FIRSTSTRONG_LTR, so it is start-aligned and RTL-aware for free, and is drawn translated to the top-left padding corner (top-anchored, not vertically centered). The background is an always-on 2-stop diagonal LinearGradient from plan.gradientStartHex to plan.gradientEndHex. When plan.emojis is non-empty, drawEmojiStrip() joins up to three of them, picks a size ~= 0.22*512*0.62, shrinks it until it fits the content width, and draws it horizontally centered with its baseline just above the bottom padding, using Typeface.DEFAULT so the system color-emoji font is reached regardless of the text font. Fonts are loaded with Typeface.createFromAsset(assets, plan.fontAssetPath) through a ConcurrentHashMap cache, falling back to Typeface.DEFAULT_BOLD on failure. generateStyledImageUri() writes the PNG to cacheDir/images and returns a FileProvider content URI. StyleConfig / FontChoice / resolveTypeface / shadeShift are gone."
+   "implementation_notes": "ImageRenderer.renderBitmap(context, text, plan: RenderPlan). buildFittedLayout() binary-searches the largest text size (15px-300px guardians) whose StaticLayout both fits the available height (square minus padding minus the bottom emoji band when there is one) AND keeps its widest unbreakable unit within the content width — a height-only check would accept sizes that only 'fit' by letting Android's line breaker split an overlong word. widestUnbreakableWidth() measures the spans between consecutive android.icu.text.BreakIterator.getLineInstance(ULocale.ROOT) boundaries (trailing whitespace trimmed), so space-delimited scripts break on words and space-less scripts (CJK/Thai/Lao/Khmer) break on characters. The layout uses Layout.Alignment.ALIGN_NORMAL + TextDirectionHeuristics.FIRSTSTRONG_LTR, so it is start-aligned and RTL-aware for free, and is drawn translated to the top-left padding corner (top-anchored, not vertically centered). The background is an always-on 2-stop diagonal LinearGradient from plan.gradientStartHex to plan.gradientEndHex. When plan.emojis is non-empty, drawEmojiRow() takes up to MAX_EMOJIS (3) of them, lays them left-to-right at glyph size 0.15*512 with an EMOJI_SPACING_PX (24px) gap between adjacent glyphs, shrinks the glyphs together by 2px steps (down to MIN_EMOJI_SIZE_PX = 16px) until the row fits the padded content width, then centers the group on the canvas width with its baseline just above the bottom padding, using Typeface.DEFAULT so the system color-emoji font is reached regardless of the text font. The fitted-text height reserves a bottom band of 0.22*512 for the row. Fonts are loaded with Typeface.createFromAsset(assets, plan.fontAssetPath) through a ConcurrentHashMap cache, falling back to Typeface.DEFAULT_BOLD on failure. generateStyledImageUri() writes the PNG to cacheDir/images and returns a FileProvider content URI. StyleConfig / FontChoice / resolveTypeface / shadeShift are gone."
   },
   {
    "name": "Clipboard Copy & Field Clear",
@@ -216,11 +216,11 @@
   },
   {
    "kind": "instrumented",
-   "scenario": "Emoji strip renders without breaking the fixed square",
+   "scenario": "Bottom emoji row renders without breaking the fixed square",
    "steps": [
-    "Render with a RenderPlan carrying three emojis, and again with an empty emoji list."
+    "Render with RenderPlans carrying one, two, three and four emojis, and again with an empty emoji list."
    ],
-   "expected": "Both produce a 512x512 bitmap; the three-emoji case draws a horizontally-centered bottom strip, the empty case draws none."
+   "expected": "Every case produces a 512x512 bitmap; 1-3 emojis form a horizontally-centered bottom row with even gaps, a 4th is ignored, and the empty case draws none."
   },
   {
    "kind": "instrumented",
@@ -303,7 +303,7 @@
     {
      "name": "emojis",
      "type": "List<String>",
-     "notes": "0-3 emojis for the bottom strip; [\"🫟\"] when the text matched no keyword"
+     "notes": "0-3 emojis for the bottom row; [\"🫟\"] when the text matched no keyword"
     }
    ],
    "notes": "Not persisted. The fully-resolved draw instruction produced by AutoStyle.planFor(originalText, translatedText). Replaces the old StyleConfig/FontChoice; the renderer does no lookups of its own.",
