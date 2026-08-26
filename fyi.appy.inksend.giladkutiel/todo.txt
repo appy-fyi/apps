@@ -1,6 +1,5 @@
 TODO:
     Auto Style:
-        Change the style of the button, use the ink emoji (🫟) as the default icon with light background, make sure the button is a perfect circle.
         If possible update the color and emoji based on the typed text, if too much compute is required, then just use the default style.
         Make sure languages that are not English also work
         Make sure fonts for the other languages are supported and look good.
@@ -8,6 +7,7 @@ TODO:
         Always use color gradient for the background.
 DONE:
     Auto Style:
+        Change the style of the button, use the ink emoji (🫟) as the default icon with light background, make sure the button is a perfect circle.
         Remove the predefined styles and the options to add and remove styles.
         Instead we generate a style based on the content of the text.
         How it works:

@@ -20,8 +20,15 @@ private const val BUTTON_SIZE_DP = 56
 private const val DEFAULT_MARGIN_END_PX = 48
 private const val DEFAULT_MARGIN_BOTTOM_PX = 220
 private const val EMOJI_TEXT_SIZE_SP = 26f
-private const val BUTTON_COLOR = 0xFF5B47E0.toInt()
-private const val BUTTON_EMOJI = "✨"
+
+// A light, near-white lavender fill (a pale tint of the app's #5B47E0 accent) with a faint
+// accent-tinted hairline so the circle stays visible on both light and dark chat backdrops.
+private const val BUTTON_BG_COLOR = 0xFFF4F1FE.toInt()
+private const val BUTTON_STROKE_COLOR = 0x265B47E0
+private const val BUTTON_STROKE_WIDTH_DP = 1
+
+/** Unicode 16 "splatter" (ink drop) — the app's namesake glyph. */
+private const val BUTTON_EMOJI = "🫟"
 
 /**
  * Inflates, positions, and tears down the single floating overlay button via [WindowManager].
@@ -91,11 +98,14 @@ class OverlayWindowManager(
             textSize = EMOJI_TEXT_SIZE_SP
             gravity = Gravity.CENTER
         }
+        val strokePx = (BUTTON_STROKE_WIDTH_DP * context.resources.displayMetrics.density).toInt()
         val buttonBackground = GradientDrawable().apply {
             shape = GradientDrawable.OVAL
-            setColor(BUTTON_COLOR)
+            setColor(BUTTON_BG_COLOR)
+            setStroke(strokePx, BUTTON_STROKE_COLOR)
         }
         return FrameLayout(context).apply {
+            // Square bounds + an OVAL background == a perfect circle.
             layoutParams = ViewGroup.LayoutParams(buttonSizePx, buttonSizePx)
             background = buttonBackground
             setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
