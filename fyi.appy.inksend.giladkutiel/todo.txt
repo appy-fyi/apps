@@ -1,4 +1,6 @@
 TODO:
+    Buttons:
+        When updating the styles or adding/deleting styles reflect the changes in the buttons immediately.
 DONE:
     Emojis:
         Replace the "None" box with an empty white box with exactly the same size as the other emoji boxes.
