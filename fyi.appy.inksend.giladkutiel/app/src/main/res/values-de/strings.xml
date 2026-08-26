@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">InkSend</string>
+    <string name="accessibility_service_description">Ermöglicht InkSend zu erkennen, wenn du eine Nachricht tippst, damit sie in ein stilisiertes Bild umgewandelt werden kann. InkSend liest nur den Text im gerade aktiv bearbeiteten Feld und sendet ihn niemals irgendwohin.</string>
+
+    <string name="toast_image_copied">Gestyltes Bild kopiert! Zum Einfügen tippen.</string>
+
+    <string name="settings_title">Text-zu-Bild-Einstellungen</string>
+
+    <string name="permissions_card_title">Erforderliche Systemberechtigungen</string>
+    <string name="permission_overlay_label">1. Overlay-Berechtigung erteilen</string>
+    <string name="permission_accessibility_label">2. Bedienungshilfen-Dienst aktivieren</string>
+    <string name="permission_granted_format">%1$s — Erteilt</string>
+    <string name="permission_open_button">Öffnen</string>
+
+    <string name="text_length_triggers_title">Textlängen-Auslöser</string>
+    <string name="min_length_label">Mindestlänge</string>
+    <string name="max_length_label">Maximallänge</string>
+
+    <string name="style1_section_title">Stil 1 — erster Overlay-Button</string>
+    <string name="style2_section_title">Stil 2 — zweiter Overlay-Button</string>
+
+    <string name="preview_unavailable">Vorschau nicht verfügbar</string>
+    <string name="preview_content_description">Stilvorschau</string>
+
+    <string name="emoji_badge_label">Emoji-Abzeichen (optional)</string>
+    <string name="emoji_badge_description">Wird oben links im Bild angezeigt. Wähle „Kein“, um kein Abzeichen anzuzeigen.</string>
+    <string name="emoji_none_choice">Kein</string>
+
+    <string name="gradient_toggle_label">Verlaufshintergrund aktivieren</string>
+    <string name="text_color_label">Textfarbe</string>
+    <string name="background_color_label">Hintergrundfarbe</string>
+    <string name="gradient_end_color_label">Verlauf-Endfarbe</string>
+    <string name="color_swatch_selected_description">Ausgewählt</string>
+
+    <string name="app_language_title">App-Sprache</string>
+    <string name="language_system_default">Systemstandard</string>
+
+    <string name="font_sans_serif">Serifenlos</string>
+    <string name="font_serif">Serif</string>
+    <string name="font_monospace">Monospace</string>
+    <string name="font_cursive">Kursiv</string>
+</resources>

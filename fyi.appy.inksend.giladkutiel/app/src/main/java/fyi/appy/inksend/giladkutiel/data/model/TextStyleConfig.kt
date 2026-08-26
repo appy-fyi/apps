@@ -1,11 +1,14 @@
 package fyi.appy.inksend.giladkutiel.data.model
 
+import androidx.annotation.StringRes
+import fyi.appy.inksend.giladkutiel.R
+
 /** Available font family choices, using Android's generic system typeface names. */
-enum class FontChoice(val typefaceName: String, val label: String) {
-    SANS_SERIF("sans-serif", "Sans Serif"),
-    SERIF("serif", "Serif"),
-    MONOSPACE("monospace", "Monospace"),
-    CURSIVE("cursive", "Cursive"),
+enum class FontChoice(val typefaceName: String, @StringRes val labelRes: Int) {
+    SANS_SERIF("sans-serif", R.string.font_sans_serif),
+    SERIF("serif", R.string.font_serif),
+    MONOSPACE("monospace", R.string.font_monospace),
+    CURSIVE("cursive", R.string.font_cursive),
 }
 
 data class TextStyleConfig(

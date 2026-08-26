@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">InkSend</string>
+    <string name="accessibility_service_description">Permite que o InkSend detecte quando você está digitando uma mensagem para que possa transformá-la em uma imagem estilizada. O InkSend só lê o texto do campo que você está editando ativamente e nunca o envia para lugar nenhum.</string>
+
+    <string name="toast_image_copied">Imagem estilizada copiada! Toque em Colar.</string>
+
+    <string name="settings_title">Configurações de Texto para Imagem</string>
+
+    <string name="permissions_card_title">Permissões do sistema necessárias</string>
+    <string name="permission_overlay_label">1. Conceder permissão de sobreposição</string>
+    <string name="permission_accessibility_label">2. Ativar o serviço de acessibilidade</string>
+    <string name="permission_granted_format">%1$s — Concedida</string>
+    <string name="permission_open_button">Abrir</string>
+
+    <string name="text_length_triggers_title">Gatilhos de comprimento de texto</string>
+    <string name="min_length_label">Comprimento mínimo</string>
+    <string name="max_length_label">Comprimento máximo</string>
+
+    <string name="style1_section_title">Estilo 1 — primeiro botão flutuante</string>
+    <string name="style2_section_title">Estilo 2 — segundo botão flutuante</string>
+
+    <string name="preview_unavailable">Pré-visualização indisponível</string>
+    <string name="preview_content_description">Pré-visualização do estilo</string>
+
+    <string name="emoji_badge_label">Selo de emoji (opcional)</string>
+    <string name="emoji_badge_description">Desenhado no canto superior esquerdo da imagem. Escolha Nenhum para não exibir selo.</string>
+    <string name="emoji_none_choice">Nenhum</string>
+
+    <string name="gradient_toggle_label">Ativar fundo em gradiente</string>
+    <string name="text_color_label">Cor do texto</string>
+    <string name="background_color_label">Cor de fundo</string>
+    <string name="gradient_end_color_label">Cor final do gradiente</string>
+    <string name="color_swatch_selected_description">Selecionado</string>
+
+    <string name="app_language_title">Idioma do aplicativo</string>
+    <string name="language_system_default">Padrão do sistema</string>
+
+    <string name="font_sans_serif">Sem serifa</string>
+    <string name="font_serif">Serifada</string>
+    <string name="font_monospace">Monoespaçada</string>
+    <string name="font_cursive">Cursiva</string>
+</resources>

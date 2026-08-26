@@ -6,6 +6,7 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.Toast
 import dagger.hilt.android.AndroidEntryPoint
+import fyi.appy.inksend.giladkutiel.R
 import fyi.appy.inksend.giladkutiel.data.model.SecondaryStyleConfig
 import fyi.appy.inksend.giladkutiel.data.model.TextStyleConfig
 import fyi.appy.inksend.giladkutiel.data.model.toRenderConfig
@@ -114,7 +115,7 @@ class TextMonitorAccessibilityService : AccessibilityService() {
 
         currentText = ""
         overlayManager?.hideOverlay()
-        Toast.makeText(this, "Styled image copied! Press Paste.", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, getString(R.string.toast_image_copied), Toast.LENGTH_SHORT).show()
     }
 
     override fun onInterrupt() {

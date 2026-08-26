@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">InkSend</string>
+    <string name="accessibility_service_description">Permet à InkSend de détecter quand vous tapez un message afin de proposer de le transformer en image stylisée. InkSend lit uniquement le texte du champ que vous modifiez activement et ne l\'envoie jamais nulle part.</string>
+
+    <string name="toast_image_copied">Image stylisée copiée ! Appuyez sur Coller.</string>
+
+    <string name="settings_title">Paramètres Texte vers Image</string>
+
+    <string name="permissions_card_title">Autorisations système requises</string>
+    <string name="permission_overlay_label">1. Accorder l\'autorisation de superposition</string>
+    <string name="permission_accessibility_label">2. Activer le service d\'accessibilité</string>
+    <string name="permission_granted_format">%1$s — Accordé</string>
+    <string name="permission_open_button">Ouvrir</string>
+
+    <string name="text_length_triggers_title">Déclencheurs de longueur de texte</string>
+    <string name="min_length_label">Longueur min.</string>
+    <string name="max_length_label">Longueur max.</string>
+
+    <string name="style1_section_title">Style 1 — premier bouton flottant</string>
+    <string name="style2_section_title">Style 2 — second bouton flottant</string>
+
+    <string name="preview_unavailable">Aperçu indisponible</string>
+    <string name="preview_content_description">Aperçu du style</string>
+
+    <string name="emoji_badge_label">Badge emoji (facultatif)</string>
+    <string name="emoji_badge_description">Dessiné dans le coin supérieur gauche de l\'image. Choisissez Aucun pour ne pas afficher de badge.</string>
+    <string name="emoji_none_choice">Aucun</string>
+
+    <string name="gradient_toggle_label">Activer le fond dégradé</string>
+    <string name="text_color_label">Couleur du texte</string>
+    <string name="background_color_label">Couleur de fond</string>
+    <string name="gradient_end_color_label">Couleur finale du dégradé</string>
+    <string name="color_swatch_selected_description">Sélectionné</string>
+
+    <string name="app_language_title">Langue de l\'application</string>
+    <string name="language_system_default">Langue du système</string>
+
+    <string name="font_sans_serif">Sans Serif</string>
+    <string name="font_serif">Serif</string>
+    <string name="font_monospace">Monospace</string>
+    <string name="font_cursive">Cursive</string>
+</resources>

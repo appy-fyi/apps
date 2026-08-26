@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">InkSend</string>
+    <string name="accessibility_service_description">InkSend को यह पहचानने देता है कि जब आप कोई संदेश टाइप कर रहे हैं, ताकि वह उसे स्टाइल की गई छवि में बदल सके। InkSend केवल उसी फ़ील्ड का टेक्स्ट पढ़ता है जिसे आप सक्रिय रूप से संपादित कर रहे हैं और उसे कभी कहीं नहीं भेजता।</string>
+
+    <string name="toast_image_copied">स्टाइल की गई छवि कॉपी हो गई! पेस्ट दबाएं।</string>
+
+    <string name="settings_title">टेक्स्ट-टू-इमेज सेटिंग्स</string>
+
+    <string name="permissions_card_title">आवश्यक सिस्टम अनुमतियाँ</string>
+    <string name="permission_overlay_label">1. ओवरले अनुमति दें</string>
+    <string name="permission_accessibility_label">2. एक्सेसिबिलिटी सेवा सक्षम करें</string>
+    <string name="permission_granted_format">%1$s — दी गई</string>
+    <string name="permission_open_button">खोलें</string>
+
+    <string name="text_length_triggers_title">टेक्स्ट लंबाई ट्रिगर</string>
+    <string name="min_length_label">न्यूनतम लंबाई</string>
+    <string name="max_length_label">अधिकतम लंबाई</string>
+
+    <string name="style1_section_title">स्टाइल 1 — पहला ओवरले बटन</string>
+    <string name="style2_section_title">स्टाइल 2 — दूसरा ओवरले बटन</string>
+
+    <string name="preview_unavailable">पूर्वावलोकन उपलब्ध नहीं</string>
+    <string name="preview_content_description">स्टाइल पूर्वावलोकन</string>
+
+    <string name="emoji_badge_label">इमोजी बैज (वैकल्पिक)</string>
+    <string name="emoji_badge_description">छवि के ऊपरी-बाएं कोने में दिखाया जाता है। बैज न दिखाने के लिए कोई नहीं चुनें।</string>
+    <string name="emoji_none_choice">कोई नहीं</string>
+
+    <string name="gradient_toggle_label">ग्रेडिएंट बैकग्राउंड सक्षम करें</string>
+    <string name="text_color_label">टेक्स्ट रंग</string>
+    <string name="background_color_label">पृष्ठभूमि रंग</string>
+    <string name="gradient_end_color_label">ग्रेडिएंट अंतिम रंग</string>
+    <string name="color_swatch_selected_description">चयनित</string>
+
+    <string name="app_language_title">ऐप की भाषा</string>
+    <string name="language_system_default">सिस्टम डिफ़ॉल्ट</string>
+
+    <string name="font_sans_serif">सैन्स सेरिफ़</string>
+    <string name="font_serif">सेरिफ़</string>
+    <string name="font_monospace">मोनोस्पेस</string>
+    <string name="font_cursive">कर्सिव</string>
+</resources>

@@ -2,4 +2,42 @@
 <resources>
     <string name="app_name">InkSend</string>
     <string name="accessibility_service_description">Lets InkSend detect when you\'re typing a message so it can offer to turn it into a styled image. InkSend only reads text in the field you\'re actively editing and never sends it anywhere.</string>
+
+    <string name="toast_image_copied">Styled image copied! Press Paste.</string>
+
+    <string name="settings_title">Text-to-Image Settings</string>
+
+    <string name="permissions_card_title">Required System Permissions</string>
+    <string name="permission_overlay_label">1. Grant Overlay Permission</string>
+    <string name="permission_accessibility_label">2. Enable Accessibility Service</string>
+    <string name="permission_granted_format">%1$s — Granted</string>
+    <string name="permission_open_button">Open</string>
+
+    <string name="text_length_triggers_title">Text Length Triggers</string>
+    <string name="min_length_label">Min Length</string>
+    <string name="max_length_label">Max Length</string>
+
+    <string name="style1_section_title">Style 1 — first overlay button</string>
+    <string name="style2_section_title">Style 2 — second overlay button</string>
+
+    <string name="preview_unavailable">Preview unavailable</string>
+    <string name="preview_content_description">Style preview</string>
+
+    <string name="emoji_badge_label">Emoji Badge (optional)</string>
+    <string name="emoji_badge_description">Drawn in the top-left corner of the image. Choose None for no badge.</string>
+    <string name="emoji_none_choice">None</string>
+
+    <string name="gradient_toggle_label">Enable Gradient Background</string>
+    <string name="text_color_label">Text Color</string>
+    <string name="background_color_label">Background Color</string>
+    <string name="gradient_end_color_label">Gradient End Color</string>
+    <string name="color_swatch_selected_description">Selected</string>
+
+    <string name="app_language_title">App Language</string>
+    <string name="language_system_default">System Default</string>
+
+    <string name="font_sans_serif">Sans Serif</string>
+    <string name="font_serif">Serif</string>
+    <string name="font_monospace">Monospace</string>
+    <string name="font_cursive">Cursive</string>
 </resources>

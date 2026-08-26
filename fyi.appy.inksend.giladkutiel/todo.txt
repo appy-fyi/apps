@@ -1,9 +1,10 @@
 TODO:
-    Color Picker:
-        - Make a nice color picker to replace the input field, you can limit the selection to a small set of predefined colors.
+    Emojis: 
+        Make sure the "none" emoji has the same size as the other emojis, add another emoji to the list.
+    Buttons:
+        Use the emoji as the button icon instead of the text, and make sure the buttons are aligned properly.
     Languages:
-        - Add support for multiple languages, add English by default and let users select additional languages. 
-            Better yet if the user's languages can be detected automatically add them.
+        Can we render an image in any language? If not write a document into doc/i18n.md that explains this topic.
 DONE:
     Font selection:
         Font selection layout is broken, please take a look and fix.
@@ -11,3 +12,8 @@ DONE:
         - Please make sure text is not midword broken, i.e. it wraps only at spaces and not in the middle of words.
     Emoji Selector:
         Make an emoji selector for the emoji not an input field, you can limit the selection to a small set of predefined popular and diverse emojis.
+    Color Picker:
+        - Make a nice color picker to replace the input field, you can limit the selection to a small set of predefined colors.
+    Languages:
+        - Add support for multiple languages, add English by default and let users select additional languages.
+            Better yet if the user's languages can be detected automatically add them.

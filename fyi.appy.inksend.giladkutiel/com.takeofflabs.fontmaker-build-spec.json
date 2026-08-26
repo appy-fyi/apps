@@ -25,9 +25,10 @@
       "entry_points": ["app launch"],
       "key_ui_elements": [
         "Required System Permissions card with an Overlay row and an Accessibility Service row, each showing a granted/not-granted status icon and an 'Open' button that deep-links to the matching system Settings screen",
+        "App Language picker: a row of chips ('System Default' plus each supported language in its own native name) that overrides the app's UI language independent of the device's system language, applied immediately",
         "Min/Max text length fields that gate when the floating overlay buttons appear (shared by both styles)",
-        "Style 1 section: live preview, font picker (Sans Serif / Serif / Monospace / Cursive), an emoji badge picker (optional, tap-to-select from a small predefined palette plus a None option, rendered in the image's top-left corner), text/background color hex fields with inline swatch + validation, gradient toggle and gradient end-color field — font size is not user-configurable; it is auto-computed from text length",
-        "Style 2 section: an identical set of controls, including its own emoji badge picker, for the second overlay button's independent style"
+        "Style 1 section: live preview, font picker (Sans Serif / Serif / Monospace / Cursive), an emoji badge picker (optional, tap-to-select from a small predefined palette plus a None option, rendered in the image's top-left corner), text/background color pickers (tap-to-select swatches from a small predefined palette, selected swatch shown with a checkmark), gradient toggle and gradient end-color picker — font size is not user-configurable; it is auto-computed from text length",
+        "Style 2 section: an identical set of controls, including its own emoji badge picker and color pickers, for the second overlay button's independent style"
       ]
     }
   ],
@@ -94,9 +95,22 @@
       "acceptance_criteria": [
         "Changing any Style 1 or Style 2 control updates that style's own live preview image within one recomposition, without a manual 'apply' step.",
         "Settings for both styles persist independently across app restarts.",
-        "An invalid hex color shows an inline error state on the field instead of silently discarding the input."
+        "Text, background, and gradient end colors are each chosen by tapping a swatch from a small predefined palette, so every persisted color value is always a valid hex string — there is no free-text color entry or invalid-color state to show."
       ],
-      "implementation_notes": "SettingsRepository wraps a single Preferences DataStore (`user_settings`) exposing TextStyleConfig (Style 1) and SecondaryStyleConfig (Style 2, under style2_* keys) as separate Flows; SettingsViewModel exposes each as its own StateFlow via stateIn(WhileSubscribed(5000)). SettingsScreen's LivePreview composable calls ImageRenderer.renderBitmap() on Dispatchers.Default inside produceState(config) and renders the result via Image(bitmap.asImageBitmap()) — called once per style, with Style 2's preview built via SecondaryStyleConfig.toRenderConfig(primaryConfig). The emoji field is a tap-to-select EmojiPicker (a FlowRow of EmojiChoiceChip boxes) over a fixed EMOJI_BADGE_CHOICES palette of 16 popular, category-diverse emoji plus a None chip that sets emoji to blank — not a free-text field — so the persisted emoji string is always either blank or one of the palette entries."
+      "implementation_notes": "SettingsRepository wraps a single Preferences DataStore (`user_settings`) exposing TextStyleConfig (Style 1) and SecondaryStyleConfig (Style 2, under style2_* keys) as separate Flows; SettingsViewModel exposes each as its own StateFlow via stateIn(WhileSubscribed(5000)). SettingsScreen's LivePreview composable calls ImageRenderer.renderBitmap() on Dispatchers.Default inside produceState(config) and renders the result via Image(bitmap.asImageBitmap()) — called once per style, with Style 2's preview built via SecondaryStyleConfig.toRenderConfig(primaryConfig). The emoji field is a tap-to-select EmojiPicker (a FlowRow of EmojiChoiceChip boxes) over a fixed EMOJI_BADGE_CHOICES palette of 16 popular, category-diverse emoji plus a None chip that sets emoji to blank — not a free-text field — so the persisted emoji string is always either blank or one of the palette entries. Text/background/gradient-end colors are each a tap-to-select ColorPicker (a FlowRow of circular ColorSwatch boxes, selected swatch marked with a checkmark whose black/white tint is chosen by isLightColor() luminance) over a fixed COLOR_PALETTE of 16 hex colors — not a free-text hex field — so the persisted color hex is always one of the palette entries."
+    },
+    {
+      "name": "Multi-language UI Support",
+      "screens": ["Settings"],
+      "est_hours": 10,
+      "description": "All UI chrome (permission copy, section titles, field labels, the Toast, font names) is externalized to string resources and translated into five languages beyond the English default (Spanish, French, German, Portuguese, Hindi). An App Language picker on the Settings screen lets the user override the app's display language independent of the device's system language; the default 'System Default' option automatically follows whichever of the device's configured languages the app has a translation for, falling back to English otherwise — so language detection is Android's own resource-qualifier resolution, not custom logic.",
+      "acceptance_criteria": [
+        "With no override selected, the app's UI language automatically matches the device's system language when a translation exists, and falls back to English otherwise, with no user action required.",
+        "Selecting a specific language in the App Language picker immediately re-renders the entire Settings screen in that language and persists the choice across app restarts, independent of the device's system language.",
+        "Selecting 'System Default' clears the override and reverts to automatic system-language matching.",
+        "All screen text — permission copy, section titles, field labels, button text, the copied-image confirmation Toast, and the four font names — is translated in every supported language; no hardcoded English string remains outside of the rendered sample preview text."
+      ],
+      "implementation_notes": "res/values/strings.xml holds the English defaults; res/values-{es,fr,de,pt,hi}/strings.xml hold full translations, selected automatically by Android's locale-qualified resource resolution. FontChoice's label field became a @StringRes labelRes so font names localize too. LanguagePicker (SettingsScreen.kt) offers 'System Default' plus each supported language in its own native name; on API 33+ it reads/writes the override via Context.getSystemService(LocaleManager::class.java).applicationLocales directly (the same mechanism the OS's own per-app language settings use), with androidx.appcompat's AppCompatDelegate.setApplicationLocales() as the pre-33 fallback — then calls Activity.recreate() itself since MainActivity is a plain ComponentActivity, not AppCompatActivity, so it doesn't get AppCompat's automatic recreation. AndroidManifest declares android:localeConfig=\"@xml/locales_config\" (listing en/es/fr/de/pt/hi) so Android 13+'s own system-level per-app language settings page also lists this app, and a manifest-declared androidx.appcompat.app.AppLocalesMetadataHolderService with autoStoreLocales=true meta-data is required for AppCompatDelegate's static API to have a valid Application context to act on — omitting it makes setApplicationLocales() a silent no-op."
     }
   ],
   "non_goals": [
@@ -164,6 +178,17 @@
     },
     {
       "kind": "manual",
+      "scenario": "App Language override applies immediately and persists",
+      "steps": [
+        "Open Settings with the device's system language set to English and no override selected.",
+        "Tap a non-English language chip (e.g. Español) in the App Language picker.",
+        "Force-close and relaunch the app.",
+        "Tap 'System Default' to clear the override."
+      ],
+      "expected": "The whole Settings screen re-renders in the selected language immediately after tapping its chip; the override survives the relaunch; tapping 'System Default' reverts the UI to the device's system language (English)."
+    },
+    {
+      "kind": "manual",
       "scenario": "Permission handling when revoked dynamically",
       "steps": [
         "Grant both the overlay and accessibility permissions, confirm both overlay buttons appear while typing.",
@@ -220,6 +245,7 @@
     "language": "Kotlin",
     "libraries": [
       { "purpose": "Android Kotlin extensions and compatibility helpers", "gradle_coordinate": "androidx.core:core-ktx:1.13.1" },
+      { "purpose": "Per-app language override (AppCompatDelegate.setApplicationLocales) for the App Language picker", "gradle_coordinate": "androidx.appcompat:appcompat:1.7.0" },
       { "purpose": "Compose host Activity", "gradle_coordinate": "androidx.activity:activity-compose:1.9.3" },
       { "purpose": "Material 3 Compose components", "gradle_coordinate": "androidx.compose.material3:material3:1.3.1" },
       { "purpose": "ViewModel integration with Compose", "gradle_coordinate": "androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6" },

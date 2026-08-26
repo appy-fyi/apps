@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">InkSend</string>
+    <string name="accessibility_service_description">Permite que InkSend detecte cuándo estás escribiendo un mensaje para poder convertirlo en una imagen con estilo. InkSend solo lee el texto del campo que estás editando activamente y nunca lo envía a ningún lugar.</string>
+
+    <string name="toast_image_copied">¡Imagen estilizada copiada! Pulsa Pegar.</string>
+
+    <string name="settings_title">Ajustes de Texto a Imagen</string>
+
+    <string name="permissions_card_title">Permisos del sistema necesarios</string>
+    <string name="permission_overlay_label">1. Conceder permiso de superposición</string>
+    <string name="permission_accessibility_label">2. Activar el servicio de accesibilidad</string>
+    <string name="permission_granted_format">%1$s — Concedido</string>
+    <string name="permission_open_button">Abrir</string>
+
+    <string name="text_length_triggers_title">Activadores de longitud de texto</string>
+    <string name="min_length_label">Longitud mínima</string>
+    <string name="max_length_label">Longitud máxima</string>
+
+    <string name="style1_section_title">Estilo 1 — primer botón flotante</string>
+    <string name="style2_section_title">Estilo 2 — segundo botón flotante</string>
+
+    <string name="preview_unavailable">Vista previa no disponible</string>
+    <string name="preview_content_description">Vista previa del estilo</string>
+
+    <string name="emoji_badge_label">Insignia de emoji (opcional)</string>
+    <string name="emoji_badge_description">Se dibuja en la esquina superior izquierda de la imagen. Elige Ninguno para no mostrar insignia.</string>
+    <string name="emoji_none_choice">Ninguno</string>
+
+    <string name="gradient_toggle_label">Activar fondo degradado</string>
+    <string name="text_color_label">Color del texto</string>
+    <string name="background_color_label">Color de fondo</string>
+    <string name="gradient_end_color_label">Color final del degradado</string>
+    <string name="color_swatch_selected_description">Seleccionado</string>
+
+    <string name="app_language_title">Idioma de la aplicación</string>
+    <string name="language_system_default">Predeterminado del sistema</string>
+
+    <string name="font_sans_serif">Sans Serif</string>
+    <string name="font_serif">Serif</string>
+    <string name="font_monospace">Monoespaciada</string>
+    <string name="font_cursive">Cursiva</string>
+</resources>
