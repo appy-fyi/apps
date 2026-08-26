@@ -80,9 +80,9 @@ object ImageRenderer {
     }
 
     /**
-     * Draws the style's emoji badge in the top-start corner, on top of the main text.
-     * Uses the default typeface rather than [config]'s font — Android resolves emoji
-     * glyphs through the system-wide font fallback chain regardless of typeface family,
+     * Draws the style's emoji badge horizontally centered near the top edge, on top of the
+     * main text. Uses the default typeface rather than [config]'s font — Android resolves
+     * emoji glyphs through the system-wide font fallback chain regardless of typeface family,
      * so this reliably picks up the system's (vector, on modern devices) color emoji font
      * instead of risking tofu boxes from a font family that doesn't declare emoji coverage.
      */
@@ -92,7 +92,8 @@ object ImageRenderer {
             textSize = EMOJI_SIZE_PX
         }
         val baselineY = EMOJI_MARGIN_PX - emojiPaint.ascent()
-        canvas.drawText(emoji, EMOJI_MARGIN_PX, baselineY, emojiPaint)
+        val centeredX = (CANVAS_SIZE_PX - emojiPaint.measureText(emoji)) / 2f
+        canvas.drawText(emoji, centeredX, baselineY, emojiPaint)
     }
 
     /**
