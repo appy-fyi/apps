@@ -16,6 +16,16 @@ import kotlin.random.Random
  * is **many-to-many**: a stem can list several emojis ("night" → 🌙 😴 🛌) and an emoji can be
  * shared by several stems. There are well over 100 distinct emojis here, spread across faces,
  * feelings, symbols, nature, animals, food, travel, activities and objects.
+ *
+ * The curated [KEYWORDS] list below is the hand-tuned core — its ordering is what gives every
+ * stem its deterministic **primary** emoji and its many-to-many alternates. On top of it a
+ * much larger bulk vocabulary (`emoji_bulk.tsv`, a `word<TAB>emoji` resource sitting next to
+ * this class) is merged in **after** the curated pairs, so curated primaries keep their slot
+ * while coverage widens to **2000+ distinct stems** — animals, birds, sea life, insects,
+ * fruit, vegetables, prepared food, drinks, fine-grained feelings, body parts, medicine,
+ * occupations, buildings, landforms, weather, transport, space, sports, music, tech, clothing,
+ * household objects, tools, school, science, finance, law, religion, games, family, action
+ * verbs, abstract qualities, time, colour, gems, and country/nationality words.
  */
 object EmojiLexicon {
 
@@ -199,13 +209,37 @@ object EmojiLexicon {
     )
 
     /**
+     * The bulk `word<TAB>emoji` vocabulary shipped as a Java resource next to this class.
+     * Parsed once at load; a missing/blank line is skipped and a missing file yields an empty
+     * list (the curated [KEYWORDS] alone still work). These pairs are appended **after** the
+     * curated ones so every curated primary keeps its position in its bucket.
+     */
+    private val BULK_KEYWORDS: List<Pair<String, String>> by lazy {
+        val stream = EmojiLexicon::class.java.getResourceAsStream("emoji_bulk.tsv")
+            ?: return@lazy emptyList()
+        stream.bufferedReader(Charsets.UTF_8).useLines { lines ->
+            lines.mapNotNull { line ->
+                val tab = line.indexOf('\t')
+                if (tab <= 0) return@mapNotNull null
+                val word = line.substring(0, tab).trim()
+                val emoji = line.substring(tab + 1).trim()
+                if (word.isEmpty() || emoji.isEmpty()) null else word to emoji
+            }.toList()
+        }
+    }
+
+    /** Curated core first (for deterministic primaries), then the bulk vocabulary. */
+    private val ALL_KEYWORDS: List<Pair<String, String>> = KEYWORDS + BULK_KEYWORDS
+
+    /**
      * Stem → **every** emoji seen for it, in declared order and de-duplicated (the primary
      * mapping first). The relation is many-to-many: one stem can carry several emojis
-     * ("night" → 🌙 😴 🛌) and one emoji can be shared by several stems.
+     * ("night" → 🌙 😴 🛌) and one emoji can be shared by several stems. Curated keywords are
+     * folded in before the bulk vocabulary, so the first emoji of every curated stem is stable.
      */
     val STEM_TO_EMOJIS: Map<String, List<String>> = buildMap<String, MutableList<String>> {
         val stemmer = PorterStemmer()
-        for ((word, emoji) in KEYWORDS) {
+        for ((word, emoji) in ALL_KEYWORDS) {
             val stem = stemmer.stem(word)
             if (stem.isEmpty()) continue
             val bucket = getOrPut(stem) { mutableListOf() }
@@ -214,7 +248,7 @@ object EmojiLexicon {
     }.mapValues { it.value.toList() }
 
     /** Every distinct emoji this lexicon can produce, used for "already typed" hits. */
-    val ALL_EMOJIS: List<String> = KEYWORDS.map { it.second }.distinct()
+    val ALL_EMOJIS: List<String> = ALL_KEYWORDS.map { it.second }.distinct()
 
     /**
      * Up to [max] emojis for [translatedText] given its precomputed [stems]: emojis the user

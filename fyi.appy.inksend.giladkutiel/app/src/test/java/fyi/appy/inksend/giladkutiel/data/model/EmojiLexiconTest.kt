@@ -42,6 +42,25 @@ class EmojiLexiconTest {
     }
 
     @Test
+    fun `the bulk vocabulary lifts coverage past 2000 distinct stems`() {
+        assertTrue(
+            "only ${EmojiLexicon.STEM_TO_EMOJIS.size} distinct stems",
+            EmojiLexicon.STEM_TO_EMOJIS.size >= 2000,
+        )
+        // Every bucket has at least one emoji and no blanks.
+        assertTrue(EmojiLexicon.STEM_TO_EMOJIS.values.all { it.isNotEmpty() && it.none(String::isBlank) })
+    }
+
+    @Test
+    fun `bulk vocabulary words resolve without touching the curated core`() {
+        assertTrue("🐧" in EmojiLexicon.select("look at that penguin"))
+        assertTrue("🥦" in EmojiLexicon.select("more broccoli please"))
+        assertTrue("🎻" in EmojiLexicon.select("she plays the violin"))
+        // Inflected form hits the same stem ("puppies" and "puppy" share the Porter stem).
+        assertTrue("🐕" in EmojiLexicon.select("look at the puppies"))
+    }
+
+    @Test
     fun `has at least 100 distinct emojis`() {
         assertTrue(
             "only ${EmojiLexicon.ALL_EMOJIS.size} distinct emojis",
